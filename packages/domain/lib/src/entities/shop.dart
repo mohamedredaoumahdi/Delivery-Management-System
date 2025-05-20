@@ -1,0 +1,213 @@
+import 'package:equatable/equatable.dart';
+
+/// Shop category types
+enum ShopCategory {
+  /// Restaurant or food establishment
+  restaurant,
+  
+  /// Grocery store
+  grocery,
+  
+  /// Pharmacy
+  pharmacy,
+  
+  /// Retail store
+  retail,
+  
+  /// Other type of shop
+  other,
+}
+
+/// Shop entity representing a vendor/shop in the system
+class Shop extends Equatable {
+  /// Unique identifier for the shop
+  final String id;
+  
+  /// Name of the shop
+  final String name;
+  
+  /// Description of the shop
+  final String description;
+  
+  /// Category of the shop
+  final ShopCategory category;
+  
+  /// Logo URL of the shop
+  final String? logoUrl;
+  
+  /// Cover image URL of the shop
+  final String? coverImageUrl;
+  
+  /// Address of the shop
+  final String address;
+  
+  /// Latitude of the shop location
+  final double latitude;
+  
+  /// Longitude of the shop location
+  final double longitude;
+  
+  /// Phone number of the shop
+  final String phone;
+  
+  /// Email of the shop
+  final String email;
+  
+  /// Website of the shop (optional)
+  final String? website;
+  
+  /// Opening hours in JSON format (can be parsed by client)
+  final String openingHours;
+  
+  /// Average rating of the shop (1-5)
+  final double rating;
+  
+  /// Number of ratings
+  final int ratingCount;
+  
+  /// Whether the shop is currently open
+  final bool isOpen;
+  
+  /// Whether the shop offers delivery
+  final bool hasDelivery;
+  
+  /// Whether the shop offers pickup
+  final bool hasPickup;
+  
+  /// Minimum order amount for delivery
+  final double minimumOrderAmount;
+  
+  /// Delivery fee
+  final double deliveryFee;
+  
+  /// Estimated delivery time in minutes
+  final int estimatedDeliveryTime;
+  
+  /// Owner/Vendor user ID
+  final String ownerId;
+  
+  /// Date when the shop was created
+  final DateTime createdAt;
+  
+  /// Date when the shop was last updated
+  final DateTime updatedAt;
+
+  /// Creates a shop entity
+  const Shop({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.category,
+    this.logoUrl,
+    this.coverImageUrl,
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+    required this.phone,
+    required this.email,
+    this.website,
+    required this.openingHours,
+    required this.rating,
+    required this.ratingCount,
+    required this.isOpen,
+    required this.hasDelivery,
+    required this.hasPickup,
+    required this.minimumOrderAmount,
+    required this.deliveryFee,
+    required this.estimatedDeliveryTime,
+    required this.ownerId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  /// Creates a copy of this shop with the given fields replaced
+  Shop copyWith({
+    String? id,
+    String? name,
+    String? description,
+    ShopCategory? category,
+    String? Function()? logoUrl,
+    String? Function()? coverImageUrl,
+    String? address,
+    double? latitude,
+    double? longitude,
+    String? phone,
+    String? email,
+    String? Function()? website,
+    String? openingHours,
+    double? rating,
+    int? ratingCount,
+    bool? isOpen,
+    bool? hasDelivery,
+    bool? hasPickup,
+    double? minimumOrderAmount,
+    double? deliveryFee,
+    int? estimatedDeliveryTime,
+    String? ownerId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Shop(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      logoUrl: logoUrl != null ? logoUrl() : this.logoUrl,
+      coverImageUrl: coverImageUrl != null ? coverImageUrl() : this.coverImageUrl,
+      address: address ?? this.address,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      website: website != null ? website() : this.website,
+      openingHours: openingHours ?? this.openingHours,
+      rating: rating ?? this.rating,
+      ratingCount: ratingCount ?? this.ratingCount,
+      isOpen: isOpen ?? this.isOpen,
+      hasDelivery: hasDelivery ?? this.hasDelivery,
+      hasPickup: hasPickup ?? this.hasPickup,
+      minimumOrderAmount: minimumOrderAmount ?? this.minimumOrderAmount,
+      deliveryFee: deliveryFee ?? this.deliveryFee,
+      estimatedDeliveryTime: estimatedDeliveryTime ?? this.estimatedDeliveryTime,
+      ownerId: ownerId ?? this.ownerId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+  
+  /// Empty shop instance
+  factory Shop.empty() {
+    return Shop(
+      id: '',
+      name: '',
+      description: '',
+      category: ShopCategory.other,
+      address: '',
+      latitude: 0,
+      longitude: 0,
+      phone: '',
+      email: '',
+      openingHours: '{}',
+      rating: 0,
+      ratingCount: 0,
+      isOpen: false,
+      hasDelivery: false,
+      hasPickup: false,
+      minimumOrderAmount: 0,
+      deliveryFee: 0,
+      estimatedDeliveryTime: 0,
+      ownerId: '',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
+  
+  @override
+  List<Object?> get props => [
+    id, name, description, category, logoUrl, coverImageUrl,
+    address, latitude, longitude, phone, email, website,
+    openingHours, rating, ratingCount, isOpen, hasDelivery,
+    hasPickup, minimumOrderAmount, deliveryFee, estimatedDeliveryTime,
+    ownerId, createdAt, updatedAt,
+  ];
+}

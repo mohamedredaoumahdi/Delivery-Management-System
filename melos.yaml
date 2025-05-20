@@ -1,0 +1,63 @@
+name: delivery_system
+repository: https://github.com/mohamedredaoumahdi/Delivery-Management-System
+
+packages:
+  - apps/**
+  - packages/**
+
+command:
+  version:
+    # Only allow versioning on main branch
+    branch: main
+    # Ensures the workspace is clean before versioning
+    workspaceCheck: true
+
+scripts:
+  analyze:
+    run: melos exec -- "flutter analyze"
+    description: Run `flutter analyze` in all packages
+
+  format:
+    run: melos exec -- "flutter format lib"
+    description: Run `flutter format` in all packages
+
+  test:
+    run: melos exec -- "flutter test"
+    description: Run `flutter test` in all packages
+    packageFilters:
+      dirExists:
+        - test
+
+  build:user:
+    run: cd apps/user_app && flutter build apk
+    description: Build the user app APK
+
+  build:vendor:
+    run: cd apps/vendor_app && flutter build apk
+    description: Build the vendor app APK
+
+  build:delivery:
+    run: cd apps/delivery_app && flutter build apk
+    description: Build the delivery app APK
+
+  build:admin:
+    run: cd apps/admin_app && flutter build web
+    description: Build the admin web app
+
+  clean:
+    run: melos exec -- "flutter clean"
+    description: Run `flutter clean` in all packages
+
+  get:
+    run: melos exec -- "flutter pub get"
+    description: Run `flutter pub get` in all packages
+
+  upgrade:
+    run: melos exec -- "flutter pub upgrade"
+    description: Run `flutter pub upgrade` in all packages
+
+sdkPath: auto
+
+# Ensure that top-level packages without a lib dir get analyzed
+ignore:
+  - 'apps/**'
