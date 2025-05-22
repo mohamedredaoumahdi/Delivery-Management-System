@@ -1,10 +1,11 @@
+import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ui_kit/ui_kit.dart';
+import 'package:user_app/features/cart/domain/cart_repository.dart';
 
 import '../bloc/cart_bloc.dart';
-import '../domain/cart_repository.dart';
 import '../widgets/cart_item_card.dart';
 import '../widgets/cart_summary_card.dart';
 import '../widgets/empty_cart.dart';

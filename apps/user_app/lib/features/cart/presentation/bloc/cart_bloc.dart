@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:domain/domain.dart';
 import 'package:equatable/equatable.dart';
+import 'package:user_app/features/cart/domain/cart_repository.dart';
 
-import '../domain/cart_repository.dart';
 
 part 'cart_event.dart';
 part 'cart_state.dart';

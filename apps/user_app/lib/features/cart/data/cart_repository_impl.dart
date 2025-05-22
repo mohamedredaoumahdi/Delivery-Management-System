@@ -353,3 +353,4 @@ class CartRepositoryImpl implements CartRepository {
     _cartSummaryController.close();
     _logger.d('CartRepository disposed');
   }
+}

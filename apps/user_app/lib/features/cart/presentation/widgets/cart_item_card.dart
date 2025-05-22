@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ui_kit/ui_kit.dart';
+import 'package:user_app/features/cart/domain/cart_repository.dart';
 
-import '../domain/cart_repository.dart';
 
 class CartItemCard extends StatefulWidget {
   final CartItem item;
