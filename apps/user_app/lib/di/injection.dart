@@ -1,8 +1,16 @@
+import 'package:core/core.dart' as core;
 import 'package:core/core.dart';
 import 'package:data/data.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/domain.dart';
 import 'package:get_it/get_it.dart';
+import 'package:data/src/datasources/local/mock_auth_remote_data_source.dart';
+import 'package:data/src/api/api_client.dart' as data_api;
+
+// Corrected imports for Order related repositories
+import 'package:domain/src/repositories/order_repository.dart';
+import 'package:data/src/repositories/order_repository_impl.dart';
+import 'package:data/src/repositories/mock_order_repository.dart';
 
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/shop/presentation/bloc/shop_list_bloc.dart';
@@ -10,8 +18,16 @@ import '../features/cart/domain/cart_repository.dart';
 import '../features/cart/data/cart_repository_impl.dart';
 import '../features/cart/presentation/bloc/cart_bloc.dart';
 import '../features/home/presentation/bloc/home_bloc.dart';
+import '../features/shop/data/shop_repository_impl.dart';
+import '../features/shop/data/mock_shop_repository.dart';
+import '../features/shop/presentation/bloc/shop_details_bloc.dart';
+import '../features/shop/presentation/bloc/product_list_bloc.dart';
+import '../features/order/presentation/bloc/order_bloc.dart';
 
 final getIt = GetIt.instance;
+
+// Toggle for using mock authentication (set to true for mock, false for real)
+const bool useMockAuth = true;
 
 Future<void> initializeDependencies() async {
   // Core services
@@ -27,8 +43,14 @@ Future<void> initializeDependencies() async {
   
   // API Client
   getIt.registerSingleton<Dio>(Dio());
-  getIt.registerSingleton<ApiClient>(
-    ApiClient(
+  getIt.registerSingleton<core.ApiClient>(
+    core.ApiClient(
+      baseUrl: 'https://api.deliverysystem.com/v1', // Replace with your API URL
+      dio: getIt<Dio>(),
+    ),
+  );
+  getIt.registerSingleton<data_api.ApiClient>(
+    data_api.ApiClient(
       baseUrl: 'https://api.deliverysystem.com/v1', // Replace with your API URL
       dio: getIt<Dio>(),
     ),
@@ -42,12 +64,19 @@ Future<void> initializeDependencies() async {
     ),
   );
   
-  getIt.registerSingleton<AuthRemoteDataSource>(
-    AuthRemoteDataSourceImpl(
-      apiClient: getIt<ApiClient>(),
-      logger: getIt<LoggerService>(),
-    ),
-  );
+  // Register either the mock or real AuthRemoteDataSource based on the toggle
+  if (useMockAuth) {
+    getIt.registerSingleton<AuthRemoteDataSource>(
+      MockAuthRemoteDataSource(),
+    );
+  } else {
+    getIt.registerSingleton<AuthRemoteDataSource>(
+      AuthRemoteDataSourceImpl(
+        apiClient: getIt<data_api.ApiClient>(),
+        logger: getIt<LoggerService>(),
+      ),
+    );
+  }
   
   // Repositories
   getIt.registerSingleton<AuthRepository>(
@@ -57,6 +86,34 @@ Future<void> initializeDependencies() async {
       logger: getIt<LoggerService>(),
     ),
   );
+  
+  // Shop Repository
+  if (useMockAuth) {
+    getIt.registerSingleton<ShopRepository>(
+      MockShopRepository(),
+    );
+  } else {
+    getIt.registerSingleton<ShopRepository>(
+      ShopRepositoryImpl(
+        apiClient: getIt<data_api.ApiClient>(),
+        logger: getIt<LoggerService>(),
+      ),
+    );
+  }
+  
+  // Order Repository
+  if (useMockAuth) {
+    getIt.registerSingleton<OrderRepository>(
+      MockOrderRepository(),
+    );
+  } else {
+    getIt.registerSingleton<OrderRepository>(
+      OrderRepositoryImpl(
+        apiClient: getIt<data_api.ApiClient>(),
+        logger: getIt<LoggerService>(),
+      ),
+    );
+  }
   
   // Local repositories
   getIt.registerSingleton<CartRepository>(
@@ -87,5 +144,22 @@ Future<void> initializeDependencies() async {
   
   getIt.registerFactory<HomeBloc>(
     () => HomeBloc(),
+  );
+
+  // Register ShopDetailsBloc
+  getIt.registerFactory<ShopDetailsBloc>(
+    () => ShopDetailsBloc(getIt<ShopRepository>()),
+  );
+
+  // Register ProductListBloc
+  getIt.registerFactory<ProductListBloc>(
+    () => ProductListBloc(getIt<ShopRepository>()),
+  );
+
+  // Register OrderBloc
+  getIt.registerFactory<OrderBloc>(
+    () => OrderBloc(
+      orderRepository: getIt<OrderRepository>(),
+    ),
   );
 }

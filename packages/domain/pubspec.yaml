@@ -1,0 +1,19 @@
+name: domain
+description: "Domain layer with entities, repositories, and use cases for the delivery system"
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  # Functional programming
+  dartz: ^0.10.1
+  
+  # Value equality
+  equatable: ^2.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0

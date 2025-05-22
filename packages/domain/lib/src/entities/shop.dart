@@ -202,6 +202,69 @@ class Shop extends Equatable {
     );
   }
   
+  /// Creates a shop from JSON
+  factory Shop.fromJson(Map<String, dynamic> json) {
+    return Shop(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      category: ShopCategory.values.firstWhere(
+        (e) => e.toString() == 'ShopCategory.${json['category']}',
+        orElse: () => ShopCategory.other,
+      ),
+      logoUrl: json['logo_url'] as String?,
+      coverImageUrl: json['cover_image_url'] as String?,
+      address: json['address'] as String,
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
+      phone: json['phone'] as String,
+      email: json['email'] as String,
+      website: json['website'] as String?,
+      openingHours: json['opening_hours'] as String,
+      rating: (json['rating'] as num).toDouble(),
+      ratingCount: json['rating_count'] as int,
+      isOpen: json['is_open'] as bool,
+      hasDelivery: json['has_delivery'] as bool,
+      hasPickup: json['has_pickup'] as bool,
+      minimumOrderAmount: (json['minimum_order_amount'] as num).toDouble(),
+      deliveryFee: (json['delivery_fee'] as num).toDouble(),
+      estimatedDeliveryTime: json['estimated_delivery_time'] as int,
+      ownerId: json['owner_id'] as String,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  /// Converts the shop to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'category': category.toString().split('.').last,
+      'logo_url': logoUrl,
+      'cover_image_url': coverImageUrl,
+      'address': address,
+      'latitude': latitude,
+      'longitude': longitude,
+      'phone': phone,
+      'email': email,
+      'website': website,
+      'opening_hours': openingHours,
+      'rating': rating,
+      'rating_count': ratingCount,
+      'is_open': isOpen,
+      'has_delivery': hasDelivery,
+      'has_pickup': hasPickup,
+      'minimum_order_amount': minimumOrderAmount,
+      'delivery_fee': deliveryFee,
+      'estimated_delivery_time': estimatedDeliveryTime,
+      'owner_id': ownerId,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+  
   @override
   List<Object?> get props => [
     id, name, description, category, logoUrl, coverImageUrl,

@@ -8,7 +8,10 @@ import 'di/injection.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/shop/presentation/bloc/shop_list_bloc.dart';
+import 'features/shop/presentation/bloc/shop_details_bloc.dart';
 import 'features/cart/presentation/bloc/cart_bloc.dart';
+import 'features/shop/presentation/bloc/product_list_bloc.dart';
+import 'features/order/presentation/bloc/order_bloc.dart';
 
 // Global GetIt instance
 final getIt = GetIt.instance;
@@ -46,9 +49,24 @@ class UserApp extends StatelessWidget {
           create: (context) => getIt<ShopListBloc>(),
         ),
         
+        // Shop Details BLoC - handles shop details
+        BlocProvider<ShopDetailsBloc>(
+          create: (context) => getIt<ShopDetailsBloc>(),
+        ),
+        
+        // Product List BLoC - handles product listings for a shop
+        BlocProvider<ProductListBloc>(
+          create: (context) => getIt<ProductListBloc>(),
+        ),
+        
         // Cart BLoC - handles shopping cart
         BlocProvider<CartBloc>(
           create: (context) => getIt<CartBloc>()..add(const CartLoadEvent()),
+        ),
+        
+        // Order BLoC - handles order related logic
+        BlocProvider<OrderBloc>(
+          create: (context) => getIt<OrderBloc>(),
         ),
       ],
       child: MaterialApp.router(
@@ -76,7 +94,9 @@ class UserApp extends StatelessWidget {
           // Handle text scaling for accessibility
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(
-              textScaleFactor: MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.2),
+              textScaler: TextScaler.linear(
+                MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.2),
+              ),
             ),
             child: child!,
           );

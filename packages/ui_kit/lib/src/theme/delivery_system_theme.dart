@@ -184,8 +184,8 @@ class DeliverySystemTheme {
     );
   }
 
-  CardTheme _getCardTheme() {
-    return CardTheme(
+  CardThemeData _getCardTheme() {
+    return CardThemeData(
       color: surfaceColor,
       elevation: 2,
       shape: RoundedRectangleBorder(

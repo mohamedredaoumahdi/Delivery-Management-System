@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:domain/domain.dart';
 import 'package:ui_kit/ui_kit.dart';
+import 'package:user_app/features/auth/presentation/bloc/auth_bloc.dart';
 
-import '../../auth/presentation/bloc/auth_bloc.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -277,7 +277,7 @@ class ProfilePage extends StatelessWidget {
         ),
         _buildSettingsItem(
           context,
-          icon: Icons.location_on_outline,
+          icon: Icons.location_on_outlined,
           title: 'Delivery Addresses',
           subtitle: 'Manage your saved addresses',
           onTap: () {
@@ -312,7 +312,7 @@ class ProfilePage extends StatelessWidget {
       children: [
         _buildSettingsItem(
           context,
-          icon: Icons.notifications_outline,
+          icon: Icons.location_on_outlined,
           title: 'Notifications',
           subtitle: 'Manage your notification preferences',
           onTap: () {

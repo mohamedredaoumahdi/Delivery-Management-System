@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ui_kit/ui_kit.dart';
+import 'package:user_app/features/auth/presentation/bloc/auth_bloc.dart';
 
-import '../../auth/presentation/bloc/auth_bloc.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});

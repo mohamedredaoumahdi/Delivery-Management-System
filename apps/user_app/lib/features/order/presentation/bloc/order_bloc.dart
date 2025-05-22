@@ -53,8 +53,8 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         (orders) {
           // Filter orders based on active/past
           final filteredOrders = event.active
-              ? orders.where((order) => order.isActive).toList()
-              : orders.where((order) => !order.isActive).toList();
+              ? orders.where((order) => order.isActive).toList().cast<Order>()
+              : orders.where((order) => !order.isActive).toList().cast<Order>();
               
           emit(OrderListLoaded(
             orders: filteredOrders,
@@ -263,8 +263,8 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           (orders) {
             // Filter orders based on active/past
             final filteredOrders = currentState.isActiveTab
-                ? orders.where((order) => order.isActive).toList()
-                : orders.where((order) => !order.isActive).toList();
+                ? orders.where((order) => order.isActive).toList().cast<Order>()
+                : orders.where((order) => !order.isActive).toList().cast<Order>();
                 
             emit(OrderListLoaded(
               orders: filteredOrders,
@@ -314,8 +314,8 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           (newOrders) {
             // Filter new orders based on active/past
             final filteredNewOrders = currentState.isActiveTab
-                ? newOrders.where((order) => order.isActive).toList()
-                : newOrders.where((order) => !order.isActive).toList();
+                ? newOrders.where((order) => order.isActive).toList().cast<Order>()
+                : newOrders.where((order) => !order.isActive).toList().cast<Order>();
                 
             final allOrders = [...currentState.orders, ...filteredNewOrders];
             

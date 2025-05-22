@@ -141,6 +141,54 @@ class Product extends Equatable {
       ? ((price - discountedPrice!) / price * 100).roundToDouble() 
       : null;
   
+  /// Creates a product from JSON
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      price: (json['price'] as num).toDouble(),
+      discountedPrice: json['discounted_price'] != null 
+          ? (json['discounted_price'] as num).toDouble() 
+          : null,
+      imageUrl: json['image_url'] as String?,
+      category: json['category'] as String,
+      tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
+      nutritionalInfo: json['nutritional_info'] as Map<String, dynamic>?,
+      inStock: json['in_stock'] as bool,
+      stockQuantity: json['stock_quantity'] as int?,
+      shopId: json['shop_id'] as String,
+      isFeatured: json['is_featured'] as bool? ?? false,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      ratingCount: json['rating_count'] as int? ?? 0,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  /// Converts the product to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'price': price,
+      'discounted_price': discountedPrice,
+      'image_url': imageUrl,
+      'category': category,
+      'tags': tags,
+      'nutritional_info': nutritionalInfo,
+      'in_stock': inStock,
+      'stock_quantity': stockQuantity,
+      'shop_id': shopId,
+      'is_featured': isFeatured,
+      'rating': rating,
+      'rating_count': ratingCount,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
   @override
   List<Object?> get props => [
     id, name, description, price, discountedPrice, imageUrl,

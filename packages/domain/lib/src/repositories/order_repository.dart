@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart' as dartz;
 
 import '../entities/order.dart';
 import '../errors/failures.dart';
@@ -6,7 +6,7 @@ import '../errors/failures.dart';
 /// Repository for order operations
 abstract class OrderRepository {
   /// Place a new order
-  Future<Either<Failure, Order>> placeOrder({
+  Future<dartz.Either<Failure, Order>> placeOrder({
     required String shopId,
     required List<OrderItem> items,
     required String deliveryAddress,
@@ -21,23 +21,23 @@ abstract class OrderRepository {
   /// [status] is an optional status filter
   /// [page] is the page number (starting from 1)
   /// [limit] is the number of items per page
-  Future<Either<Failure, List<Order>>> getUserOrders({
+  Future<dartz.Either<Failure, List<Order>>> getUserOrders({
     OrderStatus? status,
     int page = 1,
     int limit = 20,
   });
   
   /// Get order by ID
-  Future<Either<Failure, Order>> getOrderById(String id);
+  Future<dartz.Either<Failure, Order>> getOrderById(String id);
   
   /// Cancel an order
-  Future<Either<Failure, Order>> cancelOrder(String id, {String? reason});
+  Future<dartz.Either<Failure, Order>> cancelOrder(String id, {String? reason});
   
   /// Update tip amount
-  Future<Either<Failure, Order>> updateTip(String id, double tip);
+  Future<dartz.Either<Failure, Order>> updateTip(String id, double tip);
   
   /// For Vendor: Get shop orders
-  Future<Either<Failure, List<Order>>> getShopOrders({
+  Future<dartz.Either<Failure, List<Order>>> getShopOrders({
     required String shopId,
     OrderStatus? status,
     int page = 1,
@@ -45,7 +45,7 @@ abstract class OrderRepository {
   });
   
   /// For Vendor: Update order status
-  Future<Either<Failure, Order>> updateOrderStatus({
+  Future<dartz.Either<Failure, Order>> updateOrderStatus({
     required String orderId,
     required OrderStatus status,
     String? rejectionReason,
@@ -53,24 +53,24 @@ abstract class OrderRepository {
   });
   
   /// For Delivery: Get assigned orders
-  Future<Either<Failure, List<Order>>> getAssignedOrders({
+  Future<dartz.Either<Failure, List<Order>>> getAssignedOrders({
     OrderStatus? status,
     int page = 1,
     int limit = 20,
   });
   
   /// For Delivery: Update order location
-  Future<Either<Failure, Order>> updateOrderLocation({
+  Future<dartz.Either<Failure, Order>> updateOrderLocation({
     required String orderId,
     required double latitude,
     required double longitude,
   });
   
   /// For Delivery: Mark order as delivered
-  Future<Either<Failure, Order>> markOrderAsDelivered(String orderId);
+  Future<dartz.Either<Failure, Order>> markOrderAsDelivered(String orderId);
   
   /// For Admin: Get all orders
-  Future<Either<Failure, List<Order>>> getAllOrders({
+  Future<dartz.Either<Failure, List<Order>>> getAllOrders({
     String? userId,
     String? shopId,
     String? deliveryPersonId,
@@ -82,7 +82,7 @@ abstract class OrderRepository {
   });
   
   /// For Admin: Assign order to delivery person
-  Future<Either<Failure, Order>> assignOrderToDeliveryPerson({
+  Future<dartz.Either<Failure, Order>> assignOrderToDeliveryPerson({
     required String orderId,
     required String deliveryPersonId,
   });

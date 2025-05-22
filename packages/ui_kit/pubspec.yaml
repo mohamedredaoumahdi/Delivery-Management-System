@@ -1,0 +1,25 @@
+name: ui_kit
+description: "Shared UI components and theme for the delivery system apps"
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Google Fonts for typography
+  google_fonts: ^6.1.0
+  
+  # For responsive design
+  flutter_screenutil: ^5.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

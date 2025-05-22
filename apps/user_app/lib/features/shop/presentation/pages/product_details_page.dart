@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:domain/domain.dart';
 import 'package:ui_kit/ui_kit.dart';
+import 'package:user_app/features/cart/presentation/bloc/cart_bloc.dart';
 
 import '../bloc/product_details_bloc.dart';
-import '../../cart/presentation/bloc/cart_bloc.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   final String shopId;

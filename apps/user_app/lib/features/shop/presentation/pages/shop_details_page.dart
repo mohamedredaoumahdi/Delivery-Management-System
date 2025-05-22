@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:domain/domain.dart';
 import 'package:ui_kit/ui_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:user_app/features/cart/presentation/bloc/cart_bloc.dart';
 
 import '../bloc/shop_details_bloc.dart';
 import '../bloc/product_list_bloc.dart';
 import '../widgets/product_grid_item.dart';
 import '../widgets/shop_info_card.dart';
-import '../../cart/presentation/bloc/cart_bloc.dart';
 
 class ShopDetailsPage extends StatefulWidget {
   final String shopId;
@@ -62,7 +62,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
       // Load more products when user is near the bottom
       final state = context.read<ProductListBloc>().state;
       if (state is ProductListLoaded && state.hasMore) {
-        context.read<ProductListBloc>().add(const ProductListLoadMoreEvent());
+        context.read<ProductListBloc>().add( ProductListLoadMoreEvent());
       }
     }
   }
@@ -324,34 +324,27 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                   }
                 },
                 child: _categories.isNotEmpty
-                    ? Container(
-                        height: 50,
-                        margin: const EdgeInsets.only(top: 12),
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _categories.length + 1,
-                          itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: FilterChip(
-                                  label: const Text('All'),
-                                  selected: _selectedCategory == null,
-                                  onSelected: (_) => _filterByCategory(null),
-                                ),
-                              );
-                            }
-                            
-                            final category = _categories[index - 1];
-                            return Padding(
+                    ? SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: FilterChip(
+                                label: const Text('All'),
+                                selected: _selectedCategory == null,
+                                onSelected: (_) => _filterByCategory(null),
+                              ),
+                            ),
+                            ..._categories.map((category) => Padding(
                               padding: const EdgeInsets.only(right: 8),
                               child: FilterChip(
                                 label: Text(category),
                                 selected: _selectedCategory == category,
                                 onSelected: (_) => _filterByCategory(category),
                               ),
-                            );
-                          },
+                            )),
+                          ],
                         ),
                       )
                     : const SizedBox.shrink(),
@@ -673,44 +666,46 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
     final theme = Theme.of(context);
     
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.inventory_2_outlined,
-              size: 80,
-              color: theme.colorScheme.primary.withOpacity(0.7),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              _isSearching ? 'No products found' : 'No products available',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.inventory_2_outlined,
+                size: 80,
+                color: theme.colorScheme.primary.withOpacity(0.7),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _isSearching 
-                  ? 'Try adjusting your search terms or browse different categories.'
-                  : 'This shop doesn\'t have any products available at the moment.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onBackground.withOpacity(0.7),
+              const SizedBox(height: 24),
+              Text(
+                _isSearching ? 'No products found' : 'No products available',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            if (_isSearching) ...[
-              const SizedBox(height: 32),
-              AppButton(
-                text: 'Clear Search',
-                onPressed: _clearSearch,
-                variant: AppButtonVariant.outline,
-                icon: Icons.clear,
+              const SizedBox(height: 16),
+              Text(
+                _isSearching 
+                    ? 'Try adjusting your search terms or browse different categories.'
+                    : 'This shop doesn\'t have any products available at the moment.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onBackground.withOpacity(0.7),
+                ),
               ),
+              if (_isSearching) ...[
+                const SizedBox(height: 32),
+                AppButton(
+                  text: 'Clear Search',
+                  onPressed: _clearSearch,
+                  variant: AppButtonVariant.outline,
+                  icon: Icons.clear,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -720,54 +715,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
     final theme = Theme.of(context);
     
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 80,
-              color: theme.colorScheme.error,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Failed to load products',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 32),
-            AppButton(
-              text: 'Try Again',
-              onPressed: () {
-                context.read<ProductListBloc>().add(ProductListLoadEvent(
-                  shopId: widget.shopId,
-                  category: _selectedCategory,
-                ));
-              },
-              variant: AppButtonVariant.primary,
-              icon: Icons.refresh,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState(BuildContext context, String message) {
-    final theme = Theme.of(context);
-    
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(
+      child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -780,7 +728,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
               ),
               const SizedBox(height: 24),
               Text(
-                'Failed to load shop',
+                'Failed to load products',
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -796,12 +744,63 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
               AppButton(
                 text: 'Try Again',
                 onPressed: () {
-                  context.read<ShopDetailsBloc>().add(ShopDetailsLoadEvent(widget.shopId));
+                  context.read<ProductListBloc>().add(ProductListLoadEvent(
+                    shopId: widget.shopId,
+                    category: _selectedCategory,
+                  ));
                 },
                 variant: AppButtonVariant.primary,
                 icon: Icons.refresh,
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String message) {
+    final theme = Theme.of(context);
+    
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 80,
+                  color: theme.colorScheme.error,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Failed to load shop',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 32),
+                AppButton(
+                  text: 'Try Again',
+                  onPressed: () {
+                    context.read<ShopDetailsBloc>().add(ShopDetailsLoadEvent(widget.shopId));
+                  },
+                  variant: AppButtonVariant.primary,
+                  icon: Icons.refresh,
+                ),
+              ],
+            ),
           ),
         ),
       ),

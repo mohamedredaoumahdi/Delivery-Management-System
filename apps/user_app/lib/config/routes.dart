@@ -32,9 +32,10 @@ final appRouter = GoRouter(
     
     // If the user is not logged in, redirect to login page
     // except for login, signup, and forgot password pages
-    final isGoingToLogin = state.location == '/login';
-    final isGoingToSignup = state.location == '/signup';
-    final isGoingToForgotPassword = state.location == '/forgot-password';
+    final currentLocation = state.uri.toString();
+    final isGoingToLogin = currentLocation == '/login';
+    final isGoingToSignup = currentLocation == '/signup';
+    final isGoingToForgotPassword = currentLocation == '/forgot-password';
     
     if (!isLoggedIn && 
         !isGoingToLogin && 
@@ -72,7 +73,7 @@ final appRouter = GoRouter(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) {
         return ScaffoldWithBottomNavBar(
-          location: state.location,
+          location: state.uri.toString(),
           child: child,
         );
       },
