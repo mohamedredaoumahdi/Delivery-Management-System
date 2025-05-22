@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:core/core.dart';
+import 'package:core/core.dart' show LoggerService, NetworkException, TimeoutException, ApiException;
 import 'package:dartz/dartz.dart';
+import 'package:data/data.dart' as data;
 import 'package:domain/domain.dart';
 
 import '../datasources/local/auth_local_data_source.dart';
@@ -96,7 +97,7 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
         name: name,
-        role: UserModel._mapUserRoleToString(role),
+        role: data.UserModel.mapUserRoleToString(role),
         phone: phone,
       );
       
@@ -240,22 +241,24 @@ class AuthRepositoryImpl implements AuthRepository {
   
   /// Handle error and convert to Failure
   Failure _handleError(dynamic error) {
-    if (error is UnauthorizedException) {
-      return const AuthFailure('Authentication failed. Please sign in again.');
+    if (error is ApiException) {
+      if (error.statusCode == 401) {
+        return const AuthFailure('Authentication failed. Please sign in again.');
+      } else if (error.statusCode == 400) {
+        return const ValidationFailure('email', 'Invalid email or password.');
+      } else if (error.statusCode != null && error.statusCode! >= 500) {
+        return ServerFailure(
+          error.message ?? 'Server error occurred',
+          statusCode: error.statusCode,
+        );
+      }
     } else if (error is NetworkException) {
       return const NetworkFailure('No internet connection. Please try again.');
     } else if (error is TimeoutException) {
       return const TimeoutFailure('Request timed out. Please try again.');
-    } else if (error is ValidationException) {
-      return const ValidationFailure('email', 'Invalid email or password.');
-    } else if (error is ServerException) {
-      return ServerFailure(
-        error.message,
-        statusCode: error.statusCode,
-      );
-    } else {
-      return UnknownFailure(error.toString());
     }
+    
+    return UnknownFailure(error.toString());
   }
   
   /// Dispose repository

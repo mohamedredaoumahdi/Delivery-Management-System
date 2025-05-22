@@ -1,6 +1,5 @@
 import 'package:core/core.dart';
 
-import '../../api/api/api_client.dart';
 import '../../models/user_model.dart';
 import '../../models/auth_response_model.dart';
 
@@ -79,7 +78,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
-      return AuthResponseModel.fromJson(response);
+      return AuthResponseModel.fromJson(response.data);
     } catch (e) {
       logger.e('Error signing in with email and password', e);
       rethrow;
@@ -106,7 +105,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
-      return AuthResponseModel.fromJson(response);
+      return AuthResponseModel.fromJson(response.data);
     } catch (e) {
       logger.e('Error signing up with email and password', e);
       rethrow;
@@ -127,7 +126,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> getCurrentUser() async {
     try {
       final response = await apiClient.get('/auth/me');
-      return UserModel.fromJson(response['data']);
+      return UserModel.fromJson(response.data['data']);
     } catch (e) {
       logger.e('Error getting current user', e);
       rethrow;
@@ -167,7 +166,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
-      return UserModel.fromJson(response['data']);
+      return UserModel.fromJson(response.data['data']);
     } catch (e) {
       logger.e('Error updating profile', e);
       rethrow;

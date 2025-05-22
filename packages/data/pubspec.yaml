@@ -1,0 +1,35 @@
+name: data
+description: "Data layer with repository implementations and data sources for the delivery system"
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Network & API
+  dio: ^5.4.0
+  
+  # JSON Serialization
+  json_annotation: ^4.9.0
+  
+  # Functional programming
+  dartz: ^0.10.1
+  
+  # Local packages
+  core:
+    path: ../core
+  domain:
+    path: ../domain
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  
+  # Code Generation
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1

@@ -85,7 +85,7 @@ class UserModel {
       name: user.name,
       phone: user.phone,
       profilePicture: user.profilePicture,
-      roleString: _mapUserRoleToString(user.role),
+      roleString: mapUserRoleToString(user.role),
       isEmailVerified: user.isEmailVerified,
       isPhoneVerified: user.isPhoneVerified,
       createdAt: user.createdAt,
@@ -110,7 +110,7 @@ class UserModel {
   }
   
   /// Map UserRole enum to role string
-  static String _mapUserRoleToString(UserRole role) {
+  static String mapUserRoleToString(UserRole role) {
     switch (role) {
       case UserRole.customer:
         return 'customer';
