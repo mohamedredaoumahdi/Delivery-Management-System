@@ -15,7 +15,7 @@ import { errorHandler } from '@/middleware/errorHandler';
 import { notFoundHandler } from '@/middleware/notFoundHandler';
 import { rateLimiter } from '@/middleware/rateLimiter';
 import { logger } from '@/utils/logger';
-import { setupRoutes } from '@/routes';
+import setupRoutes from '@/routes';
 import { initializeSocket } from '@/services/socketService';
 import { swaggerSpec } from '@/config/swagger';
 
@@ -80,7 +80,7 @@ if (config.enableSwagger) {
 }
 
 // Setup API routes
-setupRoutes(app);
+setupRoutes(app, io, config);
 
 // Static file serving for uploads
 app.use('/uploads', express.static(config.uploadDir));

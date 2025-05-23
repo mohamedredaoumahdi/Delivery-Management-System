@@ -1,10 +1,14 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
 import { v4 as uuidv4 } from 'uuid';
 import sendEmail from '@/utils/sendEmail'; // Import sendEmail utility
+import { config } from '@/config/config';
+import { AppError } from '@/utils/appError';
+import { catchAsync } from '@/utils/catchAsync';
+import { SessionService } from '@/config/redis';
 
 const prisma = new PrismaClient();
 
@@ -23,13 +27,65 @@ const generateRefreshToken = (userId: string): string => {
   return token;
 };
 
+// Create a simple email service interface
+interface EmailService {
+  sendWelcomeEmail(email: string, name: string): Promise<void>;
+  sendPasswordResetEmail(email: string, name: string, token: string): Promise<void>;
+}
+
+// Create a mock email service implementation
+class MockEmailService implements EmailService {
+  async sendWelcomeEmail(email: string, name: string): Promise<void> {
+    console.log(`Welcome email sent to ${email} for ${name}`);
+  }
+
+  async sendPasswordResetEmail(email: string, name: string, token: string): Promise<void> {
+    console.log(`Password reset email sent to ${email} for ${name} with token ${token}`);
+  }
+}
+
+const EmailService = new MockEmailService();
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  };
+}
+
 export class AuthController {
+  private generateTokens(userId: string, role: string) {
+    const accessTokenOptions: jwt.SignOptions = {
+      expiresIn: config.jwtExpiresIn
+    };
+
+    const refreshTokenOptions: jwt.SignOptions = {
+      expiresIn: config.jwtRefreshExpiresIn
+    };
+
+    const accessToken = jwt.sign(
+      { userId, role },
+      config.jwtSecret,
+      accessTokenOptions
+    );
+
+    const refreshToken = jwt.sign(
+      { userId, role, tokenId: uuidv4() },
+      config.jwtRefreshSecret,
+      refreshTokenOptions
+    );
+
+    return { accessToken, refreshToken };
+  }
+
   /**
    * @desc    Register a new user
    * @route   POST /api/v1/auth/register
    * @access  Public
    */
-  async register(req: Request, res: Response, next: NextFunction) {
+  register = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // Check for validation errors from middleware (Joi/Zod)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -93,12 +149,32 @@ export class AuthController {
           // Continue with registration even if email sending fails
         }
 
+        // Generate tokens
+        const { accessToken, refreshToken } = this.generateTokens(user.id, user.role);
+
+        // Store refresh token in database
+        await prisma.refreshToken.create({
+          data: {
+            token: refreshToken,
+            userId: user.id,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          },
+        });
+
+        // Send welcome email (optional)
+        try {
+          await EmailService.sendWelcomeEmail(user.email, user.name);
+        } catch (error) {
+          console.error('Failed to send welcome email:', error);
+        }
+
         res.status(201).json({
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
-          token: generateToken(user.id),
+          accessToken,
+          refreshToken,
         });
       } else {
         res.status(400).json({ message: 'Invalid user data' });
@@ -108,14 +184,14 @@ export class AuthController {
       console.error(error);
       res.status(500).json({ message: 'Server Error' });
     }
-  }
+  });
 
   /**
    * @desc    Login user
    * @route   POST /api/v1/auth/login
    * @access  Public
    */
-  async login(req: Request, res: Response, next: NextFunction) {
+  login = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // Check for validation errors (assuming validation middleware is used)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -134,12 +210,31 @@ export class AuthController {
 
       // Check if user exists and password is correct
       if (user && (await bcrypt.compare(password, user.passwordHash))) {
+        // Update last login
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        });
+
+        // Generate tokens
+        const { accessToken, refreshToken } = this.generateTokens(user.id, user.role);
+
+        // Store refresh token in database
+        await prisma.refreshToken.create({
+          data: {
+            token: refreshToken,
+            userId: user.id,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          },
+        });
+
         res.json({
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
-          token: generateToken(user.id),
+          accessToken,
+          refreshToken,
         });
       } else {
         res.status(401).json({ message: 'Invalid credentials' });
@@ -149,14 +244,14 @@ export class AuthController {
       console.error(error);
       res.status(500).json({ message: 'Server Error' });
     }
-  }
+  });
 
   /**
    * @desc    Refresh JWT token
    * @route   POST /api/v1/auth/refresh
    * @access  Public
    */
-  async refreshToken(req: Request, res: Response, next: NextFunction) {
+  refreshToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { refreshToken } = req.body; // Assuming refresh token is sent in the body
 
     if (!refreshToken) {
@@ -223,14 +318,14 @@ export class AuthController {
       console.error(error);
       res.status(500).json({ message: 'Server Error' });
     }
-  }
+  });
 
   /**
    * @desc    Logout user
    * @route   POST /api/v1/auth/logout
    * @access  Private
    */
-  async logout(req: Request, res: Response, next: NextFunction) {
+  logout = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     // Assuming auth middleware populates req.user with the authenticated user
     const userId = (req as any).user?.id; // Access user ID from the request object
 
@@ -246,20 +341,25 @@ export class AuthController {
         },
       });
 
+      // Clear user session from Redis if using sessions
+      if (req.user) {
+        await SessionService.deleteSession(req.user.id);
+      }
+
       res.status(200).json({ message: 'Logged out successfully' });
 
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Server Error' });
     }
-  }
+  });
 
   /**
    * @desc    Forgot password
    * @route   POST /api/v1/auth/forgot-password
    * @access  Public
    */
-  async forgotPassword(req: Request, res: Response, next: NextFunction) {
+  forgotPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { email } = req.body;
 
     try {
@@ -323,14 +423,14 @@ export class AuthController {
       // @todo: Implement proper error handling and logging
       res.status(500).json({ message: 'Server Error' });
     }
-  }
+  });
 
   /**
    * @desc    Reset password
    * @route   POST /api/v1/auth/reset-password/:token
    * @access  Public
    */
-  async resetPassword(req: Request, res: Response, next: NextFunction) {
+  resetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { token } = req.params; // Assuming token is in URL parameters
     const { password } = req.body;
 
@@ -389,14 +489,14 @@ export class AuthController {
       // @todo: Implement proper error handling and logging
       res.status(500).json({ message: 'Server Error' });
     }
-  }
+  });
 
   /**
    * @desc    Verify email
    * @route   POST /api/v1/auth/verify-email/:token
    * @access  Public
    */
-  async verifyEmail(req: Request, res: Response, next: NextFunction) {
+  verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { token } = req.params; // Assuming token is in URL parameters
 
     try {
@@ -441,6 +541,5 @@ export class AuthController {
       // @todo: Implement proper error handling and logging
       res.status(500).json({ message: 'Server Error' });
     }
-  }
-
+  });
 } 

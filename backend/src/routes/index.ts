@@ -1,66 +1,27 @@
 // src/routes/index.ts
-import { Express } from 'express';
+import { Router } from 'express';
 import authRoutes from './auth';
-import userRoutes from './users';
 import shopRoutes from './shops';
-import productRoutes from './products';
 import orderRoutes from './orders';
-import addressRoutes from './addresses';
-import reviewRoutes from './reviews';
 import vendorRoutes from './vendor';
 import deliveryRoutes from './delivery';
-import adminRoutes from './admin';
-
-export const setupRoutes = (app: Express): void => {
-  // API version prefix
-  const apiPrefix = '/api/v1';
-
-  // Health check (outside API versioning)
-  app.get('/api/health', (req, res) => {
-    res.json({
-      status: 'OK',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    });
-  });
-
-  // Public routes
-  app.use(`${apiPrefix}/auth`, authRoutes);
-  app.use(`${apiPrefix}/shops`, shopRoutes);
-  app.use(`${apiPrefix}/products`, productRoutes);
-
-  // Protected routes (require authentication)
-  app.use(`${apiPrefix}/users`, userRoutes);
-  app.use(`${apiPrefix}/orders`, orderRoutes);
-  app.use(`${apiPrefix}/addresses`, addressRoutes);
-  app.use(`${apiPrefix}/reviews`, reviewRoutes);
-
-  // Role-specific routes
-  app.use(`${apiPrefix}/vendor`, vendorRoutes);
-  app.use(`${apiPrefix}/delivery`, deliveryRoutes);
-  app.use(`${apiPrefix}/admin`, adminRoutes);
-};
-
-// src/routes/auth.ts
-import { Router } from 'express';
-import { AuthController } from '@/controllers/authController';
-import { validateRequest } from '@/middleware/validation';
-import { loginSchema, registerSchema, refreshTokenSchema } from '@/validators/authValidators';
-import { rateLimiter } from '@/middleware/rateLimiter';
 
 const router = Router();
-const authController = new AuthController();
 
-// Apply rate limiting to auth routes
-router.use(rateLimiter);
+// Auth routes
+router.use('/auth', authRoutes);
 
-router.post('/register', validateRequest(registerSchema), authController.register);
-router.post('/login', validateRequest(loginSchema), authController.login);
-router.post('/refresh', validateRequest(refreshTokenSchema), authController.refreshToken);
-router.post('/logout', authController.logout);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
-router.post('/verify-email', authController.verifyEmail);
+// Shop routes
+router.use('/shops', shopRoutes);
+
+// Order routes (requires authentication)
+router.use('/orders', orderRoutes);
+
+// Vendor routes (requires authentication and vendor role)
+router.use('/vendor', vendorRoutes);
+
+// Delivery routes (requires authentication and delivery role)
+router.use('/delivery', deliveryRoutes);
 
 export default router;
 

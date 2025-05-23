@@ -1,6 +1,6 @@
 // src/middleware/auth.ts
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import type { Request, Response, NextFunction } from 'express';
+import * as jwt from 'jsonwebtoken';
 import { config } from '@/config/config';
 import { prisma } from '@/config/database';
 import { AppError } from '@/utils/appError';
@@ -92,7 +92,7 @@ export const requireRole = (roles: string[]) => {
 // src/controllers/authController.ts
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '@/config/database';
 import { config } from '@/config/config';
