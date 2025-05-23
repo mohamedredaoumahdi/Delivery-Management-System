@@ -8,16 +8,7 @@ let redisClient: Redis | null = null;
 
 // Create Redis client
 const createRedisClient = (): Redis => {
-  const redis = new Redis(config.redisUrl, {
-    retryDelayOnFailover: 100,
-    retryTimes: 3,
-    lazyConnect: true,
-    maxRetriesPerRequest: 3,
-    reconnectOnError: (err) => {
-      const targetError = 'READONLY';
-      return err.message.includes(targetError);
-    },
-  });
+  const redis = new Redis(config.redisUrl);
 
   // Redis event handlers
   redis.on('connect', () => {

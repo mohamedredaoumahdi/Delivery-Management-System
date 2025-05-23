@@ -69,8 +69,11 @@ export const checkDatabaseHealth = async (): Promise<boolean> => {
 };
 
 // Database transaction helper
+// Define a type for the transaction client
+type TransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
+
 export const runTransaction = async <T>(
-  callback: (tx: PrismaClient) => Promise<T>
+  callback: (tx: TransactionClient) => Promise<T> // Use the defined TransactionClient type
 ): Promise<T> => {
   return await prisma.$transaction(callback);
 };
