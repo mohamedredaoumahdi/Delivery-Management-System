@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,24 +39,47 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const jwt = __importStar(require("jsonwebtoken"));
 const express_validator_1 = require("express-validator");
 const uuid_1 = require("uuid");
 const sendEmail_1 = __importDefault(require("@/utils/sendEmail"));
+const config_1 = require("@/config/config");
+const catchAsync_1 = require("@/utils/catchAsync");
+const redis_1 = require("@/config/redis");
 const prisma = new client_1.PrismaClient();
 const generateToken = (id) => {
-    return jsonwebtoken_1.default.sign({ id }, process.env.JWT_SECRET, {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN,
     });
 };
 const generateRefreshToken = (userId) => {
-    const token = jsonwebtoken_1.default.sign({ userId }, process.env.JWT_REFRESH_SECRET, {
+    const token = jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET, {
         expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
     });
     return token;
 };
+class MockEmailService {
+    async sendWelcomeEmail(email, name) {
+        console.log(`Welcome email sent to ${email} for ${name}`);
+    }
+    async sendPasswordResetEmail(email, name, token) {
+        console.log(`Password reset email sent to ${email} for ${name} with token ${token}`);
+    }
+}
+const EmailService = new MockEmailService();
 class AuthController {
-    async register(req, res, next) {
+    generateTokens(userId, role) {
+        const accessTokenOptions = {
+            expiresIn: config_1.config.jwtExpiresIn
+        };
+        const refreshTokenOptions = {
+            expiresIn: config_1.config.jwtRefreshExpiresIn
+        };
+        const accessToken = jwt.sign({ userId, role }, config_1.config.jwtSecret, accessTokenOptions);
+        const refreshToken = jwt.sign({ userId, role, tokenId: (0, uuid_1.v4)() }, config_1.config.jwtRefreshSecret, refreshTokenOptions);
+        return { accessToken, refreshToken };
+    }
+    register = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
         const errors = (0, express_validator_1.validationResult)(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -70,12 +126,27 @@ class AuthController {
                 catch (emailError) {
                     console.error('Error sending email verification email:', emailError);
                 }
+                const { accessToken, refreshToken } = this.generateTokens(user.id, user.role);
+                await prisma.refreshToken.create({
+                    data: {
+                        token: refreshToken,
+                        userId: user.id,
+                        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                    },
+                });
+                try {
+                    await EmailService.sendWelcomeEmail(user.email, user.name);
+                }
+                catch (error) {
+                    console.error('Failed to send welcome email:', error);
+                }
                 res.status(201).json({
                     id: user.id,
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                    token: generateToken(user.id),
+                    accessToken,
+                    refreshToken,
                 });
             }
             else {
@@ -86,8 +157,8 @@ class AuthController {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
         }
-    }
-    async login(req, res, next) {
+    });
+    login = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
         const errors = (0, express_validator_1.validationResult)(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -100,12 +171,25 @@ class AuthController {
                 },
             });
             if (user && (await bcryptjs_1.default.compare(password, user.passwordHash))) {
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { lastLoginAt: new Date() },
+                });
+                const { accessToken, refreshToken } = this.generateTokens(user.id, user.role);
+                await prisma.refreshToken.create({
+                    data: {
+                        token: refreshToken,
+                        userId: user.id,
+                        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                    },
+                });
                 res.json({
                     id: user.id,
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                    token: generateToken(user.id),
+                    accessToken,
+                    refreshToken,
                 });
             }
             else {
@@ -116,8 +200,8 @@ class AuthController {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
         }
-    }
-    async refreshToken(req, res, next) {
+    });
+    refreshToken = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
         const { refreshToken } = req.body;
         if (!refreshToken) {
             return res.status(401).json({ message: 'Refresh token not provided' });
@@ -155,8 +239,8 @@ class AuthController {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
         }
-    }
-    async logout(req, res, next) {
+    });
+    logout = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
         const userId = req.user?.id;
         if (!userId) {
             return res.status(401).json({ message: 'Not authenticated' });
@@ -167,14 +251,17 @@ class AuthController {
                     userId: userId,
                 },
             });
+            if (req.user) {
+                await redis_1.SessionService.deleteSession(req.user.id);
+            }
             res.status(200).json({ message: 'Logged out successfully' });
         }
         catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
         }
-    }
-    async forgotPassword(req, res, next) {
+    });
+    forgotPassword = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
         const { email } = req.body;
         try {
             const user = await prisma.user.findUnique({
@@ -219,8 +306,8 @@ class AuthController {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
         }
-    }
-    async resetPassword(req, res, next) {
+    });
+    resetPassword = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
         const { token } = req.params;
         const { password } = req.body;
         try {
@@ -260,8 +347,8 @@ class AuthController {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
         }
-    }
-    async verifyEmail(req, res, next) {
+    });
+    verifyEmail = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
         const { token } = req.params;
         try {
             const emailVerificationToken = await prisma.emailVerificationToken.findFirst({
@@ -294,7 +381,7 @@ class AuthController {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
         }
-    }
+    });
 }
 exports.AuthController = AuthController;
 //# sourceMappingURL=authController.js.map

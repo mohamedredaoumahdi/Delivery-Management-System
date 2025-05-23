@@ -9,16 +9,7 @@ const config_1 = require("./config");
 const logger_1 = require("@/utils/logger");
 let redisClient = null;
 const createRedisClient = () => {
-    const redis = new ioredis_1.default(config_1.config.redisUrl, {
-        retryDelayOnFailover: 100,
-        retryTimes: 3,
-        lazyConnect: true,
-        maxRetriesPerRequest: 3,
-        reconnectOnError: (err) => {
-            const targetError = 'READONLY';
-            return err.message.includes(targetError);
-        },
-    });
+    const redis = new ioredis_1.default(config_1.config.redisUrl);
     redis.on('connect', () => {
         logger_1.logger.info('Redis client connected');
     });

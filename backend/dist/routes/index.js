@@ -3,53 +3,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupRoutes = void 0;
+const express_1 = require("express");
 const auth_1 = __importDefault(require("./auth"));
-const users_1 = __importDefault(require("./users"));
 const shops_1 = __importDefault(require("./shops"));
-const products_1 = __importDefault(require("./products"));
 const orders_1 = __importDefault(require("./orders"));
-const addresses_1 = __importDefault(require("./addresses"));
-const reviews_1 = __importDefault(require("./reviews"));
 const vendor_1 = __importDefault(require("./vendor"));
 const delivery_1 = __importDefault(require("./delivery"));
-const admin_1 = __importDefault(require("./admin"));
-const setupRoutes = (app) => {
-    const apiPrefix = '/api/v1';
-    app.get('/api/health', (req, res) => {
-        res.json({
-            status: 'OK',
-            timestamp: new Date().toISOString(),
-            uptime: process.uptime(),
-        });
-    });
-    app.use(`${apiPrefix}/auth`, auth_1.default);
-    app.use(`${apiPrefix}/shops`, shops_1.default);
-    app.use(`${apiPrefix}/products`, products_1.default);
-    app.use(`${apiPrefix}/users`, users_1.default);
-    app.use(`${apiPrefix}/orders`, orders_1.default);
-    app.use(`${apiPrefix}/addresses`, addresses_1.default);
-    app.use(`${apiPrefix}/reviews`, reviews_1.default);
-    app.use(`${apiPrefix}/vendor`, vendor_1.default);
-    app.use(`${apiPrefix}/delivery`, delivery_1.default);
-    app.use(`${apiPrefix}/admin`, admin_1.default);
-};
-exports.setupRoutes = setupRoutes;
-const express_1 = require("express");
-const authController_1 = require("@/controllers/authController");
-const validation_1 = require("@/middleware/validation");
-const authValidators_1 = require("@/validators/authValidators");
-const rateLimiter_1 = require("@/middleware/rateLimiter");
 const router = (0, express_1.Router)();
-const authController = new authController_1.AuthController();
-router.use(rateLimiter_1.rateLimiter);
-router.post('/register', (0, validation_1.validateRequest)(authValidators_1.registerSchema), authController.register);
-router.post('/login', (0, validation_1.validateRequest)(authValidators_1.loginSchema), authController.login);
-router.post('/refresh', (0, validation_1.validateRequest)(authValidators_1.refreshTokenSchema), authController.refreshToken);
-router.post('/logout', authController.logout);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
-router.post('/verify-email', authController.verifyEmail);
+router.use('/auth', auth_1.default);
+router.use('/shops', shops_1.default);
+router.use('/orders', orders_1.default);
+router.use('/vendor', vendor_1.default);
+router.use('/delivery', delivery_1.default);
 exports.default = router;
 const shopController_1 = require("@/controllers/shopController");
 const auth_2 = require("@/middleware/auth");
@@ -64,6 +29,7 @@ router.get('/:id/products', (0, cache_1.cache)(180), shopController.getShopProdu
 router.get('/:id/categories', (0, cache_1.cache)(600), shopController.getShopCategories);
 exports.default = router;
 const orderController_1 = require("@/controllers/orderController");
+const validation_1 = require("@/middleware/validation");
 const orderValidators_1 = require("@/validators/orderValidators");
 const router = (0, express_1.Router)();
 const orderController = new orderController_1.OrderController();

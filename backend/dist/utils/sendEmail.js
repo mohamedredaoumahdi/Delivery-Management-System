@@ -1,5 +1,26 @@
 "use strict";
-'nodemailer\';\n\ninterface EmailOptions {\n  email: string;\n  subject: string;\n  message: string;\n}\n\nconst sendEmail = async (options: EmailOptions): Promise<void> => {\n  // Create a transporter object using the default SMTP transport\n  const transporter = nodemailer.createTransport({\n    host: process.env.SMTP_HOST,\n    port: parseInt(process.env.SMTP_PORT || \'587\', 10),\n    auth: {\n      user: process.env.SMTP_USER,\n      pass: process.env.SMTP_PASS,\n    },\n    // Add security options if needed, e.g., secure: true for TLS\n  });\n\n  // Define email options\n  const mailOptions = {\n    from: `${process.env.FROM_NAME || \'Delivery System\'} <${process.env.FROM_EMAIL || \'noreply@deliverysystem.com\'}>`,\n    to: options.email,\n    subject: options.subject,\
-    text: options.message,\n    // html: \'<b>Hello world?</b>\', // html body\n  };\n\n  // Send email\n  const info = await transporter.sendMail(mailOptions);\n\n  console.log(\'Message sent: %s\', info.messageId);\n};\n\nexport default sendEmail; ;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const nodemailer_1 = __importDefault(require("nodemailer"));
+const sendEmail = async (options) => {
+    const transporter = nodemailer_1.default.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587', 10),
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        },
+    });
+    const mailOptions = {
+        from: `${process.env.FROM_NAME || 'Delivery System'} <${process.env.FROM_EMAIL || 'noreply@deliverysystem.com'}>`,
+        to: options.email,
+        subject: options.subject,
+        text: options.message,
+    };
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Message sent: %s', info.messageId);
+};
+exports.default = sendEmail;
 //# sourceMappingURL=sendEmail.js.map

@@ -19,7 +19,7 @@ const errorHandler_1 = require("@/middleware/errorHandler");
 const notFoundHandler_1 = require("@/middleware/notFoundHandler");
 const rateLimiter_1 = require("@/middleware/rateLimiter");
 const logger_1 = require("@/utils/logger");
-const routes_1 = require("@/routes");
+const routes_1 = __importDefault(require("@/routes"));
 const socketService_1 = require("@/services/socketService");
 const swagger_1 = require("@/config/swagger");
 const app = (0, express_1.default)();
@@ -62,7 +62,7 @@ app.get('/health', (req, res) => {
 if (config_1.config.enableSwagger) {
     app.use('/api/docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.swaggerSpec));
 }
-(0, routes_1.setupRoutes)(app);
+app.use('/api', routes_1.default);
 app.use('/uploads', express_1.default.static(config_1.config.uploadDir));
 app.use(notFoundHandler_1.notFoundHandler);
 app.use(errorHandler_1.errorHandler);
@@ -79,12 +79,11 @@ const gracefulShutdown = (signal) => {
 };
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('unhandledRejection', (reason, promise) => {
+    logger_1.logger.error('Unhandled Rejection at:', reason);
+});
 process.on('uncaughtException', (error) => {
     logger_1.logger.error('Uncaught Exception:', error);
-    process.exit(1);
-});
-process.on('unhandledRejection', (reason, promise) => {
-    logger_1.logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
     process.exit(1);
 });
 const startServer = async () => {
