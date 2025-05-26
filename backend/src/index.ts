@@ -10,7 +10,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import { config } from '@/config/config';
 import { connectDatabase } from '@/config/database';
-import { connectRedis } from '@/config/redis';
+import { connectRedis, disconnectRedis } from '@/config/redis';
 import { errorHandler } from '@/middleware/errorHandler';
 import { notFoundHandler } from '@/middleware/notFoundHandler';
 import { rateLimiter } from '@/middleware/rateLimiter';
@@ -34,6 +34,7 @@ const io = new Server(server, {
 
 // Initialize socket service
 initializeSocket(io);
+console.log('Socket.io initialized');
 
 // Security middleware
 app.use(helmet({
@@ -90,9 +91,17 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // Graceful shutdown handler
-const gracefulShutdown = (signal: string) => {
+const gracefulShutdown = async (signal: string) => {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
   
+  try {
+    // Close Redis connection
+    await disconnectRedis();
+    logger.info('Redis connection closed');
+  } catch (error) {
+    logger.error('Error closing Redis connection:', error);
+  }
+
   server.close(() => {
     logger.info('HTTP server closed');
     process.exit(0);
@@ -108,6 +117,8 @@ const gracefulShutdown = (signal: string) => {
 // Listen for termination signals
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+// Handle nodemon restarts
+process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
@@ -131,7 +142,6 @@ const startServer = async () => {
 
     // Connect to Redis
     await connectRedis();
-    logger.info('Redis connected successfully');
 
     // Start HTTP server
     server.listen(config.port, () => {

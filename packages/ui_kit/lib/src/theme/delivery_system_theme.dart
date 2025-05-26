@@ -107,7 +107,6 @@ class DeliverySystemTheme {
       outlinedButtonTheme: _getOutlinedButtonTheme(isDark: true),
       textButtonTheme: _getTextButtonTheme(),
       inputDecorationTheme: _getInputDecorationTheme(isDark: true),
-      useMaterial3: true,
     );
   }
 

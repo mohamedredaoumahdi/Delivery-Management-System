@@ -32,7 +32,7 @@ class EmptyCart extends StatelessWidget {
               'Looks like you haven\'t added anything to your cart yet.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onBackground.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
               ),
             ),
           ),

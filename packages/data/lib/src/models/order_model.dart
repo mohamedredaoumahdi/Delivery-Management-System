@@ -138,8 +138,8 @@ class OrderModel {
       estimatedDeliveryTime: _dateTimeFromJson(json['estimatedDeliveryTime']),
       deliveredAt: _dateTimeFromJson(json['deliveredAt']),
       deliveryPersonId: json['deliveryPersonId'] as String?,
-      createdAt: _dateTimeFromJson(json['createdAt'])!,
-      updatedAt: _dateTimeFromJson(json['updatedAt'])!,
+      createdAt: _dateTimeFromJson(json['createdAt']),
+      updatedAt: _dateTimeFromJson(json['updatedAt']),
     );
   }
 

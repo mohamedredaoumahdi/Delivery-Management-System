@@ -4,7 +4,7 @@ import { auth } from '@/middleware/auth';
 import { requireRole } from '@/middleware/requireRole';
 import { validateRequest } from '@/middleware/validation';
 import { createProductSchema, updateProductSchema } from '@/validators/productValidators';
-import { upload } from '@/middleware/upload';
+import { upload, resizeImages } from '@/middleware/upload';
 
 const router = Router();
 const productController = new ProductController();
@@ -20,27 +20,28 @@ router.use(auth);
 
 // Vendor routes
 router.post('/', 
-  requireRole('VENDOR'),
+  requireRole(['VENDOR']),
   upload.array('images', 5),
+  resizeImages,
   validateRequest(createProductSchema),
   productController.createProduct
 );
 
 router.put('/:id',
-  requireRole('VENDOR'),
+  requireRole(['VENDOR']),
   upload.array('images', 5),
   validateRequest(updateProductSchema),
   productController.updateProduct
 );
 
 router.delete('/:id',
-  requireRole('VENDOR'),
+  requireRole(['VENDOR']),
   productController.deleteProduct
 );
 
 // Admin routes
 router.put('/:id/status',
-  requireRole('ADMIN'),
+  requireRole(['VENDOR', 'ADMIN']),
   productController.updateProductStatus
 );
 

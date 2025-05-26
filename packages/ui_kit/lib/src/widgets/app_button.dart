@@ -115,51 +115,51 @@ class AppButton extends StatelessWidget {
     
     // Create the button style
     final buttonStyle = ButtonStyle(
-      backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-        if (states.contains(MaterialState.disabled)) {
+      backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+        if (states.contains(WidgetState.disabled)) {
           return backgroundColor.withOpacity(0.5);
         }
         if (variant == AppButtonVariant.text || variant == AppButtonVariant.outline) {
-          if (states.contains(MaterialState.hovered) || 
-              states.contains(MaterialState.pressed)) {
+          if (states.contains(WidgetState.hovered) || 
+              states.contains(WidgetState.pressed)) {
             return backgroundColor.withOpacity(0.1);
           }
           return backgroundColor;
         }
-        if (states.contains(MaterialState.pressed)) {
+        if (states.contains(WidgetState.pressed)) {
           return backgroundColor.withOpacity(0.8);
         }
         return backgroundColor;
       }),
-      foregroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-        if (states.contains(MaterialState.disabled)) {
+      foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+        if (states.contains(WidgetState.disabled)) {
           return textColor.withOpacity(0.5);
         }
         return textColor;
       }),
-      overlayColor: MaterialStateProperty.resolveWith<Color?>((states) {
+      overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
         if (variant == AppButtonVariant.text || variant == AppButtonVariant.outline) {
-          if (states.contains(MaterialState.hovered)) {
+          if (states.contains(WidgetState.hovered)) {
             return primaryColor.withOpacity(0.04);
           }
-          if (states.contains(MaterialState.focused)) {
+          if (states.contains(WidgetState.focused)) {
             return primaryColor.withOpacity(0.12);
           }
-          if (states.contains(MaterialState.pressed)) {
+          if (states.contains(WidgetState.pressed)) {
             return primaryColor.withOpacity(0.12);
           }
         }
         return null;
       }),
-      side: MaterialStateProperty.all(borderSide),
-      shape: MaterialStateProperty.all(
+      side: WidgetStateProperty.all(borderSide),
+      shape: WidgetStateProperty.all(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius ?? 8),
         ),
       ),
-      padding: MaterialStateProperty.all(padding),
-      minimumSize: MaterialStateProperty.all(Size(fullWidth ? double.infinity : 0, height)),
-      textStyle: MaterialStateProperty.all(
+      padding: WidgetStateProperty.all(padding),
+      minimumSize: WidgetStateProperty.all(Size(fullWidth ? double.infinity : 0, height)),
+      textStyle: WidgetStateProperty.all(
         TextStyle(
           fontSize: fontSize,
           fontWeight: FontWeight.w600,

@@ -1,9 +1,10 @@
 import multer from 'multer';
 import sharp from 'sharp';
 import path from 'path';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { config } from '@/config/config';
 import { AppError } from '@/utils/appError';
+import { v4 as uuidv4 } from 'uuid';
 
 // Multer configuration
 const multerStorage = multer.memoryStorage();
@@ -25,7 +26,8 @@ export const upload = multer({
 });
 
 // Image resizing middleware
-export const resizeImages = (req: Request, res: any, next: NextFunction) => {
+export const resizeImages = (req: Request, res: Response, next: NextFunction) => {
+  console.log('req.files:', req.files);
   if (!req.files) return next();
 
   req.body.images = [];
@@ -33,6 +35,8 @@ export const resizeImages = (req: Request, res: any, next: NextFunction) => {
   Promise.all(
     (req.files as Express.Multer.File[]).map(async (file, i) => {
       const filename = `image-${Date.now()}-${i + 1}.jpeg`;
+      console.log('Processing file:', file.originalname);
+      console.log('File buffer:', file.buffer);
 
       await sharp(file.buffer)
         .resize(800, 600)

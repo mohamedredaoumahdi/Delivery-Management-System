@@ -18,6 +18,11 @@ export const validateRequest = (schema: Joi.ObjectSchema) => {
       return next(new AppError(errorMessage, 400));
     }
 
+    // Handle category field
+    if (req.body.category) {
+      req.body.category = req.body.category.toUpperCase();
+    }
+
     next();
   };
 }; 

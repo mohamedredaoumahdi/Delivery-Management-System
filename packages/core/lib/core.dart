@@ -1,6 +1,6 @@
 /// Core package that contains utilities and common code
 /// for the delivery system apps.
-library core;
+library;
 
 // Services
 export 'src/services/logger_service.dart';

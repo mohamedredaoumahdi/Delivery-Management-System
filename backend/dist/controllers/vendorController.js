@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VendorController = void 0;
 const client_1 = require("@prisma/client");
-const AppError_1 = require("@/utils/appError");
+const appError_1 = require("@/utils/appError");
 const prisma = new client_1.PrismaClient();
 class VendorController {
     async getShop(req, res) {
@@ -12,36 +12,28 @@ class VendorController {
             }
         });
         if (!shop) {
-            throw new AppError_1.AppError('Shop not found', 404);
+            throw new appError_1.AppError('Shop not found', 404);
         }
         res.json(shop);
     }
     async updateShop(req, res) {
-        const shop = await prisma.shop.update({
-            where: {
-                ownerId: req.user.id
-            },
-            data: req.body
+        const shop = await prisma.shop.findFirst({
+            where: { ownerId: req.user.id }
         });
         if (!shop) {
-            throw new AppError_1.AppError('Shop not found', 404);
+            throw new appError_1.AppError('Shop not found', 404);
         }
-        res.json(shop);
-    }
-    async updateShopStatus(req, res) {
-        const { status } = req.body;
-        const shop = await prisma.shop.update({
-            where: {
-                ownerId: req.user.id
-            },
+        const { name, description, logoUrl } = req.body;
+        const updatedShop = await prisma.shop.update({
+            where: { id: shop.id },
             data: {
-                status: status
+                name,
+                description,
+                logoUrl,
+                isActive: true
             }
         });
-        if (!shop) {
-            throw new AppError_1.AppError('Shop not found', 404);
-        }
-        res.json(shop);
+        res.json(updatedShop);
     }
     async getProducts(req, res) {
         const shop = await prisma.shop.findFirst({
@@ -50,7 +42,7 @@ class VendorController {
             }
         });
         if (!shop) {
-            throw new AppError_1.AppError('Shop not found', 404);
+            throw new appError_1.AppError('Shop not found', 404);
         }
         const products = await prisma.product.findMany({
             where: {
@@ -63,6 +55,12 @@ class VendorController {
         res.json(products);
     }
     async createProduct(req, res) {
+        const shop = await prisma.shop.findFirst({
+            where: { ownerId: req.user.id }
+        });
+        if (!shop) {
+            throw new appError_1.AppError('Shop not found', 404);
+        }
         const { name, description, price, categoryId, images } = req.body;
         const product = await prisma.product.create({
             data: {
@@ -71,18 +69,25 @@ class VendorController {
                 price,
                 categoryId,
                 images,
-                shopId: req.user.id
+                categoryName: (await prisma.category.findUnique({ where: { id: categoryId } })).name,
+                shopId: shop.id
             }
         });
         res.status(201).json(product);
     }
     async updateProduct(req, res) {
+        const shop = await prisma.shop.findFirst({
+            where: { ownerId: req.user.id }
+        });
+        if (!shop) {
+            throw new appError_1.AppError('Shop not found', 404);
+        }
         const { id } = req.params;
         const { name, description, price, categoryId, images } = req.body;
         const product = await prisma.product.update({
             where: {
                 id,
-                shopId: req.user.id
+                shopId: shop.id
             },
             data: {
                 name,
@@ -93,34 +98,46 @@ class VendorController {
             }
         });
         if (!product) {
-            throw new AppError_1.AppError('Product not found', 404);
+            throw new appError_1.AppError('Product not found', 404);
         }
         res.json(product);
     }
     async deleteProduct(req, res) {
+        const shop = await prisma.shop.findFirst({
+            where: { ownerId: req.user.id }
+        });
+        if (!shop) {
+            throw new appError_1.AppError('Shop not found', 404);
+        }
         const { id } = req.params;
         const product = await prisma.product.delete({
             where: {
                 id,
-                shopId: req.user.id
+                shopId: shop.id
             }
         });
         if (!product) {
-            throw new AppError_1.AppError('Product not found', 404);
+            throw new appError_1.AppError('Product not found', 404);
         }
         res.json({ message: 'Product deleted successfully' });
     }
     async getVendorOrders(req, res) {
+        const shop = await prisma.shop.findFirst({
+            where: { ownerId: req.user.id }
+        });
+        if (!shop) {
+            throw new appError_1.AppError('Shop not found', 404);
+        }
         const orders = await prisma.order.findMany({
             where: {
-                shopId: req.user.id
+                shopId: shop.id
             },
             include: {
                 user: {
                     select: {
                         name: true,
                         phone: true,
-                        address: true
+                        addresses: true
                     }
                 },
                 items: {
@@ -136,19 +153,25 @@ class VendorController {
         res.json(orders);
     }
     async updateOrderStatus(req, res) {
+        const shop = await prisma.shop.findFirst({
+            where: { ownerId: req.user.id }
+        });
+        if (!shop) {
+            throw new appError_1.AppError('Shop not found', 404);
+        }
         const { id } = req.params;
         const { status } = req.body;
         const order = await prisma.order.update({
             where: {
                 id,
-                shopId: req.user.id
+                shopId: shop.id
             },
             data: {
                 status: status
             }
         });
         if (!order) {
-            throw new AppError_1.AppError('Order not found', 404);
+            throw new appError_1.AppError('Order not found', 404);
         }
         res.json(order);
     }
@@ -159,7 +182,7 @@ class VendorController {
             }
         });
         if (!shop) {
-            throw new AppError_1.AppError('Shop not found', 404);
+            throw new appError_1.AppError('Shop not found', 404);
         }
         const stats = await prisma.order.aggregate({
             _count: {
@@ -178,7 +201,7 @@ class VendorController {
         const { startDate, endDate } = req.query;
         const where = {
             shopId: req.user.id,
-            status: OrderStatus.DELIVERED
+            status: client_1.OrderStatus.DELIVERED
         };
         if (startDate && endDate) {
             where.deliveredAt = {
@@ -206,7 +229,7 @@ class VendorController {
             }
         });
         if (!shop) {
-            throw new AppError_1.AppError('Shop not found', 404);
+            throw new appError_1.AppError('Shop not found', 404);
         }
         const products = await prisma.order.aggregate({
             _count: {

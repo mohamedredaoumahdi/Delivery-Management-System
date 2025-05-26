@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                       Text(
                         'Sign in to continue',
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.colorScheme.onBackground.withOpacity(0.7),
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),

@@ -479,7 +479,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                   if (isVerified) ...[
                     const SizedBox(width: 8),
-                    Icon(
+                    const Icon(
                       Icons.verified,
                       size: 16,
                       color: Colors.green,

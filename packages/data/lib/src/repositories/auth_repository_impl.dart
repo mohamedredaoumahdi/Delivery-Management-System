@@ -7,7 +7,6 @@ import 'package:domain/domain.dart';
 
 import '../datasources/local/auth_local_data_source.dart';
 import '../datasources/remote/auth_remote_data_source.dart';
-import '../models/user_model.dart';
 
 /// Implementation of the [AuthRepository]
 class AuthRepositoryImpl implements AuthRepository {

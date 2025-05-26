@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { PaymentMethod } from '@prisma/client';
 
 export const createOrderSchema = Joi.object({
   shopId: Joi.string().required(),
@@ -10,7 +11,7 @@ export const createOrderSchema = Joi.object({
     })
   ).required(),
   deliveryAddress: Joi.string().required(),
-  paymentMethod: Joi.string().valid('CASH', 'CARD').required(),
+  paymentMethod: Joi.string().valid(...Object.values(PaymentMethod)).required(),
 });
 
 export const updateOrderSchema = Joi.object({

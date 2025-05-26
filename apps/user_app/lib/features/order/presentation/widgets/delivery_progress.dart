@@ -15,37 +15,37 @@ class DeliveryProgress extends StatelessWidget {
     
     // Define the progress steps
     final steps = [
-      _ProgressStep(
+      const _ProgressStep(
         title: 'Order Placed',
         subtitle: 'We received your order',
         icon: Icons.receipt_outlined,
         status: OrderStatus.pending,
       ),
-      _ProgressStep(
+      const _ProgressStep(
         title: 'Confirmed',
         subtitle: 'Shop accepted your order',
         icon: Icons.check_circle_outline,
         status: OrderStatus.accepted,
       ),
-      _ProgressStep(
+      const _ProgressStep(
         title: 'Preparing',
         subtitle: 'Your order is being prepared',
         icon: Icons.restaurant_outlined,
         status: OrderStatus.preparing,
       ),
-      _ProgressStep(
+      const _ProgressStep(
         title: 'Ready for Pickup',
         subtitle: 'Order is ready for delivery',
         icon: Icons.shopping_bag_outlined,
         status: OrderStatus.readyForPickup,
       ),
-      _ProgressStep(
+      const _ProgressStep(
         title: 'Out for Delivery',
         subtitle: 'Driver is on the way',
         icon: Icons.delivery_dining,
         status: OrderStatus.inDelivery,
       ),
-      _ProgressStep(
+      const _ProgressStep(
         title: 'Delivered',
         subtitle: 'Order delivered successfully',
         icon: Icons.check_circle,
@@ -76,7 +76,7 @@ class DeliveryProgress extends StatelessWidget {
         const SizedBox(height: 24),
         
         // Progress steps
-        ...steps.map((step) => _buildProgressStep(context, step)).toList(),
+        ...steps.map((step) => _buildProgressStep(context, step)),
       ],
     );
   }

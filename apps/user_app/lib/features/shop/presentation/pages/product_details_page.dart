@@ -184,7 +184,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               Container(
-                                color: theme.colorScheme.surfaceVariant,
+                                color: theme.colorScheme.surfaceContainerHighest,
                                 child: const Icon(
                                   Icons.image_not_supported_outlined,
                                   size: 64,
@@ -194,7 +194,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       },
                     )
                   : Container(
-                      color: theme.colorScheme.surfaceVariant,
+                      color: theme.colorScheme.surfaceContainerHighest,
                       child: const Icon(
                         Icons.fastfood,
                         size: 64,
@@ -405,7 +405,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       children: product.tags.map((tag) {
                         return Chip(
                           label: Text(tag),
-                          backgroundColor: theme.colorScheme.surfaceVariant,
+                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
                           labelStyle: theme.textTheme.bodySmall,
                         );
                       }).toList(),

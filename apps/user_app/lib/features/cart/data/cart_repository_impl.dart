@@ -337,9 +337,7 @@ class CartRepositoryImpl implements CartRepository {
       productDescription: map['productDescription'],
       productImageUrl: map['productImageUrl'],
       productPrice: map['productPrice'].toDouble(),
-      discountedPrice: map['discountedPrice'] != null 
-          ? map['discountedPrice'].toDouble() 
-          : null,
+      discountedPrice: map['discountedPrice']?.toDouble(),
       shopId: map['shopId'],
       shopName: map['shopName'],
       quantity: map['quantity'],

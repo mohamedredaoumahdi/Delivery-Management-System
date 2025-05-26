@@ -1,7 +1,5 @@
 import 'package:data/data.dart';
 import 'package:core/core.dart';
-import '../../models/user_model.dart';
-import '../../models/auth_response_model.dart';
 
 class MockAuthRemoteDataSource implements AuthRemoteDataSource {
   static const String _mockEmail = 'test@example.com';

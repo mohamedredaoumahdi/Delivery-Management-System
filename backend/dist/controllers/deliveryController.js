@@ -2,15 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeliveryController = void 0;
 const client_1 = require("@prisma/client");
-const AppError_1 = require("@/utils/appError");
+const appError_1 = require("@/utils/appError");
 const prisma = new client_1.PrismaClient();
 class DeliveryController {
     async getAssignedOrders(req, res) {
         const orders = await prisma.order.findMany({
             where: {
-                deliveryId: req.user.id,
                 status: {
-                    in: [client_1.OrderStatus.ACCEPTED, client_1.OrderStatus.PICKED_UP, client_1.OrderStatus.IN_TRANSIT]
+                    in: [client_1.OrderStatus.ACCEPTED, client_1.OrderStatus.READY_FOR_PICKUP, client_1.OrderStatus.IN_DELIVERY]
                 }
             },
             include: {
@@ -18,14 +17,13 @@ class DeliveryController {
                     select: {
                         name: true,
                         address: true,
-                        location: true
                     }
                 },
                 user: {
                     select: {
                         name: true,
                         phone: true,
-                        address: true
+                        addresses: true
                     }
                 }
             },
@@ -38,22 +36,20 @@ class DeliveryController {
     async getAvailableOrders(req, res) {
         const orders = await prisma.order.findMany({
             where: {
-                status: client_1.OrderStatus.READY_FOR_DELIVERY,
-                deliveryId: null
+                status: client_1.OrderStatus.READY_FOR_PICKUP,
             },
             include: {
                 shop: {
                     select: {
                         name: true,
                         address: true,
-                        location: true
                     }
                 },
                 user: {
                     select: {
                         name: true,
                         phone: true,
-                        address: true
+                        addresses: true
                     }
                 }
             },
@@ -68,11 +64,9 @@ class DeliveryController {
         const order = await prisma.order.update({
             where: {
                 id,
-                status: client_1.OrderStatus.READY_FOR_DELIVERY,
-                deliveryId: null
+                status: client_1.OrderStatus.READY_FOR_PICKUP,
             },
             data: {
-                deliveryId: req.user.id,
                 status: client_1.OrderStatus.ACCEPTED
             },
             include: {
@@ -80,20 +74,19 @@ class DeliveryController {
                     select: {
                         name: true,
                         address: true,
-                        location: true
                     }
                 },
                 user: {
                     select: {
                         name: true,
                         phone: true,
-                        address: true
+                        addresses: true
                     }
                 }
             }
         });
         if (!order) {
-            throw new AppError_1.AppError('Order not available for delivery', 400);
+            throw new appError_1.AppError('Order not available for delivery', 400);
         }
         res.json(order);
     }
@@ -103,49 +96,36 @@ class DeliveryController {
         const order = await prisma.order.update({
             where: {
                 id,
-                deliveryId: req.user.id
             },
             data: {
                 status: status
             }
         });
         if (!order) {
-            throw new AppError_1.AppError('Order not found', 404);
+            throw new appError_1.AppError('Order not found', 404);
         }
         res.json(order);
     }
     async updateLocation(req, res) {
         const { latitude, longitude } = req.body;
-        const delivery = await prisma.delivery.update({
-            where: {
-                id: req.user.id
-            },
-            data: {
-                currentLocation: {
-                    latitude,
-                    longitude
-                }
-            }
-        });
-        res.json(delivery);
+        res.json({ message: 'Location update not supported' });
     }
     async getDeliveryHistory(req, res) {
         const orders = await prisma.order.findMany({
             where: {
-                deliveryId: req.user.id,
                 status: client_1.OrderStatus.DELIVERED
             },
             include: {
                 shop: {
                     select: {
                         name: true,
-                        address: true
+                        address: true,
                     }
                 },
                 user: {
                     select: {
                         name: true,
-                        address: true
+                        addresses: true
                     }
                 }
             },

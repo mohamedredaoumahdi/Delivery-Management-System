@@ -1,6 +1,6 @@
 /// UI Kit package that contains shared UI components and theme
 /// for the delivery system apps.
-library ui_kit;
+library;
 
 // Theme
 export 'src/theme/delivery_system_theme.dart';

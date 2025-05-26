@@ -32,6 +32,7 @@ enum OrderStatus {
   READY_FOR_PICKUP
   IN_DELIVERY
   DELIVERED
+  CANCELLATION_REQUESTED
   CANCELLED
   REFUNDED
 }
@@ -69,6 +70,8 @@ model User {
   refreshTokens     RefreshToken[]
   passwordResetTokens PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  deliveryLocations DeliveryLocation[]
+  favorites         UserFavorite[]
 
   @@map("users")
 }
@@ -122,6 +125,7 @@ model Shop {
   orders                Order[]
   reviews               Review[]
   categories            Category[]
+  favorites             UserFavorite[]
 
   @@map("shops")
 }
@@ -339,4 +343,33 @@ model Category {
   products    Product[]
 
   @@map("categories")
+}
+
+// Real-time delivery person location tracking
+model DeliveryLocation {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  latitude    Float
+  longitude   Float
+  timestamp   DateTime @default(now())
+
+  // Relationships
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("delivery_locations")
+}
+
+// User favorites
+model UserFavorite {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  shopId    String   @map("shop_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, shopId])
+  @@map("user_favorites")
 }

@@ -45,14 +45,14 @@ class ShopCard extends StatelessWidget {
                             Container(
                               height: 140,
                               width: double.infinity,
-                              color: theme.colorScheme.surfaceVariant,
+                              color: theme.colorScheme.surfaceContainerHighest,
                               child: const Icon(Icons.image_not_supported_outlined, size: 32),
                             ),
                       )
                     : Container(
                         height: 140,
                         width: double.infinity,
-                        color: theme.colorScheme.surfaceVariant,
+                        color: theme.colorScheme.surfaceContainerHighest,
                         child: Icon(
                           _getCategoryIcon(shop.category),
                           size: 32,

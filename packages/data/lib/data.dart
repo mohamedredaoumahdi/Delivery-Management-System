@@ -1,6 +1,6 @@
 /// Data package that contains repository implementations and data sources
 /// for the delivery system apps.
-library data;
+library;
 
 // Repositories
 export 'src/repositories/auth_repository_impl.dart';

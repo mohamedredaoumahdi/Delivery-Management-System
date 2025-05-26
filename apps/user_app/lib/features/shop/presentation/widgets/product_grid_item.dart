@@ -34,7 +34,7 @@ class ProductGridItem extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
                           Container(
-                            color: theme.colorScheme.surfaceVariant,
+                            color: theme.colorScheme.surfaceContainerHighest,
                             child: const Icon(
                               Icons.image_not_supported_outlined,
                               size: 32,
@@ -42,7 +42,7 @@ class ProductGridItem extends StatelessWidget {
                           ),
                     )
                   : Container(
-                      color: theme.colorScheme.surfaceVariant,
+                      color: theme.colorScheme.surfaceContainerHighest,
                       child: const Icon(
                         Icons.fastfood,
                         size: 32,

@@ -1,6 +1,6 @@
 /// Domain package that contains business entities and use cases
 /// for the delivery system apps.
-library domain;
+library;
 
 // Entities
 export 'src/entities/user.dart';

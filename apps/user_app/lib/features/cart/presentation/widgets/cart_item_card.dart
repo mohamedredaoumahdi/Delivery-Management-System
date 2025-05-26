@@ -88,7 +88,7 @@ class _CartItemCardState extends State<CartItemCard> {
                           Container(
                             width: 80,
                             height: 80,
-                            color: theme.colorScheme.surfaceVariant,
+                            color: theme.colorScheme.surfaceContainerHighest,
                             child: const Icon(Icons.image_not_supported_outlined),
                           ),
                     ),
@@ -98,7 +98,7 @@ class _CartItemCardState extends State<CartItemCard> {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceVariant,
+                      color: theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.fastfood),

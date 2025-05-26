@@ -3,6 +3,7 @@ import { AdminController } from '@/controllers/adminController';
 import { auth } from '@/middleware/auth';
 import { requireRole } from '@/middleware/requireRole';
 import { validateRequest } from '@/middleware/validation';
+import { upload } from '@/middleware/upload';
 import { 
   updateUserSchema, 
   createShopSchema, 
@@ -16,7 +17,7 @@ const adminController = new AdminController();
 
 // All admin routes require authentication and admin role
 router.use(auth);
-router.use(requireRole('ADMIN'));
+router.use(requireRole(['ADMIN']));
 
 // User management
 router.get('/users', adminController.getUsers);
@@ -32,8 +33,8 @@ router.delete('/shops/:id', adminController.deleteShop);
 
 // Category management
 router.get('/categories', adminController.getCategories);
-router.post('/categories', validateRequest(createCategorySchema), adminController.createCategory);
-router.put('/categories/:id', validateRequest(updateCategorySchema), adminController.updateCategory);
+router.post('/categories', upload.single('image'), validateRequest(createCategorySchema), adminController.createCategory);
+router.put('/categories/:id', upload.single('image'), validateRequest(updateCategorySchema), adminController.updateCategory);
 router.delete('/categories/:id', adminController.deleteCategory);
 
 // Analytics

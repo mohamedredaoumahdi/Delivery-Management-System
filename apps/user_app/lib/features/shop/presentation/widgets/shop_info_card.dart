@@ -49,7 +49,7 @@ class ShopInfoCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.star,
                             size: 16,
                             color: Colors.amber,

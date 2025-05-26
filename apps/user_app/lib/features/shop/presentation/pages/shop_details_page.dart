@@ -692,7 +692,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                     : 'This shop doesn\'t have any products available at the moment.',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onBackground.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
               if (_isSearching) ...[

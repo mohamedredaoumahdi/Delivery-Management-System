@@ -36,7 +36,7 @@ class ShopListItem extends StatelessWidget {
                         Container(
                           width: 70,
                           height: 70,
-                          color: theme.colorScheme.surfaceVariant,
+                          color: theme.colorScheme.surfaceContainerHighest,
                           child: Icon(
                             _getCategoryIcon(shop.category),
                             color: theme.colorScheme.primary,
@@ -46,7 +46,7 @@ class ShopListItem extends StatelessWidget {
                 : Container(
                     width: 70,
                     height: 70,
-                    color: theme.colorScheme.surfaceVariant,
+                    color: theme.colorScheme.surfaceContainerHighest,
                     child: Icon(
                       _getCategoryIcon(shop.category),
                       color: theme.colorScheme.primary,

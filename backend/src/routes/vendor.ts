@@ -26,8 +26,10 @@ router.delete('/products/:id', vendorController.deleteProduct);
 
 // Order management
 router.get('/orders', vendorController.getVendorOrders);
-router.patch('/orders/:id/status', vendorController.updateOrderStatus);
 router.get('/orders/stats', vendorController.getOrderStats);
+router.patch('/orders/:id/status', vendorController.updateOrderStatus);
+router.patch('/orders/:id/cancellation-request', vendorController.handleCancellationRequest);
+router.post('/orders/:id/cancel', vendorController.cancelOrder);
 
 // Analytics
 router.get('/analytics/sales', vendorController.getSalesAnalytics);

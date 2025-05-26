@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderController = void 0;
 const client_1 = require("@prisma/client");
-const AppError_1 = require("@/utils/appError");
+const appError_1 = require("@/utils/appError");
 const prisma = new client_1.PrismaClient();
 class OrderController {
     async createOrder(req, res) {
@@ -11,9 +11,21 @@ class OrderController {
             data: {
                 userId: req.user.id,
                 shopId,
+                shopName: req.body.shopName,
+                orderNumber: `ORD-${Date.now()}`,
                 deliveryAddress,
+                deliveryLatitude: req.body.deliveryLatitude,
+                deliveryLongitude: req.body.deliveryLongitude,
                 paymentMethod,
                 status: client_1.OrderStatus.PENDING,
+                subtotal: items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                deliveryFee: req.body.deliveryFee || 0,
+                serviceFee: req.body.serviceFee || 0,
+                tax: req.body.tax || 0,
+                total: items.reduce((sum, item) => sum + (item.price * item.quantity), 0) +
+                    (req.body.deliveryFee || 0) +
+                    (req.body.serviceFee || 0) +
+                    (req.body.tax || 0),
                 items: {
                     create: items.map((item) => ({
                         productId: item.productId,
@@ -94,17 +106,11 @@ class OrderController {
                             }
                         }
                     }
-                },
-                delivery: {
-                    select: {
-                        name: true,
-                        phone: true
-                    }
                 }
             }
         });
         if (!order) {
-            throw new AppError_1.AppError('Order not found', 404);
+            throw new appError_1.AppError('Order not found', 404);
         }
         res.json(order);
     }
@@ -116,10 +122,10 @@ class OrderController {
             }
         });
         if (!order) {
-            throw new AppError_1.AppError('Order not found', 404);
+            throw new appError_1.AppError('Order not found', 404);
         }
         if (order.status !== client_1.OrderStatus.PENDING) {
-            throw new AppError_1.AppError('Cannot cancel order in current status', 400);
+            throw new appError_1.AppError('Cannot cancel order in current status', 400);
         }
         const updatedOrder = await prisma.order.update({
             where: {
@@ -140,10 +146,10 @@ class OrderController {
             }
         });
         if (!order) {
-            throw new AppError_1.AppError('Order not found', 404);
+            throw new appError_1.AppError('Order not found', 404);
         }
         if (order.status !== client_1.OrderStatus.DELIVERED) {
-            throw new AppError_1.AppError('Can only update tip for delivered orders', 400);
+            throw new appError_1.AppError('Can only update tip for delivered orders', 400);
         }
         const updatedOrder = await prisma.order.update({
             where: {
@@ -162,22 +168,30 @@ class OrderController {
                 userId: req.user.id
             },
             include: {
-                delivery: {
+                shop: {
                     select: {
                         name: true,
-                        phone: true,
-                        currentLocation: true
+                        address: true
+                    }
+                },
+                items: {
+                    include: {
+                        product: {
+                            select: {
+                                name: true,
+                                price: true
+                            }
+                        }
                     }
                 }
             }
         });
         if (!order) {
-            throw new AppError_1.AppError('Order not found', 404);
+            throw new appError_1.AppError('Order not found', 404);
         }
         res.json({
             status: order.status,
             estimatedDeliveryTime: order.estimatedDeliveryTime,
-            delivery: order.delivery
         });
     }
 }

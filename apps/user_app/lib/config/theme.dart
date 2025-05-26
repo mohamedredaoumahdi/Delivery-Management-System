@@ -16,7 +16,7 @@ class UserAppTheme {
       navigationBarTheme: NavigationBarThemeData(
         elevation: 8,
         indicatorColor: baseTheme.primaryColor.withOpacity(0.2),
-        labelTextStyle: MaterialStateProperty.all(
+        labelTextStyle: WidgetStateProperty.all(
           const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -78,7 +78,7 @@ class UserAppTheme {
       navigationBarTheme: NavigationBarThemeData(
         elevation: 8,
         indicatorColor: Colors.deepPurple.shade300.withOpacity(0.3),
-        labelTextStyle: MaterialStateProperty.all(
+        labelTextStyle: WidgetStateProperty.all(
           const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,

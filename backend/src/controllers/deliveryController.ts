@@ -1,154 +1,140 @@
-import { Response } from 'express';
-import { PrismaClient, OrderStatus } from '@prisma/client';
+import { Request, Response, NextFunction } from 'express';
+import { prisma } from '@/config/database';
 import { AppError } from '@/utils/appError';
-import { AuthenticatedRequest } from '../types/express';
-
-const prisma = new PrismaClient();
+import { catchAsync } from '@/utils/catchAsync';
+import { AuthenticatedRequest } from '@/types/express';
 
 export class DeliveryController {
-  async getAssignedOrders(req: AuthenticatedRequest, res: Response) {
+  getAssignedOrders = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
     const orders = await prisma.order.findMany({
       where: {
-        status: {
-          in: [OrderStatus.ACCEPTED, OrderStatus.READY_FOR_PICKUP, OrderStatus.IN_DELIVERY]
-        }
+        deliveryPersonId: req.user!.id,
       },
       include: {
-        shop: {
-          select: {
-            name: true,
-            address: true,
-          }
-        },
-        user: {
-          select: {
-            name: true,
-            phone: true,
-            addresses: true
-          }
-        }
+        items: true,
+        shop: true,
+        user: true,
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
     });
 
-    res.json(orders);
-  }
+    res.json({
+      status: 'success',
+      data: orders,
+    });
+  });
 
-  async getAvailableOrders(req: AuthenticatedRequest, res: Response) {
+  getAvailableOrders = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
     const orders = await prisma.order.findMany({
       where: {
-        status: OrderStatus.READY_FOR_PICKUP,
+        status: 'READY_FOR_PICKUP',
+        deliveryPersonId: null,
       },
       include: {
-        shop: {
-          select: {
-            name: true,
-            address: true,
-          }
-        },
-        user: {
-          select: {
-            name: true,
-            phone: true,
-            addresses: true
-          }
-        }
+        items: true,
+        shop: true,
+        user: true,
       },
-      orderBy: {
-        createdAt: 'asc'
-      }
     });
 
-    res.json(orders);
-  }
+    res.json({
+      status: 'success',
+      data: orders,
+    });
+  });
 
-  async acceptOrder(req: AuthenticatedRequest, res: Response) {
-    const { id } = req.params;
-
+  acceptOrder = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const order = await prisma.order.update({
-      where: {
-        id,
-        status: OrderStatus.READY_FOR_PICKUP,
-      },
+      where: { id: req.params.id },
       data: {
-        status: OrderStatus.ACCEPTED
+        deliveryPersonId: req.user!.id,
+        status: 'IN_DELIVERY',
       },
-      include: {
-        shop: {
-          select: {
-            name: true,
-            address: true,
-          }
-        },
-        user: {
-          select: {
-            name: true,
-            phone: true,
-            addresses: true
-          }
-        }
-      }
     });
 
-    if (!order) {
-      throw new AppError('Order not available for delivery', 400);
-    }
+    res.json({
+      status: 'success',
+      data: order,
+    });
+  });
 
-    res.json(order);
-  }
-
-  async updateOrderStatus(req: AuthenticatedRequest, res: Response) {
-    const { id } = req.params;
-    const { status } = req.body;
-
+  markPickedUp = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const order = await prisma.order.update({
-      where: {
-        id,
-      },
+      where: { id: req.params.id },
       data: {
-        status: status as OrderStatus
-      }
+        status: 'IN_DELIVERY',
+      },
     });
 
-    if (!order) {
-      throw new AppError('Order not found', 404);
-    }
+    res.json({
+      status: 'success',
+      data: order,
+    });
+  });
 
-    res.json(order);
-  }
+  markDelivered = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const order = await prisma.order.update({
+      where: { id: req.params.id },
+      data: {
+        status: 'DELIVERED',
+        deliveredAt: new Date(),
+      },
+    });
 
-  async updateLocation(req: AuthenticatedRequest, res: Response) {
+    res.json({
+      status: 'success',
+      data: order,
+    });
+  });
+
+  updateLocation = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
     const { latitude, longitude } = req.body;
 
-    res.json({ message: 'Location update not supported' });
-  }
-
-  async getDeliveryHistory(req: AuthenticatedRequest, res: Response) {
-    const orders = await prisma.order.findMany({
-      where: {
-        status: OrderStatus.DELIVERED
+    // Create a new location record
+    await prisma.deliveryLocation.create({
+      data: {
+        userId: req.user!.id,
+        latitude,
+        longitude,
       },
-      include: {
-        shop: {
-          select: {
-            name: true,
-            address: true,
-          }
-        },
-        user: {
-          select: {
-            name: true,
-            addresses: true
-          }
-        }
-      },
-      orderBy: {
-        deliveredAt: 'desc'
-      }
     });
 
-    res.json(orders);
-  }
+    res.json({
+      status: 'success',
+      message: 'Location updated successfully',
+    });
+  });
+
+  getDeliveryStats = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const stats = await prisma.order.groupBy({
+      by: ['status'],
+      where: {
+        deliveryPersonId: req.user!.id,
+      },
+      _count: true,
+    });
+
+    res.json({
+      status: 'success',
+      data: stats,
+    });
+  });
+
+  getEarnings = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const earnings = await prisma.order.aggregate({
+      where: {
+        deliveryPersonId: req.user!.id,
+        status: 'DELIVERED',
+      },
+      _sum: {
+        deliveryFee: true,
+      },
+    });
+
+    res.json({
+      status: 'success',
+      data: {
+        totalEarnings: earnings._sum?.deliveryFee || 0,
+      },
+    });
+  });
 } 

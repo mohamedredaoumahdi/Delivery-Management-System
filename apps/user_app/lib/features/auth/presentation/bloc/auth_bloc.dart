@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:domain/domain.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';

@@ -1,7 +1,5 @@
 import 'package:dartz/dartz.dart' hide Order;
 import 'package:domain/domain.dart';
-import 'package:domain/src/errors/failures.dart';
-import 'package:domain/src/entities/order.dart';
 
 class MockOrderRepository implements OrderRepository {
   // Mock data
