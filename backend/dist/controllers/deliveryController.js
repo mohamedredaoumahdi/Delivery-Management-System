@@ -1,139 +1,159 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeliveryController = void 0;
-const Order_1 = require("@/models/Order");
-const AppError_1 = require("@/utils/AppError");
+const client_1 = require("@prisma/client");
+const AppError_1 = require("@/utils/appError");
+const prisma = new client_1.PrismaClient();
 class DeliveryController {
     async getAssignedOrders(req, res) {
-        const orders = await Order_1.Order.find({
-            delivery: req.user.id,
-            status: { $in: ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT'] }
-        })
-            .populate([
-            { path: 'shop', select: 'name address location' },
-            { path: 'user', select: 'name phone address' }
-        ])
-            .sort({ createdAt: -1 });
+        const orders = await prisma.order.findMany({
+            where: {
+                deliveryId: req.user.id,
+                status: {
+                    in: [client_1.OrderStatus.ACCEPTED, client_1.OrderStatus.PICKED_UP, client_1.OrderStatus.IN_TRANSIT]
+                }
+            },
+            include: {
+                shop: {
+                    select: {
+                        name: true,
+                        address: true,
+                        location: true
+                    }
+                },
+                user: {
+                    select: {
+                        name: true,
+                        phone: true,
+                        address: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
         res.json(orders);
     }
     async getAvailableOrders(req, res) {
-        const orders = await Order_1.Order.find({
-            status: 'PENDING',
-            delivery: null
-        })
-            .populate([
-            { path: 'shop', select: 'name address location' },
-            { path: 'user', select: 'name phone address' }
-        ])
-            .sort({ createdAt: 1 });
+        const orders = await prisma.order.findMany({
+            where: {
+                status: client_1.OrderStatus.READY_FOR_DELIVERY,
+                deliveryId: null
+            },
+            include: {
+                shop: {
+                    select: {
+                        name: true,
+                        address: true,
+                        location: true
+                    }
+                },
+                user: {
+                    select: {
+                        name: true,
+                        phone: true,
+                        address: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'asc'
+            }
+        });
         res.json(orders);
     }
     async acceptOrder(req, res) {
-        const order = await Order_1.Order.findOne({
-            _id: req.params.id,
-            status: 'PENDING',
-            delivery: null
+        const { id } = req.params;
+        const order = await prisma.order.update({
+            where: {
+                id,
+                status: client_1.OrderStatus.READY_FOR_DELIVERY,
+                deliveryId: null
+            },
+            data: {
+                deliveryId: req.user.id,
+                status: client_1.OrderStatus.ACCEPTED
+            },
+            include: {
+                shop: {
+                    select: {
+                        name: true,
+                        address: true,
+                        location: true
+                    }
+                },
+                user: {
+                    select: {
+                        name: true,
+                        phone: true,
+                        address: true
+                    }
+                }
+            }
         });
         if (!order) {
             throw new AppError_1.AppError('Order not available for delivery', 400);
         }
-        order.delivery = req.user.id;
-        order.status = 'ACCEPTED';
-        await order.save();
         res.json(order);
     }
-    async markPickedUp(req, res) {
-        const order = await Order_1.Order.findOne({
-            _id: req.params.id,
-            delivery: req.user.id,
-            status: 'ACCEPTED'
+    async updateOrderStatus(req, res) {
+        const { id } = req.params;
+        const { status } = req.body;
+        const order = await prisma.order.update({
+            where: {
+                id,
+                deliveryId: req.user.id
+            },
+            data: {
+                status: status
+            }
         });
         if (!order) {
-            throw new AppError_1.AppError('Order not found or cannot be picked up', 400);
+            throw new AppError_1.AppError('Order not found', 404);
         }
-        order.status = 'PICKED_UP';
-        await order.save();
-        res.json(order);
-    }
-    async markDelivered(req, res) {
-        const order = await Order_1.Order.findOne({
-            _id: req.params.id,
-            delivery: req.user.id,
-            status: 'IN_TRANSIT'
-        });
-        if (!order) {
-            throw new AppError_1.AppError('Order not found or cannot be marked as delivered', 400);
-        }
-        order.status = 'DELIVERED';
-        order.deliveredAt = new Date();
-        await order.save();
         res.json(order);
     }
     async updateLocation(req, res) {
-        const { location } = req.body;
-        const order = await Order_1.Order.findOne({
-            _id: req.params.id,
-            delivery: req.user.id,
-            status: { $in: ['PICKED_UP', 'IN_TRANSIT'] }
-        });
-        if (!order) {
-            throw new AppError_1.AppError('Order not found or cannot update location', 400);
-        }
-        order.currentLocation = location;
-        await order.save();
-        res.json(order);
-    }
-    async getDeliveryStats(req, res) {
-        const stats = await Order_1.Order.aggregate([
-            {
-                $match: {
-                    delivery: req.user.id,
-                    status: 'DELIVERED'
-                }
+        const { latitude, longitude } = req.body;
+        const delivery = await prisma.delivery.update({
+            where: {
+                id: req.user.id
             },
-            {
-                $group: {
-                    _id: null,
-                    totalDeliveries: { $sum: 1 },
-                    totalEarnings: { $sum: { $add: ['$deliveryFee', '$tip'] } },
-                    averageRating: { $avg: '$rating' }
+            data: {
+                currentLocation: {
+                    latitude,
+                    longitude
                 }
             }
-        ]);
-        res.json(stats[0] || {
-            totalDeliveries: 0,
-            totalEarnings: 0,
-            averageRating: 0
         });
+        res.json(delivery);
     }
-    async getEarnings(req, res) {
-        const { startDate, endDate } = req.query;
-        const match = {
-            delivery: req.user.id,
-            status: 'DELIVERED'
-        };
-        if (startDate && endDate) {
-            match.deliveredAt = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
-            };
-        }
-        const earnings = await Order_1.Order.aggregate([
-            { $match: match },
-            {
-                $group: {
-                    _id: {
-                        year: { $year: '$deliveredAt' },
-                        month: { $month: '$deliveredAt' },
-                        day: { $dayOfMonth: '$deliveredAt' }
-                    },
-                    earnings: { $sum: { $add: ['$deliveryFee', '$tip'] } },
-                    deliveries: { $sum: 1 }
+    async getDeliveryHistory(req, res) {
+        const orders = await prisma.order.findMany({
+            where: {
+                deliveryId: req.user.id,
+                status: client_1.OrderStatus.DELIVERED
+            },
+            include: {
+                shop: {
+                    select: {
+                        name: true,
+                        address: true
+                    }
+                },
+                user: {
+                    select: {
+                        name: true,
+                        address: true
+                    }
                 }
             },
-            { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } }
-        ]);
-        res.json(earnings);
+            orderBy: {
+                deliveredAt: 'desc'
+            }
+        });
+        res.json(orders);
     }
 }
 exports.DeliveryController = DeliveryController;

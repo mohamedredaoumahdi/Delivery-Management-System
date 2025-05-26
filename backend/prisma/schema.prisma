@@ -121,6 +121,7 @@ model Shop {
   products              Product[]
   orders                Order[]
   reviews               Review[]
+  categories            Category[]
 
   @@map("shops")
 }
@@ -134,7 +135,8 @@ model Product {
   discountedPrice  Float?    @map("discounted_price")
   imageUrl         String?   @map("image_url")
   images           String[]  // Array of image URLs
-  category         String
+  categoryName     String    @map("category_name")
+  categoryId       String?   @map("category_id")
   tags             String[]  // Array of tags for searching
   nutritionalInfo  Json?     @map("nutritional_info") // JSON object
   inStock          Boolean   @default(true) @map("in_stock")
@@ -149,6 +151,7 @@ model Product {
 
   // Relationships
   shop             Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  category         Category? @relation(fields: [categoryId], references: [id])
   orderItems       OrderItem[]
   reviews          Review[]
 
@@ -318,4 +321,22 @@ model EmailVerificationToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("email_verification_tokens")
+}
+
+// Categories table
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  imageUrl    String?  @map("image_url")
+  status      String   @default("ACTIVE")
+  shopId      String   @map("shop_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  products    Product[]
+
+  @@map("categories")
 }

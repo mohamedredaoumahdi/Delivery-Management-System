@@ -44,20 +44,10 @@ const express_validator_1 = require("express-validator");
 const uuid_1 = require("uuid");
 const sendEmail_1 = __importDefault(require("@/utils/sendEmail"));
 const config_1 = require("@/config/config");
+const appError_1 = require("@/utils/appError");
 const catchAsync_1 = require("@/utils/catchAsync");
 const redis_1 = require("@/config/redis");
 const prisma = new client_1.PrismaClient();
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN,
-    });
-};
-const generateRefreshToken = (userId) => {
-    const token = jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET, {
-        expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
-    });
-    return token;
-};
 class MockEmailService {
     async sendWelcomeEmail(email, name) {
         console.log(`Welcome email sent to ${email} for ${name}`);
@@ -66,7 +56,7 @@ class MockEmailService {
         console.log(`Password reset email sent to ${email} for ${name} with token ${token}`);
     }
 }
-const EmailService = new MockEmailService();
+const emailService = new MockEmailService();
 class AuthController {
     generateTokens(userId, role) {
         const accessTokenOptions = {
@@ -92,7 +82,7 @@ class AuthController {
                 },
             });
             if (userExists) {
-                return res.status(400).json({ message: 'User already exists' });
+                throw new appError_1.AppError('User already exists', 400);
             }
             const salt = await bcryptjs_1.default.genSalt(10);
             const hashedPassword = await bcryptjs_1.default.hash(password, salt);
@@ -104,58 +94,58 @@ class AuthController {
                     role: role || client_1.UserRole.CUSTOMER,
                 },
             });
-            if (user) {
-                const verificationToken = (0, uuid_1.v4)();
-                const verificationExpiresAt = new Date(Date.now() + 3600000 * 24);
-                await prisma.emailVerificationToken.create({
-                    data: {
-                        token: verificationToken,
-                        userId: user.id,
-                        expiresAt: verificationExpiresAt,
-                    },
-                });
-                const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-                try {
-                    await (0, sendEmail_1.default)({
-                        email: user.email,
-                        subject: 'Verify Your Email Address',
-                        message: `Thank you for registering! Please click the following link to verify your email address: ${verificationUrl}\n\nIf you did not create an account, please ignore this email.`,
-                    });
-                    console.log(`Email verification email sent to ${user.email}`);
-                }
-                catch (emailError) {
-                    console.error('Error sending email verification email:', emailError);
-                }
-                const { accessToken, refreshToken } = this.generateTokens(user.id, user.role);
-                await prisma.refreshToken.create({
-                    data: {
-                        token: refreshToken,
-                        userId: user.id,
-                        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                    },
-                });
-                try {
-                    await EmailService.sendWelcomeEmail(user.email, user.name);
-                }
-                catch (error) {
-                    console.error('Failed to send welcome email:', error);
-                }
-                res.status(201).json({
-                    id: user.id,
-                    name: user.name,
+            if (!user) {
+                return res.status(400).json({ message: 'Invalid user data' });
+            }
+            const verificationToken = (0, uuid_1.v4)();
+            const verificationExpiresAt = new Date(Date.now() + 3600000 * 24);
+            await prisma.emailVerificationToken.create({
+                data: {
+                    token: verificationToken,
+                    userId: user.id,
+                    expiresAt: verificationExpiresAt,
+                },
+            });
+            const verificationUrl = `${config_1.config.frontendUrl}/verify-email?token=${verificationToken}`;
+            try {
+                await (0, sendEmail_1.default)({
                     email: user.email,
-                    role: user.role,
-                    accessToken,
-                    refreshToken,
+                    subject: 'Verify Your Email Address',
+                    message: `Thank you for registering! Please click the following link to verify your email address: ${verificationUrl}\n\nIf you did not create an account, please ignore this email.`,
                 });
+                console.log(`Email verification email sent to ${user.email}`);
             }
-            else {
-                res.status(400).json({ message: 'Invalid user data' });
+            catch (emailError) {
+                console.error('Error sending email verification email:', emailError);
             }
+            const { accessToken, refreshToken } = this.generateTokens(user.id, user.role);
+            await prisma.refreshToken.create({
+                data: {
+                    token: refreshToken,
+                    userId: user.id,
+                    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                },
+            });
+            try {
+                await emailService.sendWelcomeEmail(user.email, user.name);
+            }
+            catch (error) {
+                console.error('Failed to send welcome email:', error);
+            }
+            return res.status(201).json({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                accessToken,
+                refreshToken,
+            });
         }
         catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Server Error' });
+            if (error instanceof appError_1.AppError) {
+                throw error;
+            }
+            throw new appError_1.AppError('Server Error', 500);
         }
     });
     login = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
@@ -170,35 +160,35 @@ class AuthController {
                     email,
                 },
             });
-            if (user && (await bcryptjs_1.default.compare(password, user.passwordHash))) {
-                await prisma.user.update({
-                    where: { id: user.id },
-                    data: { lastLoginAt: new Date() },
-                });
-                const { accessToken, refreshToken } = this.generateTokens(user.id, user.role);
-                await prisma.refreshToken.create({
-                    data: {
-                        token: refreshToken,
-                        userId: user.id,
-                        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                    },
-                });
-                res.json({
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role,
-                    accessToken,
-                    refreshToken,
-                });
+            if (!user || !(await bcryptjs_1.default.compare(password, user.passwordHash))) {
+                throw new appError_1.AppError('Invalid credentials', 401);
             }
-            else {
-                res.status(401).json({ message: 'Invalid credentials' });
-            }
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { lastLoginAt: new Date() },
+            });
+            const { accessToken, refreshToken } = this.generateTokens(user.id, user.role);
+            await prisma.refreshToken.create({
+                data: {
+                    token: refreshToken,
+                    userId: user.id,
+                    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                },
+            });
+            return res.json({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                accessToken,
+                refreshToken,
+            });
         }
         catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Server Error' });
+            if (error instanceof appError_1.AppError) {
+                throw error;
+            }
+            throw new appError_1.AppError('Server Error', 500);
         }
     });
     refreshToken = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
@@ -230,14 +220,14 @@ class AuthController {
             if (!user || !user.isActive) {
                 return res.status(403).json({ message: 'User not found or inactive' });
             }
-            const newAccessToken = generateToken(user.id);
-            res.json({
+            const newAccessToken = this.generateTokens(user.id, user.role).accessToken;
+            return res.json({
                 accessToken: newAccessToken,
             });
         }
         catch (error) {
             console.error(error);
-            res.status(500).json({ message: 'Server Error' });
+            return res.status(500).json({ message: 'Server Error' });
         }
     });
     logout = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
@@ -254,11 +244,11 @@ class AuthController {
             if (req.user) {
                 await redis_1.SessionService.deleteSession(req.user.id);
             }
-            res.status(200).json({ message: 'Logged out successfully' });
+            return res.status(200).json({ message: 'Logged out successfully' });
         }
         catch (error) {
             console.error(error);
-            res.status(500).json({ message: 'Server Error' });
+            return res.status(500).json({ message: 'Server Error' });
         }
     });
     forgotPassword = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
@@ -288,7 +278,7 @@ class AuthController {
                     expiresAt: expiresAt,
                 },
             });
-            const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+            const resetUrl = `${config_1.config.frontendUrl}/reset-password?token=${resetToken}`;
             try {
                 await (0, sendEmail_1.default)({
                     email: user.email,
@@ -300,11 +290,11 @@ class AuthController {
             catch (emailError) {
                 console.error('Error sending password reset email:', emailError);
             }
-            res.status(200).json({ message: 'If a user with that email exists, a password reset link has been sent.' });
+            return res.status(200).json({ message: 'If a user with that email exists, a password reset link has been sent.' });
         }
         catch (error) {
             console.error(error);
-            res.status(500).json({ message: 'Server Error' });
+            return res.status(500).json({ message: 'Server Error' });
         }
     });
     resetPassword = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
@@ -341,11 +331,11 @@ class AuthController {
                     id: foundToken.id,
                 },
             });
-            res.status(200).json({ message: 'Password reset successfully' });
+            return res.status(200).json({ message: 'Password reset successfully' });
         }
         catch (error) {
             console.error(error);
-            res.status(500).json({ message: 'Server Error' });
+            return res.status(500).json({ message: 'Server Error' });
         }
     });
     verifyEmail = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
@@ -375,11 +365,11 @@ class AuthController {
                     id: emailVerificationToken.id,
                 },
             });
-            res.status(200).json({ message: 'Email verified successfully' });
+            return res.status(200).json({ message: 'Email verified successfully' });
         }
         catch (error) {
             console.error(error);
-            res.status(500).json({ message: 'Server Error' });
+            return res.status(500).json({ message: 'Server Error' });
         }
     });
 }

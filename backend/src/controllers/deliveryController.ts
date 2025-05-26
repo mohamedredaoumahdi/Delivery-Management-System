@@ -1,163 +1,154 @@
 import { Response } from 'express';
-import { Order } from '@/models/Order';
-import { AppError } from '@/utils/AppError';
-import { AuthenticatedRequest } from '@/types/express';
+import { PrismaClient, OrderStatus } from '@prisma/client';
+import { AppError } from '@/utils/appError';
+import { AuthenticatedRequest } from '../types/express';
+
+const prisma = new PrismaClient();
 
 export class DeliveryController {
   async getAssignedOrders(req: AuthenticatedRequest, res: Response) {
-    const orders = await Order.find({
-      delivery: req.user.id,
-      status: { $in: ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT'] }
-    })
-      .populate([
-        { path: 'shop', select: 'name address location' },
-        { path: 'user', select: 'name phone address' }
-      ])
-      .sort({ createdAt: -1 });
+    const orders = await prisma.order.findMany({
+      where: {
+        status: {
+          in: [OrderStatus.ACCEPTED, OrderStatus.READY_FOR_PICKUP, OrderStatus.IN_DELIVERY]
+        }
+      },
+      include: {
+        shop: {
+          select: {
+            name: true,
+            address: true,
+          }
+        },
+        user: {
+          select: {
+            name: true,
+            phone: true,
+            addresses: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
     res.json(orders);
   }
 
   async getAvailableOrders(req: AuthenticatedRequest, res: Response) {
-    const orders = await Order.find({
-      status: 'PENDING',
-      delivery: null
-    })
-      .populate([
-        { path: 'shop', select: 'name address location' },
-        { path: 'user', select: 'name phone address' }
-      ])
-      .sort({ createdAt: 1 });
+    const orders = await prisma.order.findMany({
+      where: {
+        status: OrderStatus.READY_FOR_PICKUP,
+      },
+      include: {
+        shop: {
+          select: {
+            name: true,
+            address: true,
+          }
+        },
+        user: {
+          select: {
+            name: true,
+            phone: true,
+            addresses: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
 
     res.json(orders);
   }
 
   async acceptOrder(req: AuthenticatedRequest, res: Response) {
-    const order = await Order.findOne({
-      _id: req.params.id,
-      status: 'PENDING',
-      delivery: null
+    const { id } = req.params;
+
+    const order = await prisma.order.update({
+      where: {
+        id,
+        status: OrderStatus.READY_FOR_PICKUP,
+      },
+      data: {
+        status: OrderStatus.ACCEPTED
+      },
+      include: {
+        shop: {
+          select: {
+            name: true,
+            address: true,
+          }
+        },
+        user: {
+          select: {
+            name: true,
+            phone: true,
+            addresses: true
+          }
+        }
+      }
     });
 
     if (!order) {
       throw new AppError('Order not available for delivery', 400);
     }
 
-    order.delivery = req.user.id;
-    order.status = 'ACCEPTED';
-    await order.save();
-
     res.json(order);
   }
 
-  async markPickedUp(req: AuthenticatedRequest, res: Response) {
-    const order = await Order.findOne({
-      _id: req.params.id,
-      delivery: req.user.id,
-      status: 'ACCEPTED'
+  async updateOrderStatus(req: AuthenticatedRequest, res: Response) {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const order = await prisma.order.update({
+      where: {
+        id,
+      },
+      data: {
+        status: status as OrderStatus
+      }
     });
 
     if (!order) {
-      throw new AppError('Order not found or cannot be picked up', 400);
+      throw new AppError('Order not found', 404);
     }
-
-    order.status = 'PICKED_UP';
-    await order.save();
-
-    res.json(order);
-  }
-
-  async markDelivered(req: AuthenticatedRequest, res: Response) {
-    const order = await Order.findOne({
-      _id: req.params.id,
-      delivery: req.user.id,
-      status: 'IN_TRANSIT'
-    });
-
-    if (!order) {
-      throw new AppError('Order not found or cannot be marked as delivered', 400);
-    }
-
-    order.status = 'DELIVERED';
-    order.deliveredAt = new Date();
-    await order.save();
 
     res.json(order);
   }
 
   async updateLocation(req: AuthenticatedRequest, res: Response) {
-    const { location } = req.body;
-    const order = await Order.findOne({
-      _id: req.params.id,
-      delivery: req.user.id,
-      status: { $in: ['PICKED_UP', 'IN_TRANSIT'] }
-    });
+    const { latitude, longitude } = req.body;
 
-    if (!order) {
-      throw new AppError('Order not found or cannot update location', 400);
-    }
-
-    order.currentLocation = location;
-    await order.save();
-
-    res.json(order);
+    res.json({ message: 'Location update not supported' });
   }
 
-  async getDeliveryStats(req: AuthenticatedRequest, res: Response) {
-    const stats = await Order.aggregate([
-      {
-        $match: {
-          delivery: req.user.id,
-          status: 'DELIVERED'
+  async getDeliveryHistory(req: AuthenticatedRequest, res: Response) {
+    const orders = await prisma.order.findMany({
+      where: {
+        status: OrderStatus.DELIVERED
+      },
+      include: {
+        shop: {
+          select: {
+            name: true,
+            address: true,
+          }
+        },
+        user: {
+          select: {
+            name: true,
+            addresses: true
+          }
         }
       },
-      {
-        $group: {
-          _id: null,
-          totalDeliveries: { $sum: 1 },
-          totalEarnings: { $sum: { $add: ['$deliveryFee', '$tip'] } },
-          averageRating: { $avg: '$rating' }
-        }
+      orderBy: {
+        deliveredAt: 'desc'
       }
-    ]);
-
-    res.json(stats[0] || {
-      totalDeliveries: 0,
-      totalEarnings: 0,
-      averageRating: 0
     });
-  }
 
-  async getEarnings(req: AuthenticatedRequest, res: Response) {
-    const { startDate, endDate } = req.query;
-    const match: any = {
-      delivery: req.user.id,
-      status: 'DELIVERED'
-    };
-
-    if (startDate && endDate) {
-      match.deliveredAt = {
-        $gte: new Date(startDate as string),
-        $lte: new Date(endDate as string)
-      };
-    }
-
-    const earnings = await Order.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: {
-            year: { $year: '$deliveredAt' },
-            month: { $month: '$deliveredAt' },
-            day: { $dayOfMonth: '$deliveredAt' }
-          },
-          earnings: { $sum: { $add: ['$deliveryFee', '$tip'] } },
-          deliveries: { $sum: 1 }
-        }
-      },
-      { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } }
-    ]);
-
-    res.json(earnings);
+    res.json(orders);
   }
 } 

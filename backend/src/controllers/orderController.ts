@@ -1,43 +1,120 @@
-import { Request, Response } from 'express';
-import { Order } from '@/models/Order';
-import { AppError } from '@/utils/AppError';
-import { AuthenticatedRequest } from '@/types/express';
+import { Response } from 'express';
+import { PrismaClient, OrderStatus } from '@prisma/client';
+import { AppError } from '@/utils/appError';
+import { AuthenticatedRequest } from '../types/express';
+
+const prisma = new PrismaClient();
 
 export class OrderController {
   async createOrder(req: AuthenticatedRequest, res: Response) {
-    const order = await Order.create({
-      ...req.body,
-      user: req.user.id
-    });
+    const { items, shopId, deliveryAddress, paymentMethod } = req.body;
 
-    await order.populate([
-      { path: 'shop', select: 'name address' },
-      { path: 'items.product', select: 'name price' }
-    ]);
+    const order = await prisma.order.create({
+      data: {
+        userId: req.user!.id,
+        shopId,
+        shopName: req.body.shopName,
+        orderNumber: `ORD-${Date.now()}`,
+        deliveryAddress,
+        deliveryLatitude: req.body.deliveryLatitude,
+        deliveryLongitude: req.body.deliveryLongitude,
+        paymentMethod,
+        status: OrderStatus.PENDING,
+        subtotal: items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0),
+        deliveryFee: req.body.deliveryFee || 0,
+        serviceFee: req.body.serviceFee || 0,
+        tax: req.body.tax || 0,
+        total: items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) + 
+               (req.body.deliveryFee || 0) + 
+               (req.body.serviceFee || 0) + 
+               (req.body.tax || 0),
+        items: {
+          create: items.map((item: any) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        }
+      },
+      include: {
+        shop: {
+          select: {
+            name: true,
+            address: true
+          }
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                price: true
+              }
+            }
+          }
+        }
+      }
+    });
 
     res.status(201).json(order);
   }
 
   async getUserOrders(req: AuthenticatedRequest, res: Response) {
-    const orders = await Order.find({ user: req.user.id })
-      .populate([
-        { path: 'shop', select: 'name address' },
-        { path: 'items.product', select: 'name price' }
-      ])
-      .sort({ createdAt: -1 });
+    const orders = await prisma.order.findMany({
+      where: {
+        userId: req.user!.id
+      },
+      include: {
+        shop: {
+          select: {
+            name: true,
+            address: true
+          }
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                price: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
     res.json(orders);
   }
 
   async getOrderById(req: AuthenticatedRequest, res: Response) {
-    const order = await Order.findOne({
-      _id: req.params.id,
-      user: req.user.id
-    }).populate([
-      { path: 'shop', select: 'name address' },
-      { path: 'items.product', select: 'name price' },
-      { path: 'delivery', select: 'name phone' }
-    ]);
+    const order = await prisma.order.findFirst({
+      where: {
+        id: req.params.id,
+        userId: req.user!.id
+      },
+      include: {
+        shop: {
+          select: {
+            name: true,
+            address: true
+          }
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                price: true
+              }
+            }
+          }
+        }
+      }
+    });
 
     if (!order) {
       throw new AppError('Order not found', 404);
@@ -47,54 +124,88 @@ export class OrderController {
   }
 
   async cancelOrder(req: AuthenticatedRequest, res: Response) {
-    const order = await Order.findOne({
-      _id: req.params.id,
-      user: req.user.id
+    const order = await prisma.order.findFirst({
+      where: {
+        id: req.params.id,
+        userId: req.user!.id
+      }
     });
 
     if (!order) {
       throw new AppError('Order not found', 404);
     }
 
-    if (order.status !== 'PENDING') {
+    if (order.status !== OrderStatus.PENDING) {
       throw new AppError('Cannot cancel order in current status', 400);
     }
 
-    order.status = 'CANCELLED';
-    await order.save();
+    const updatedOrder = await prisma.order.update({
+      where: {
+        id: order.id
+      },
+      data: {
+        status: OrderStatus.CANCELLED
+      }
+    });
 
-    res.json(order);
+    res.json(updatedOrder);
   }
 
   async updateTip(req: AuthenticatedRequest, res: Response) {
     const { tip } = req.body;
-    const order = await Order.findOne({
-      _id: req.params.id,
-      user: req.user.id
+    
+    const order = await prisma.order.findFirst({
+      where: {
+        id: req.params.id,
+        userId: req.user!.id
+      }
     });
 
     if (!order) {
       throw new AppError('Order not found', 404);
     }
 
-    if (order.status !== 'DELIVERED') {
+    if (order.status !== OrderStatus.DELIVERED) {
       throw new AppError('Can only update tip for delivered orders', 400);
     }
 
-    order.tip = tip;
-    await order.save();
+    const updatedOrder = await prisma.order.update({
+      where: {
+        id: order.id
+      },
+      data: {
+        tip
+      }
+    });
 
-    res.json(order);
+    res.json(updatedOrder);
   }
 
   async trackOrder(req: AuthenticatedRequest, res: Response) {
-    const order = await Order.findOne({
-      _id: req.params.id,
-      user: req.user.id
-    }).populate([
-      { path: 'shop', select: 'name address location' },
-      { path: 'delivery', select: 'name phone location' }
-    ]);
+    const order = await prisma.order.findFirst({
+      where: {
+        id: req.params.id,
+        userId: req.user!.id
+      },
+      include: {
+        shop: {
+          select: {
+            name: true,
+            address: true
+          }
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                price: true
+              }
+            }
+          }
+        }
+      }
+    });
 
     if (!order) {
       throw new AppError('Order not found', 404);
@@ -102,10 +213,7 @@ export class OrderController {
 
     res.json({
       status: order.status,
-      shop: order.shop,
-      delivery: order.delivery,
       estimatedDeliveryTime: order.estimatedDeliveryTime,
-      currentLocation: order.currentLocation
     });
   }
 } 

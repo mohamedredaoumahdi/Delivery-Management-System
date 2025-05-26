@@ -22,6 +22,9 @@ interface Config {
   jwtExpiresIn: string;
   jwtRefreshExpiresIn: string;
   
+  // Frontend
+  frontendUrl: string;
+  
   // Email
   smtpHost: string;
   smtpPort: number;
@@ -95,6 +98,9 @@ export const config: Config = {
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET!,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '15m',
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+  
+  // Frontend
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   
   // Email
   smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',

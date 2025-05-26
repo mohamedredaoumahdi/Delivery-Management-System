@@ -1,6 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const userController_1 = require("@/controllers/userController");
+const auth_1 = require("@/middleware/auth");
+const validation_1 = require("@/middleware/validation");
+const userValidators_1 = require("@/validators/userValidators");
 const router = (0, express_1.Router)();
+const userController = new userController_1.UserController();
+router.use(auth_1.auth);
+router.get('/profile', userController.getProfile);
+router.put('/profile', (0, validation_1.validateRequest)(userValidators_1.updateProfileSchema), userController.updateProfile);
+router.put('/password', (0, validation_1.validateRequest)(userValidators_1.changePasswordSchema), userController.changePassword);
+router.get('/addresses', userController.getAddresses);
+router.post('/addresses', userController.addAddress);
+router.put('/addresses/:id', userController.updateAddress);
+router.delete('/addresses/:id', userController.deleteAddress);
+router.get('/orders', userController.getOrderHistory);
+router.get('/orders/:id', userController.getOrderDetails);
+router.get('/favorites', userController.getFavorites);
+router.post('/favorites/:shopId', userController.addToFavorites);
+router.delete('/favorites/:shopId', userController.removeFromFavorites);
 exports.default = router;
 //# sourceMappingURL=users.js.map

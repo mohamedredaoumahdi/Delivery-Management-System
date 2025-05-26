@@ -1,14 +1,6 @@
-import type { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { AppError } from '@/utils/appError';
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-  };
-}
+import { AuthenticatedRequest } from '@/types/express';
 
 export const requireRole = (roles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {

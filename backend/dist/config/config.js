@@ -25,6 +25,7 @@ exports.config = {
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '15m',
     jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
     smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
     smtpPort: parseInt(process.env.SMTP_PORT || '587', 10),
     smtpUser: process.env.SMTP_USER || '',

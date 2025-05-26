@@ -1,91 +1,183 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderController = void 0;
-const Order_1 = require("@/models/Order");
-const AppError_1 = require("@/utils/AppError");
+const client_1 = require("@prisma/client");
+const AppError_1 = require("@/utils/appError");
+const prisma = new client_1.PrismaClient();
 class OrderController {
     async createOrder(req, res) {
-        const order = await Order_1.Order.create({
-            ...req.body,
-            user: req.user.id
+        const { items, shopId, deliveryAddress, paymentMethod } = req.body;
+        const order = await prisma.order.create({
+            data: {
+                userId: req.user.id,
+                shopId,
+                deliveryAddress,
+                paymentMethod,
+                status: client_1.OrderStatus.PENDING,
+                items: {
+                    create: items.map((item) => ({
+                        productId: item.productId,
+                        quantity: item.quantity,
+                        price: item.price
+                    }))
+                }
+            },
+            include: {
+                shop: {
+                    select: {
+                        name: true,
+                        address: true
+                    }
+                },
+                items: {
+                    include: {
+                        product: {
+                            select: {
+                                name: true,
+                                price: true
+                            }
+                        }
+                    }
+                }
+            }
         });
-        await order.populate([
-            { path: 'shop', select: 'name address' },
-            { path: 'items.product', select: 'name price' }
-        ]);
         res.status(201).json(order);
     }
     async getUserOrders(req, res) {
-        const orders = await Order_1.Order.find({ user: req.user.id })
-            .populate([
-            { path: 'shop', select: 'name address' },
-            { path: 'items.product', select: 'name price' }
-        ])
-            .sort({ createdAt: -1 });
+        const orders = await prisma.order.findMany({
+            where: {
+                userId: req.user.id
+            },
+            include: {
+                shop: {
+                    select: {
+                        name: true,
+                        address: true
+                    }
+                },
+                items: {
+                    include: {
+                        product: {
+                            select: {
+                                name: true,
+                                price: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
         res.json(orders);
     }
     async getOrderById(req, res) {
-        const order = await Order_1.Order.findOne({
-            _id: req.params.id,
-            user: req.user.id
-        }).populate([
-            { path: 'shop', select: 'name address' },
-            { path: 'items.product', select: 'name price' },
-            { path: 'delivery', select: 'name phone' }
-        ]);
+        const order = await prisma.order.findFirst({
+            where: {
+                id: req.params.id,
+                userId: req.user.id
+            },
+            include: {
+                shop: {
+                    select: {
+                        name: true,
+                        address: true
+                    }
+                },
+                items: {
+                    include: {
+                        product: {
+                            select: {
+                                name: true,
+                                price: true
+                            }
+                        }
+                    }
+                },
+                delivery: {
+                    select: {
+                        name: true,
+                        phone: true
+                    }
+                }
+            }
+        });
         if (!order) {
             throw new AppError_1.AppError('Order not found', 404);
         }
         res.json(order);
     }
     async cancelOrder(req, res) {
-        const order = await Order_1.Order.findOne({
-            _id: req.params.id,
-            user: req.user.id
+        const order = await prisma.order.findFirst({
+            where: {
+                id: req.params.id,
+                userId: req.user.id
+            }
         });
         if (!order) {
             throw new AppError_1.AppError('Order not found', 404);
         }
-        if (order.status !== 'PENDING') {
+        if (order.status !== client_1.OrderStatus.PENDING) {
             throw new AppError_1.AppError('Cannot cancel order in current status', 400);
         }
-        order.status = 'CANCELLED';
-        await order.save();
-        res.json(order);
+        const updatedOrder = await prisma.order.update({
+            where: {
+                id: order.id
+            },
+            data: {
+                status: client_1.OrderStatus.CANCELLED
+            }
+        });
+        res.json(updatedOrder);
     }
     async updateTip(req, res) {
         const { tip } = req.body;
-        const order = await Order_1.Order.findOne({
-            _id: req.params.id,
-            user: req.user.id
+        const order = await prisma.order.findFirst({
+            where: {
+                id: req.params.id,
+                userId: req.user.id
+            }
         });
         if (!order) {
             throw new AppError_1.AppError('Order not found', 404);
         }
-        if (order.status !== 'DELIVERED') {
+        if (order.status !== client_1.OrderStatus.DELIVERED) {
             throw new AppError_1.AppError('Can only update tip for delivered orders', 400);
         }
-        order.tip = tip;
-        await order.save();
-        res.json(order);
+        const updatedOrder = await prisma.order.update({
+            where: {
+                id: order.id
+            },
+            data: {
+                tip
+            }
+        });
+        res.json(updatedOrder);
     }
     async trackOrder(req, res) {
-        const order = await Order_1.Order.findOne({
-            _id: req.params.id,
-            user: req.user.id
-        }).populate([
-            { path: 'shop', select: 'name address location' },
-            { path: 'delivery', select: 'name phone location' }
-        ]);
+        const order = await prisma.order.findFirst({
+            where: {
+                id: req.params.id,
+                userId: req.user.id
+            },
+            include: {
+                delivery: {
+                    select: {
+                        name: true,
+                        phone: true,
+                        currentLocation: true
+                    }
+                }
+            }
+        });
         if (!order) {
             throw new AppError_1.AppError('Order not found', 404);
         }
         res.json({
             status: order.status,
-            shop: order.shop,
-            delivery: order.delivery,
             estimatedDeliveryTime: order.estimatedDeliveryTime,
-            currentLocation: order.currentLocation
+            delivery: order.delivery
         });
     }
 }

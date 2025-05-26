@@ -1,15 +1,18 @@
 import { Response } from 'express';
-import { Shop } from '@/models/Shop';
-import { Product } from '@/models/Product';
-import { Order } from '@/models/Order';
-import { AppError } from '@/utils/AppError';
-import { AuthenticatedRequest } from '@/types/express';
+import { PrismaClient, OrderStatus } from '@prisma/client';
+import { AppError } from '@/utils/appError';
+import { AuthenticatedRequest } from '../types/express';
+
+const prisma = new PrismaClient();
 
 export class VendorController {
   // Shop Management
   async getShop(req: AuthenticatedRequest, res: Response) {
-    const shop = await Shop.findOne({ owner: req.user.id })
-      .select('-__v');
+    const shop = await prisma.shop.findFirst({
+      where: {
+        ownerId: req.user!.id
+      }
+    });
 
     if (!shop) {
       throw new AppError('Shop not found', 404);
@@ -19,73 +22,103 @@ export class VendorController {
   }
 
   async updateShop(req: AuthenticatedRequest, res: Response) {
-    const shop = await Shop.findOneAndUpdate(
-      { owner: req.user.id },
-      { $set: req.body },
-      { new: true, runValidators: true }
-    ).select('-__v');
+    const shop = await prisma.shop.findFirst({
+      where: { ownerId: req.user!.id }
+    });
 
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    res.json(shop);
-  }
+    const { name, description, logoUrl } = req.body;
 
-  async updateShopStatus(req: AuthenticatedRequest, res: Response) {
-    const { status } = req.body;
-    const shop = await Shop.findOneAndUpdate(
-      { owner: req.user.id },
-      { $set: { status } },
-      { new: true, runValidators: true }
-    ).select('-__v');
+    const updatedShop = await prisma.shop.update({
+      where: { id: shop.id },
+      data: {
+        name,
+        description,
+        logoUrl,
+        isActive: true
+      }
+    });
 
-    if (!shop) {
-      throw new AppError('Shop not found', 404);
-    }
-
-    res.json(shop);
+    res.json(updatedShop);
   }
 
   // Product Management
   async getProducts(req: AuthenticatedRequest, res: Response) {
-    const shop = await Shop.findOne({ owner: req.user.id });
+    const shop = await prisma.shop.findFirst({
+      where: {
+        ownerId: req.user!.id
+      }
+    });
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    const products = await Product.find({ shop: shop._id })
-      .select('-__v')
-      .sort({ createdAt: -1 });
+    const products = await prisma.product.findMany({
+      where: {
+        shopId: shop.id
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
     res.json(products);
   }
 
   async createProduct(req: AuthenticatedRequest, res: Response) {
-    const shop = await Shop.findOne({ owner: req.user.id });
+    const shop = await prisma.shop.findFirst({
+      where: { ownerId: req.user!.id }
+    });
+
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    const product = await Product.create({
-      ...req.body,
-      shop: shop._id
+    const { name, description, price, categoryId, images } = req.body;
+
+    const product = await prisma.product.create({
+      data: {
+        name,
+        description,
+        price,
+        categoryId,
+        images,
+        categoryName: (await prisma.category.findUnique({ where: { id: categoryId } }))!.name,
+        shopId: shop.id
+      }
     });
 
     res.status(201).json(product);
   }
 
   async updateProduct(req: AuthenticatedRequest, res: Response) {
-    const shop = await Shop.findOne({ owner: req.user.id });
+    const shop = await prisma.shop.findFirst({
+      where: { ownerId: req.user!.id }
+    });
+
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    const product = await Product.findOneAndUpdate(
-      { _id: req.params.id, shop: shop._id },
-      { $set: req.body },
-      { new: true, runValidators: true }
-    ).select('-__v');
+    const { id } = req.params;
+    const { name, description, price, categoryId, images } = req.body;
+
+    const product = await prisma.product.update({
+      where: {
+        id,
+        shopId: shop.id
+      },
+      data: {
+        name,
+        description,
+        price,
+        categoryId,
+        images
+      }
+    });
 
     if (!product) {
       throw new AppError('Product not found', 404);
@@ -95,52 +128,87 @@ export class VendorController {
   }
 
   async deleteProduct(req: AuthenticatedRequest, res: Response) {
-    const shop = await Shop.findOne({ owner: req.user.id });
+    const shop = await prisma.shop.findFirst({
+      where: { ownerId: req.user!.id }
+    });
+
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    const product = await Product.findOneAndDelete({
-      _id: req.params.id,
-      shop: shop._id
+    const { id } = req.params;
+
+    const product = await prisma.product.delete({
+      where: {
+        id,
+        shopId: shop.id
+      }
     });
 
     if (!product) {
       throw new AppError('Product not found', 404);
     }
 
-    res.status(204).send();
+    res.json({ message: 'Product deleted successfully' });
   }
 
   // Order Management
-  async getOrders(req: AuthenticatedRequest, res: Response) {
-    const shop = await Shop.findOne({ owner: req.user.id });
+  async getVendorOrders(req: AuthenticatedRequest, res: Response) {
+    const shop = await prisma.shop.findFirst({
+      where: { ownerId: req.user!.id }
+    });
+
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    const orders = await Order.find({ shop: shop._id })
-      .populate([
-        { path: 'user', select: 'name phone address' },
-        { path: 'delivery', select: 'name phone' }
-      ])
-      .sort({ createdAt: -1 });
+    const orders = await prisma.order.findMany({
+      where: {
+        shopId: shop.id
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            phone: true,
+            addresses: true
+          }
+        },
+        items: {
+          include: {
+            product: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
     res.json(orders);
   }
 
   async updateOrderStatus(req: AuthenticatedRequest, res: Response) {
-    const { status } = req.body;
-    const shop = await Shop.findOne({ owner: req.user.id });
+    const shop = await prisma.shop.findFirst({
+      where: { ownerId: req.user!.id }
+    });
+
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    const order = await Order.findOneAndUpdate(
-      { _id: req.params.id, shop: shop._id },
-      { $set: { status } },
-      { new: true, runValidators: true }
-    );
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const order = await prisma.order.update({
+      where: {
+        id,
+        shopId: shop.id
+      },
+      data: {
+        status: status as OrderStatus
+      }
+    });
 
     if (!order) {
       throw new AppError('Order not found', 404);
@@ -150,114 +218,82 @@ export class VendorController {
   }
 
   async getOrderStats(req: AuthenticatedRequest, res: Response) {
-    const shop = await Shop.findOne({ owner: req.user.id });
+    const shop = await prisma.shop.findFirst({
+      where: {
+        ownerId: req.user!.id
+      }
+    });
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    const stats = await Order.aggregate([
-      {
-        $match: {
-          shop: shop._id,
-          status: 'DELIVERED'
-        }
+    const stats = await prisma.order.aggregate({
+      _count: {
+        id: true
       },
-      {
-        $group: {
-          _id: null,
-          totalOrders: { $sum: 1 },
-          totalRevenue: { $sum: '$total' },
-          averageOrderValue: { $avg: '$total' }
-        }
+      _sum: {
+        total: true
+      },
+      _avg: {
+        total: true
       }
-    ]);
-
-    res.json(stats[0] || {
-      totalOrders: 0,
-      totalRevenue: 0,
-      averageOrderValue: 0
     });
+
+    res.json(stats);
   }
 
   // Analytics
   async getSalesAnalytics(req: AuthenticatedRequest, res: Response) {
     const { startDate, endDate } = req.query;
-    const shop = await Shop.findOne({ owner: req.user.id });
-    if (!shop) {
-      throw new AppError('Shop not found', 404);
-    }
 
-    const match: any = {
-      shop: shop._id,
-      status: 'DELIVERED'
+    const where: any = {
+      shopId: req.user!.id,
+      status: OrderStatus.DELIVERED
     };
 
     if (startDate && endDate) {
-      match.deliveredAt = {
-        $gte: new Date(startDate as string),
-        $lte: new Date(endDate as string)
+      where.deliveredAt = {
+        gte: new Date(startDate as string),
+        lte: new Date(endDate as string)
       };
     }
 
-    const sales = await Order.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: {
-            year: { $year: '$deliveredAt' },
-            month: { $month: '$deliveredAt' },
-            day: { $dayOfMonth: '$deliveredAt' }
-          },
-          revenue: { $sum: '$total' },
-          orders: { $sum: 1 }
-        }
+    const sales = await prisma.order.aggregate({
+      _count: {
+        id: true
       },
-      { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } }
-    ]);
+      _sum: {
+        total: true
+      },
+      _avg: {
+        total: true
+      }
+    });
 
     res.json(sales);
   }
 
   async getProductAnalytics(req: AuthenticatedRequest, res: Response) {
-    const shop = await Shop.findOne({ owner: req.user.id });
+    const shop = await prisma.shop.findFirst({
+      where: {
+        ownerId: req.user!.id
+      }
+    });
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    const products = await Order.aggregate([
-      {
-        $match: {
-          shop: shop._id,
-          status: 'DELIVERED'
-        }
+    const products = await prisma.order.aggregate({
+      _count: {
+        id: true
       },
-      { $unwind: '$items' },
-      {
-        $group: {
-          _id: '$items.product',
-          totalSold: { $sum: '$items.quantity' },
-          revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
-        }
+      _sum: {
+        total: true
       },
-      {
-        $lookup: {
-          from: 'products',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'product'
-        }
-      },
-      { $unwind: '$product' },
-      {
-        $project: {
-          _id: 1,
-          name: '$product.name',
-          totalSold: 1,
-          revenue: 1
-        }
-      },
-      { $sort: { totalSold: -1 } }
-    ]);
+      _avg: {
+        total: true
+      }
+    });
 
     res.json(products);
   }
