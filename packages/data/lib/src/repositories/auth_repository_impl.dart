@@ -70,10 +70,10 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       
       // Save auth token
-      await localDataSource.saveAuthToken(response.token);
+      await localDataSource.saveAuthToken(response.data.token);
       
       // Save user
-      _currentUser = response.user.toDomain();
+      _currentUser = response.data.user.toDomain();
       _authStateController.add(_currentUser);
       
       return Right(_currentUser!);
@@ -90,6 +90,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String name,
     required UserRole role,
     String? phone,
+    required String confirmPassword,
   }) async {
     try {
       final response = await remoteDataSource.signUpWithEmailAndPassword(
@@ -98,13 +99,14 @@ class AuthRepositoryImpl implements AuthRepository {
         name: name,
         role: data.UserModel.mapUserRoleToString(role),
         phone: phone,
+        confirmPassword: confirmPassword,
       );
       
       // Save auth token
-      await localDataSource.saveAuthToken(response.token);
+      await localDataSource.saveAuthToken(response.data.token);
       
       // Save user
-      _currentUser = response.user.toDomain();
+      _currentUser = response.data.user.toDomain();
       _authStateController.add(_currentUser);
       
       return Right(_currentUser!);

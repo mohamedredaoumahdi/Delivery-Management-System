@@ -69,6 +69,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       name: event.name,
       role: UserRole.customer, // Always register as customer in user app
       phone: event.phone,
+      confirmPassword: event.confirmPassword,
     );
     
     result.fold(

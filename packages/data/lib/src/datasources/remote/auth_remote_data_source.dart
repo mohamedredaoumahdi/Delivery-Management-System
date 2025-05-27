@@ -19,6 +19,7 @@ abstract class AuthRemoteDataSource {
     required String name,
     required String role,
     String? phone,
+    required String confirmPassword,
   });
   
   /// Sign out
@@ -93,6 +94,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String name,
     required String role,
     String? phone,
+    required String confirmPassword,
   }) async {
     try {
       final response = await apiClient.post(
@@ -101,11 +103,44 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'email': email,
           'password': password,
           'name': name,
-          'role': role,
+          'role': role.toUpperCase(),
+          'confirmPassword': confirmPassword,
           if (phone != null) 'phone': phone,
         },
       );
       
+      // Check if response or response data is null/empty
+      if (response == null || response.isEmpty) {
+        throw ApiException(message: 'Invalid response from server: response is null or empty');
+      }
+
+      // Check for server-side errors in the response body (e.g., validation errors)
+      if (response.containsKey('error') && response['error'] != null) {
+         // Check if the error is a string, otherwise default message
+        final errorMessage = response['error'] is String 
+            ? response['error'] as String
+            : 'An error occurred during sign up';
+
+        // Optionally check for specific status codes if the backend sends them in the body
+        final statusCode = response.containsKey('statusCode') && response['statusCode'] is int
+            ? response['statusCode'] as int
+            : 400; // Default to 400 for client errors
+
+        throw ApiException(
+          message: errorMessage,
+          statusCode: statusCode,
+        );
+      }
+
+      // Check if required fields are present and not null
+      if (!response.containsKey('token') || response['token'] == null) {
+         throw ApiException(message: 'Invalid response from server: token is missing');
+      }
+      if (!response.containsKey('user') || response['user'] == null || !(response['user'] is Map<String, dynamic>)) {
+         throw ApiException(message: 'Invalid response from server: user data is missing or invalid');
+      }
+      
+      // Assuming the structure is now validated, parse the response
       return AuthResponseModel.fromJson(response);
     } catch (e) {
       logger.e('Error signing up with email and password', e);

@@ -16,6 +16,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  build_runner: any
+  json_serializable: any
 
 # This is a workspace configuration - each app will have its own Flutter configuration
 flutter:

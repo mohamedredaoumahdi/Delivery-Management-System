@@ -4,12 +4,10 @@ import 'package:data/data.dart';
 import 'package:dio/dio.dart';
 import 'package:domain/domain.dart';
 import 'package:get_it/get_it.dart';
-import 'package:data/src/datasources/local/mock_auth_remote_data_source.dart';
 import 'package:data/src/api/api_client.dart' as data_api;
 
 // Corrected imports for Order related repositories
 import 'package:data/src/repositories/order_repository_impl.dart';
-import 'package:data/src/repositories/mock_order_repository.dart';
 
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/shop/presentation/bloc/shop_list_bloc.dart';
@@ -18,15 +16,11 @@ import '../features/cart/data/cart_repository_impl.dart';
 import '../features/cart/presentation/bloc/cart_bloc.dart';
 import '../features/home/presentation/bloc/home_bloc.dart';
 import '../features/shop/data/shop_repository_impl.dart';
-import '../features/shop/data/mock_shop_repository.dart';
 import '../features/shop/presentation/bloc/shop_details_bloc.dart';
 import '../features/shop/presentation/bloc/product_list_bloc.dart';
 import '../features/order/presentation/bloc/order_bloc.dart';
 
 final getIt = GetIt.instance;
-
-// Toggle for using mock authentication (set to true for mock, false for real)
-const bool useMockAuth = true;
 
 Future<void> initializeDependencies() async {
   // Core services
@@ -41,16 +35,19 @@ Future<void> initializeDependencies() async {
   getIt.registerSingleton<ConnectivityService>(connectivityService);
   
   // API Client
-  getIt.registerSingleton<Dio>(Dio());
+  final dio = Dio();
+  dio.options.headers['Content-Type'] = 'application/json';
+  getIt.registerSingleton<Dio>(dio);
+  
   getIt.registerSingleton<core.ApiClient>(
     core.ApiClient(
-      baseUrl: 'https://api.deliverysystem.com/v1', // Replace with your API URL
+      baseUrl: 'http://localhost:3000/api', // Node.js server
       dio: getIt<Dio>(),
     ),
   );
   getIt.registerSingleton<data_api.ApiClient>(
     data_api.ApiClient(
-      baseUrl: 'https://api.deliverysystem.com/v1', // Replace with your API URL
+      baseUrl: 'http://localhost:3000/api', // Node.js server
       dio: getIt<Dio>(),
     ),
   );
@@ -63,19 +60,12 @@ Future<void> initializeDependencies() async {
     ),
   );
   
-  // Register either the mock or real AuthRemoteDataSource based on the toggle
-  if (useMockAuth) {
-    getIt.registerSingleton<AuthRemoteDataSource>(
-      MockAuthRemoteDataSource(),
-    );
-  } else {
-    getIt.registerSingleton<AuthRemoteDataSource>(
-      AuthRemoteDataSourceImpl(
-        apiClient: getIt<data_api.ApiClient>(),
-        logger: getIt<LoggerService>(),
-      ),
-    );
-  }
+  getIt.registerSingleton<AuthRemoteDataSource>(
+    AuthRemoteDataSourceImpl(
+      apiClient: getIt<data_api.ApiClient>(),
+      logger: getIt<LoggerService>(),
+    ),
+  );
   
   // Repositories
   getIt.registerSingleton<AuthRepository>(
@@ -87,32 +77,20 @@ Future<void> initializeDependencies() async {
   );
   
   // Shop Repository
-  if (useMockAuth) {
-    getIt.registerSingleton<ShopRepository>(
-      MockShopRepository(),
-    );
-  } else {
-    getIt.registerSingleton<ShopRepository>(
-      ShopRepositoryImpl(
-        apiClient: getIt<data_api.ApiClient>(),
-        logger: getIt<LoggerService>(),
-      ),
-    );
-  }
+  getIt.registerSingleton<ShopRepository>(
+    ShopRepositoryImpl(
+      apiClient: getIt<data_api.ApiClient>(),
+      logger: getIt<LoggerService>(),
+    ),
+  );
   
   // Order Repository
-  if (useMockAuth) {
-    getIt.registerSingleton<OrderRepository>(
-      MockOrderRepository(),
-    );
-  } else {
-    getIt.registerSingleton<OrderRepository>(
-      OrderRepositoryImpl(
-        apiClient: getIt<data_api.ApiClient>(),
-        logger: getIt<LoggerService>(),
-      ),
-    );
-  }
+  getIt.registerSingleton<OrderRepository>(
+    OrderRepositoryImpl(
+      apiClient: getIt<data_api.ApiClient>(),
+      logger: getIt<LoggerService>(),
+    ),
+  );
   
   // Local repositories
   getIt.registerSingleton<CartRepository>(

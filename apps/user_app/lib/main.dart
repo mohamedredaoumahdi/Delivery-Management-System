@@ -83,7 +83,7 @@ class UserApp extends StatelessWidget {
         // Disable debug banner in release mode
         debugShowCheckedModeBanner: false,
         
-        // Localization (can be extended later)
+        // Localization (can be extended later) -
         supportedLocales: const [
           Locale('en', 'US'), // English
           // Add more locales as needed
@@ -95,7 +95,7 @@ class UserApp extends StatelessWidget {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(
               textScaler: TextScaler.linear(
-                MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.2),
+                MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.2),
               ),
             ),
             child: child!,

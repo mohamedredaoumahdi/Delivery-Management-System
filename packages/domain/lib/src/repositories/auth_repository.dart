@@ -18,6 +18,7 @@ abstract class AuthRepository {
     required String name,
     required UserRole role,
     String? phone,
+    required String confirmPassword,
   });
   
   /// Sign out the current user
