@@ -15,4 +15,5 @@ export 'src/models/api_response.dart';
 export 'src/config/environment.dart';
 
 // Exceptions
-export 'src/exceptions/api_exceptions.dart';
+// export 'src/exceptions/api_exceptions.dart';
+export 'src/error/app_exception.dart';

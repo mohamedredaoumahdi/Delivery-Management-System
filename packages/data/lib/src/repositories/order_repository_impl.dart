@@ -1,6 +1,15 @@
 import 'package:dartz/dartz.dart' as dartz;
 import 'package:domain/domain.dart';
-import 'package:core/core.dart';
+import 'package:core/core.dart' show 
+  LoggerService, 
+  NetworkException, 
+  ServerFailure,
+  NetworkFailure,
+  TimeoutFailure,
+  UnknownFailure,
+  AuthFailure,
+  ValidationFailure;
+import 'package:core/src/exceptions/api_exceptions.dart' show ApiException, TimeoutException;
 
 import '../api/api_client.dart' as data_api;
 import '../models/order_model.dart';
@@ -52,7 +61,7 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response['data']);
+      final orderModel = OrderModel.fromJson(response.data['data']);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error placing order', e);
@@ -81,9 +90,20 @@ class OrderRepositoryImpl implements OrderRepository {
         queryParameters: queryParams,
       );
 
-      final ordersData = response['data'] as List<dynamic>;
+      // Handle the response data
+      final responseData = response.data;
+      List<dynamic> ordersData;
+      
+      if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
+        ordersData = responseData['data'] as List<dynamic>;
+      } else if (responseData is List<dynamic>) {
+        ordersData = responseData;
+      } else {
+        ordersData = [];
+      }
+
       final orders = ordersData
-          .map((orderJson) => OrderModel.fromJson(orderJson).toDomain())
+          .map((orderJson) => OrderModel.fromJson(orderJson as Map<String, dynamic>).toDomain())
           .toList();
 
       return dartz.Right(orders);
@@ -98,7 +118,7 @@ class OrderRepositoryImpl implements OrderRepository {
     try {
       final response = await apiClient.get('/orders/$id');
       
-      final orderModel = OrderModel.fromJson(response['data']);
+      final orderModel = OrderModel.fromJson(response.data['data']);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error getting order by ID', e);
@@ -116,7 +136,7 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response['data']);
+      final orderModel = OrderModel.fromJson(response.data['data']);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error cancelling order', e);
@@ -134,7 +154,7 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response['data']);
+      final orderModel = OrderModel.fromJson(response.data['data']);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error updating tip', e);
@@ -165,7 +185,7 @@ class OrderRepositoryImpl implements OrderRepository {
         queryParameters: queryParams,
       );
 
-      final ordersData = response['data'] as List<dynamic>;
+      final ordersData = response.data['data'] as List<dynamic>;
       final orders = ordersData
           .map((orderJson) => OrderModel.fromJson(orderJson).toDomain())
           .toList();
@@ -202,7 +222,7 @@ class OrderRepositoryImpl implements OrderRepository {
         data: data,
       );
 
-      final orderModel = OrderModel.fromJson(response['data']);
+      final orderModel = OrderModel.fromJson(response.data['data']);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error updating order status', e);
@@ -231,7 +251,7 @@ class OrderRepositoryImpl implements OrderRepository {
         queryParameters: queryParams,
       );
 
-      final ordersData = response['data'] as List<dynamic>;
+      final ordersData = response.data['data'] as List<dynamic>;
       final orders = ordersData
           .map((orderJson) => OrderModel.fromJson(orderJson).toDomain())
           .toList();
@@ -258,7 +278,7 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response['data']);
+      final orderModel = OrderModel.fromJson(response.data['data']);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error updating order location', e);
@@ -276,7 +296,7 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response['data']);
+      final orderModel = OrderModel.fromJson(response.data['data']);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error marking order as delivered', e);
@@ -330,7 +350,7 @@ class OrderRepositoryImpl implements OrderRepository {
         queryParameters: queryParams,
       );
 
-      final ordersData = response['data'] as List<dynamic>;
+      final ordersData = response.data['data'] as List<dynamic>;
       final orders = ordersData
           .map((orderJson) => OrderModel.fromJson(orderJson).toDomain())
           .toList();
@@ -355,7 +375,7 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response['data']);
+      final orderModel = OrderModel.fromJson(response.data['data']);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error assigning order to delivery person', e);

@@ -128,7 +128,7 @@ export class OrderController {
       }
     });
 
-    res.json(orders);
+    res.json({ status: 'success', data: orders });
   }
 
   async getOrderById(req: AuthenticatedRequest, res: Response) {

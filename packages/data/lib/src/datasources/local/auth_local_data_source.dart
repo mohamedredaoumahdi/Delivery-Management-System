@@ -11,6 +11,15 @@ abstract class AuthLocalDataSource {
   /// Clear authentication token
   Future<void> clearAuthToken();
   
+  /// Save refresh token
+  Future<void> saveRefreshToken(String token);
+  
+  /// Get refresh token
+  Future<String?> getRefreshToken();
+  
+  /// Clear refresh token
+  Future<void> clearRefreshToken();
+  
   /// Save user ID
   Future<void> saveUserId(String userId);
   
@@ -19,6 +28,9 @@ abstract class AuthLocalDataSource {
   
   /// Clear user ID
   Future<void> clearUserId();
+  
+  /// Clear all auth data
+  Future<void> clearAllAuthData();
 }
 
 /// Implementation of [AuthLocalDataSource] using [StorageService]
@@ -31,6 +43,9 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   
   /// Key for auth token
   static const String _authTokenKey = 'auth_token';
+  
+  /// Key for refresh token
+  static const String _refreshTokenKey = 'refresh_token';
   
   /// Key for user ID
   static const String _userIdKey = 'user_id';
@@ -74,6 +89,38 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   }
 
   @override
+  Future<void> saveRefreshToken(String token) async {
+    try {
+      await storageService.setString(_refreshTokenKey, token);
+      logger.d('Refresh token saved');
+    } catch (e) {
+      logger.e('Error saving refresh token', e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String?> getRefreshToken() async {
+    try {
+      return storageService.getString(_refreshTokenKey);
+    } catch (e) {
+      logger.e('Error getting refresh token', e);
+      return null;
+    }
+  }
+
+  @override
+  Future<void> clearRefreshToken() async {
+    try {
+      await storageService.remove(_refreshTokenKey);
+      logger.d('Refresh token cleared');
+    } catch (e) {
+      logger.e('Error clearing refresh token', e);
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> saveUserId(String userId) async {
     try {
       await storageService.setString(_userIdKey, userId);
@@ -101,6 +148,21 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       logger.d('User ID cleared');
     } catch (e) {
       logger.e('Error clearing user ID', e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> clearAllAuthData() async {
+    try {
+      await Future.wait([
+        clearAuthToken(),
+        clearRefreshToken(),
+        clearUserId(),
+      ]);
+      logger.d('All auth data cleared');
+    } catch (e) {
+      logger.e('Error clearing all auth data', e);
       rethrow;
     }
   }

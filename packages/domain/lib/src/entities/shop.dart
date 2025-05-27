@@ -208,31 +208,44 @@ class Shop extends Equatable {
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String,
-      category: ShopCategory.values.firstWhere(
-        (e) => e.toString() == 'ShopCategory.${json['category']}',
-        orElse: () => ShopCategory.other,
-      ),
-      logoUrl: json['logo_url'] as String?,
-      coverImageUrl: json['cover_image_url'] as String?,
+      category: _parseShopCategory(json['category'] as String),
+      logoUrl: json['logoUrl'] as String?,
+      coverImageUrl: json['coverImageUrl'] as String?,
       address: json['address'] as String,
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       phone: json['phone'] as String,
       email: json['email'] as String,
       website: json['website'] as String?,
-      openingHours: json['opening_hours'] as String,
+      openingHours: json['openingHours'] as String,
       rating: (json['rating'] as num).toDouble(),
-      ratingCount: json['rating_count'] as int,
-      isOpen: json['is_open'] as bool,
-      hasDelivery: json['has_delivery'] as bool,
-      hasPickup: json['has_pickup'] as bool,
-      minimumOrderAmount: (json['minimum_order_amount'] as num).toDouble(),
-      deliveryFee: (json['delivery_fee'] as num).toDouble(),
-      estimatedDeliveryTime: json['estimated_delivery_time'] as int,
-      ownerId: json['owner_id'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      ratingCount: json['ratingCount'] as int,
+      isOpen: json['isOpen'] as bool,
+      hasDelivery: json['hasDelivery'] as bool,
+      hasPickup: json['hasPickup'] as bool,
+      minimumOrderAmount: (json['minimumOrderAmount'] as num).toDouble(),
+      deliveryFee: (json['deliveryFee'] as num).toDouble(),
+      estimatedDeliveryTime: json['estimatedDeliveryTime'] as int,
+      ownerId: json['ownerId'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
+  }
+
+  /// Parse shop category from string
+  static ShopCategory _parseShopCategory(String categoryString) {
+    switch (categoryString.toUpperCase()) {
+      case 'RESTAURANT':
+        return ShopCategory.restaurant;
+      case 'GROCERY':
+        return ShopCategory.grocery;
+      case 'PHARMACY':
+        return ShopCategory.pharmacy;
+      case 'RETAIL':
+        return ShopCategory.retail;
+      default:
+        return ShopCategory.other;
+    }
   }
 
   /// Converts the shop to JSON

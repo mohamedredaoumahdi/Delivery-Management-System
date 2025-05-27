@@ -25,14 +25,14 @@ class ShopRepositoryImpl implements ShopRepository {
     try {
       final response = await apiClient.get('/shops', queryParameters: {
         if (query != null) 'q': query,
-        if (category != null) 'category': category.toString(),
+        if (category != null) 'category': _categoryToString(category),
         if (latitude != null) 'lat': latitude,
         if (longitude != null) 'lng': longitude,
         if (radius != null) 'radius': radius,
         'page': page,
         'limit': limit,
       });
-      final shops = (response['data'] as List)
+      final shops = (response.data['data'] as List)
           .map((json) => Shop.fromJson(json as Map<String, dynamic>))
           .toList();
       return Right(shops);
@@ -42,11 +42,27 @@ class ShopRepositoryImpl implements ShopRepository {
     }
   }
 
+  /// Convert ShopCategory enum to backend string format
+  String _categoryToString(ShopCategory category) {
+    switch (category) {
+      case ShopCategory.restaurant:
+        return 'RESTAURANT';
+      case ShopCategory.grocery:
+        return 'GROCERY';
+      case ShopCategory.pharmacy:
+        return 'PHARMACY';
+      case ShopCategory.retail:
+        return 'RETAIL';
+      case ShopCategory.other:
+        return 'OTHER';
+    }
+  }
+
   @override
   Future<Either<Failure, Shop>> getShopById(String id) async {
     try {
       final response = await apiClient.get('/shops/$id');
-      final shop = Shop.fromJson(response['data'] as Map<String, dynamic>);
+      final shop = Shop.fromJson(response.data['data'] as Map<String, dynamic>);
       return Right(shop);
     } catch (e) {
       logger.e('Error getting shop by id', e);
@@ -73,7 +89,7 @@ class ShopRepositoryImpl implements ShopRepository {
         'page': page,
         'limit': limit,
       });
-      final products = (response['data'] as List)
+      final products = (response.data['data'] as List)
           .map((json) => Product.fromJson(json as Map<String, dynamic>))
           .toList();
       return Right(products);
@@ -87,7 +103,7 @@ class ShopRepositoryImpl implements ShopRepository {
   Future<Either<Failure, Product>> getProductById(String id) async {
     try {
       final response = await apiClient.get('/products/$id');
-      final product = Product.fromJson(response['data'] as Map<String, dynamic>);
+      final product = Product.fromJson(response.data['data'] as Map<String, dynamic>);
       return Right(product);
     } catch (e) {
       logger.e('Error getting product by id', e);
@@ -101,7 +117,7 @@ class ShopRepositoryImpl implements ShopRepository {
       final response = await apiClient.get('/shops/featured', queryParameters: {
         'limit': limit,
       });
-      final shops = (response['data'] as List)
+      final shops = (response.data['data'] as List)
           .map((json) => Shop.fromJson(json as Map<String, dynamic>))
           .toList();
       return Right(shops);
@@ -125,7 +141,7 @@ class ShopRepositoryImpl implements ShopRepository {
         'radius': radius,
         'limit': limit,
       });
-      final shops = (response['data'] as List)
+      final shops = (response.data['data'] as List)
           .map((json) => Shop.fromJson(json as Map<String, dynamic>))
           .toList();
       return Right(shops);
@@ -139,7 +155,9 @@ class ShopRepositoryImpl implements ShopRepository {
   Future<Either<Failure, List<String>>> getProductCategories({required String shopId}) async {
     try {
       final response = await apiClient.get('/shops/$shopId/categories');
-      final categories = (response['data'] as List).cast<String>();
+      final categories = (response.data['data'] as List)
+          .map((category) => category['name'] as String)
+          .toList();
       return Right(categories);
     } catch (e) {
       logger.e('Error getting product categories', e);
@@ -151,7 +169,7 @@ class ShopRepositoryImpl implements ShopRepository {
   Future<Either<Failure, Shop>> createShop(Shop shop) async {
     try {
       final response = await apiClient.post('/shops', data: shop.toJson());
-      final createdShop = Shop.fromJson(response['data'] as Map<String, dynamic>);
+      final createdShop = Shop.fromJson(response.data['data'] as Map<String, dynamic>);
       return Right(createdShop);
     } catch (e) {
       logger.e('Error creating shop', e);
@@ -163,7 +181,7 @@ class ShopRepositoryImpl implements ShopRepository {
   Future<Either<Failure, Shop>> updateShop(Shop shop) async {
     try {
       final response = await apiClient.put('/shops/${shop.id}', data: shop.toJson());
-      final updatedShop = Shop.fromJson(response['data'] as Map<String, dynamic>);
+      final updatedShop = Shop.fromJson(response.data['data'] as Map<String, dynamic>);
       return Right(updatedShop);
     } catch (e) {
       logger.e('Error updating shop', e);
@@ -186,7 +204,7 @@ class ShopRepositoryImpl implements ShopRepository {
   Future<Either<Failure, Product>> createProduct(Product product) async {
     try {
       final response = await apiClient.post('/products', data: product.toJson());
-      final createdProduct = Product.fromJson(response['data'] as Map<String, dynamic>);
+      final createdProduct = Product.fromJson(response.data['data'] as Map<String, dynamic>);
       return Right(createdProduct);
     } catch (e) {
       logger.e('Error creating product', e);
@@ -198,7 +216,7 @@ class ShopRepositoryImpl implements ShopRepository {
   Future<Either<Failure, Product>> updateProduct(Product product) async {
     try {
       final response = await apiClient.put('/products/${product.id}', data: product.toJson());
-      final updatedProduct = Product.fromJson(response['data'] as Map<String, dynamic>);
+      final updatedProduct = Product.fromJson(response.data['data'] as Map<String, dynamic>);
       return Right(updatedProduct);
     } catch (e) {
       logger.e('Error updating product', e);

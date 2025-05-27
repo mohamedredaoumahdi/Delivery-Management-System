@@ -1,5 +1,5 @@
 import 'package:data/src/api/api_client.dart';
-import 'package:core/core.dart' hide ApiClient; // Hide core's ApiClient to avoid conflict
+import 'package:core/core.dart' as core;
 
 import '../../models/user_model.dart';
 import '../../models/auth_response_model.dart';
@@ -58,7 +58,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final ApiClient apiClient;
   
   /// Logger service
-  final LoggerService logger;
+  final core.LoggerService logger;
 
   /// Create auth remote data source
   AuthRemoteDataSourceImpl({
@@ -80,7 +80,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
-      return AuthResponseModel.fromJson(response);
+      return AuthResponseModel.fromJson(response.data);
     } catch (e) {
       logger.e('Error signing in with email and password', e);
       rethrow;
@@ -109,39 +109,35 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
-      // Check if response or response data is null/empty
-      if (response == null || response.isEmpty) {
-        throw ApiException(message: 'Invalid response from server: response is null or empty');
+      // Check if response data is null/empty
+      if (response.data == null) {
+        throw core.ServerException('Invalid response from server: response is null');
       }
 
-      // Check for server-side errors in the response body (e.g., validation errors)
-      if (response.containsKey('error') && response['error'] != null) {
-         // Check if the error is a string, otherwise default message
-        final errorMessage = response['error'] is String 
-            ? response['error'] as String
+      final data = response.data as Map<String, dynamic>;
+
+      // Check for server-side errors in the response body
+      if (data.containsKey('error') && data['error'] != null) {
+        final errorMessage = data['error'] is String 
+            ? data['error'] as String
             : 'An error occurred during sign up';
 
-        // Optionally check for specific status codes if the backend sends them in the body
-        final statusCode = response.containsKey('statusCode') && response['statusCode'] is int
-            ? response['statusCode'] as int
-            : 400; // Default to 400 for client errors
+        final statusCode = data.containsKey('statusCode') && data['statusCode'] is int
+            ? data['statusCode'] as int
+            : 400;
 
-        throw ApiException(
-          message: errorMessage,
-          statusCode: statusCode,
-        );
+        throw core.ServerException(errorMessage, 'HTTP_$statusCode');
       }
 
       // Check if required fields are present and not null
-      if (!response.containsKey('token') || response['token'] == null) {
-         throw ApiException(message: 'Invalid response from server: token is missing');
+      if (!data.containsKey('token') || data['token'] == null) {
+        throw core.ServerException('Invalid response from server: token is missing');
       }
-      if (!response.containsKey('user') || response['user'] == null || !(response['user'] is Map<String, dynamic>)) {
-         throw ApiException(message: 'Invalid response from server: user data is missing or invalid');
+      if (!data.containsKey('user') || data['user'] == null || !(data['user'] is Map<String, dynamic>)) {
+        throw core.ServerException('Invalid response from server: user data is missing or invalid');
       }
       
-      // Assuming the structure is now validated, parse the response
-      return AuthResponseModel.fromJson(response);
+      return AuthResponseModel.fromJson(data);
     } catch (e) {
       logger.e('Error signing up with email and password', e);
       rethrow;
@@ -161,8 +157,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> getCurrentUser() async {
     try {
-      final response = await apiClient.get('/auth/me');
-      return UserModel.fromJson(response);
+      final response = await apiClient.get('/users/profile');
+      return UserModel.fromJson(response.data['data']);
     } catch (e) {
       logger.e('Error getting current user', e);
       rethrow;
@@ -202,7 +198,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
-      return UserModel.fromJson(response);
+      return UserModel.fromJson(response.data);
     } catch (e) {
       logger.e('Error updating profile', e);
       rethrow;

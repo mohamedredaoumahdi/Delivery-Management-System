@@ -7,23 +7,59 @@ const prisma = new PrismaClient();
 
 export class ShopController {
   getShops = catchAsync(async (req: Request, res: Response) => {
+    const { 
+      q: query, 
+      category, 
+      lat, 
+      lng, 
+      radius, 
+      page = 1, 
+      limit = 20 
+    } = req.query;
+
+    // Build where clause
+    const where: any = { isActive: true };
+
+    // Add category filter
+    if (category && typeof category === 'string') {
+      where.category = category.toUpperCase();
+    }
+
+    // Add search query filter
+    if (query && typeof query === 'string') {
+      where.OR = [
+        { name: { contains: query, mode: 'insensitive' } },
+        { description: { contains: query, mode: 'insensitive' } },
+        { address: { contains: query, mode: 'insensitive' } },
+      ];
+    }
+
+    // Calculate pagination
+    const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
+
     const shops = await prisma.shop.findMany({
-      where: { isActive: true },
+      where,
       orderBy: { rating: 'desc' },
+      skip,
+      take,
     });
-    return res.json(shops);
+
+    return res.json({ status: 'success', data: shops });
   });
 
   getFeaturedShops = catchAsync(async (req: Request, res: Response) => {
+    const { limit = 10 } = req.query;
+    
     const shops = await prisma.shop.findMany({
       where: {
         isActive: true,
         isFeatured: true,
       },
       orderBy: { rating: 'desc' },
-      take: 10,
+      take: Number(limit),
     });
-    return res.json(shops);
+    return res.json({ status: 'success', data: shops });
   });
 
   getNearbyShops = catchAsync(async (req: Request, res: Response) => {
@@ -43,7 +79,7 @@ export class ShopController {
       take: 20,
     });
 
-    return res.json(shops);
+    return res.json({ status: 'success', data: shops });
   });
 
   getShopById = catchAsync(async (req: Request, res: Response) => {
@@ -55,7 +91,7 @@ export class ShopController {
       throw new AppError('Shop not found', 404);
     }
 
-    return res.json(shop);
+    return res.json({ status: 'success', data: shop });
   });
 
   getShopProducts = catchAsync(async (req: Request, res: Response) => {
@@ -67,7 +103,7 @@ export class ShopController {
       orderBy: { createdAt: 'desc' },
     });
 
-    return res.json(products);
+    return res.json({ status: 'success', data: products });
   });
 
   getShopCategories = catchAsync(async (req: Request, res: Response) => {
@@ -79,6 +115,6 @@ export class ShopController {
       orderBy: { name: 'asc' },
     });
 
-    return res.json(categories);
+    return res.json({ status: 'success', data: categories });
   });
 } 

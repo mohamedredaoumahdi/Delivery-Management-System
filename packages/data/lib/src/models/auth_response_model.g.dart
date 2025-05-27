@@ -22,9 +22,14 @@ Map<String, dynamic> _$AuthResponseModelToJson(AuthResponseModel instance) =>
 
 AuthDataModel _$AuthDataModelFromJson(Map<String, dynamic> json) =>
     AuthDataModel(
-      token: json['accessToken'] as String,
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
       user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$AuthDataModelToJson(AuthDataModel instance) =>
-    <String, dynamic>{'accessToken': instance.token, 'user': instance.user};
+    <String, dynamic>{
+      'accessToken': instance.accessToken,
+      'refreshToken': instance.refreshToken,
+      'user': instance.user,
+    };

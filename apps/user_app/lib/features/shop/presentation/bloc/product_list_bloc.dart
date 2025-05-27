@@ -89,6 +89,7 @@ class ProductListError extends ProductListState {
 class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
   final ShopRepository _shopRepository;
   int _currentPage = 1;
+  String? _currentShopId;
   String? _currentQuery;
   String? _currentCategory;
 
@@ -101,6 +102,7 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
 
   Future<void> _onLoad(ProductListLoadEvent event, Emitter<ProductListState> emit) async {
     _currentPage = 1;
+    _currentShopId = event.shopId;
     _currentQuery = null;
     _currentCategory = event.category;
     
@@ -110,6 +112,7 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
 
   Future<void> _onSearch(ProductListSearchEvent event, Emitter<ProductListState> emit) async {
     _currentPage = 1;
+    _currentShopId = event.shopId;
     _currentQuery = event.query;
     _currentCategory = event.category;
     
@@ -127,37 +130,63 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
 
   Future<void> _onRefresh(ProductListRefreshEvent event, Emitter<ProductListState> emit) async {
     _currentPage = 1;
+    _currentShopId = event.shopId;
     _currentCategory = event.category;
     await _loadProducts(emit);
   }
 
   Future<void> _loadProducts(Emitter<ProductListState> emit) async {
     try {
+      print('🔍 Loading products for shop: $_currentShopId');
       final result = await _shopRepository.getShopProducts(
-        shopId: _currentQuery == null ? _currentCategory! : _currentQuery!,
+        shopId: _currentShopId!,
+        query: _currentQuery,
+        category: _currentCategory,
         page: _currentPage,
         limit: 20,
       );
       
       result.fold(
-        (failure) => emit(ProductListError(failure.message)),
+        (failure) {
+          print('❌ Products failed: ${failure.message}');
+          emit(ProductListError(failure.message));
+        },
         (products) async {
+          print('✅ Products loaded: ${products.length} products');
+          
+          // Get categories
+          print('🔍 Loading categories for shop: $_currentShopId');
           final categoriesResult = await _shopRepository.getProductCategories(
-            shopId: _currentQuery == null ? _currentCategory! : _currentQuery!,
+            shopId: _currentShopId!,
           );
           
-          categoriesResult.fold(
-            (failure) => emit(ProductListError(failure.message)),
-            (categories) => emit(ProductListLoaded(
-              products: products,
-              categories: categories,
-              hasMore: products.length >= 20,
-            )),
-          );
+          // Check if emit is still valid before calling
+          if (!emit.isDone) {
+            categoriesResult.fold(
+              (failure) {
+                print('❌ Categories failed: ${failure.message}');
+                emit(ProductListError(failure.message));
+              },
+              (categories) {
+                print('✅ Categories loaded: ${categories.length} categories');
+                print('  Categories: $categories');
+                emit(ProductListLoaded(
+                  products: products,
+                  categories: categories,
+                  hasMore: products.length >= 20,
+                ));
+              },
+            );
+          } else {
+            print('⚠️ Emit is done, skipping state emission');
+          }
         },
       );
     } catch (e) {
-      emit(ProductListError(e.toString()));
+      print('💥 Products exception: $e');
+      if (!emit.isDone) {
+        emit(ProductListError(e.toString()));
+      }
     }
   }
 }

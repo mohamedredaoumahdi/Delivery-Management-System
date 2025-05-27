@@ -148,21 +148,21 @@ class Product extends Equatable {
       name: json['name'] as String,
       description: json['description'] as String,
       price: (json['price'] as num).toDouble(),
-      discountedPrice: json['discounted_price'] != null 
-          ? (json['discounted_price'] as num).toDouble() 
+      discountedPrice: json['discountedPrice'] != null 
+          ? (json['discountedPrice'] as num).toDouble() 
           : null,
-      imageUrl: json['image_url'] as String?,
-      category: json['category'] as String,
+      imageUrl: json['imageUrl'] as String?,
+      category: json['categoryName'] as String,
       tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
-      nutritionalInfo: json['nutritional_info'] as Map<String, dynamic>?,
-      inStock: json['in_stock'] as bool,
-      stockQuantity: json['stock_quantity'] as int?,
-      shopId: json['shop_id'] as String,
-      isFeatured: json['is_featured'] as bool? ?? false,
+      nutritionalInfo: json['nutritionalInfo'] as Map<String, dynamic>?,
+      inStock: json['inStock'] as bool,
+      stockQuantity: json['stockQuantity'] as int?,
+      shopId: json['shopId'] as String,
+      isFeatured: json['isFeatured'] as bool? ?? false,
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
-      ratingCount: json['rating_count'] as int? ?? 0,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      ratingCount: json['ratingCount'] as int? ?? 0,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
 

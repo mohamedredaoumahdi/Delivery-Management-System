@@ -194,13 +194,24 @@ class ShopListBloc extends Bloc<ShopListEvent, ShopListState> {
     emit(const ShopListLoadingFeatured());
 
     try {
+      print('🔍 Loading featured shops with limit: ${event.limit}');
       final result = await _shopRepository.getFeaturedShops(limit: event.limit);
 
       result.fold(
-        (failure) => emit(ShopListFeaturedError(failure.message)),
-        (shops) => emit(ShopListFeaturedLoaded(shops: shops)),
+        (failure) {
+          print('❌ Featured shops failed: ${failure.message}');
+          emit(ShopListFeaturedError(failure.message));
+        },
+        (shops) {
+          print('✅ Featured shops loaded: ${shops.length} shops');
+          for (final shop in shops) {
+            print('  - ${shop.name} (${shop.id})');
+          }
+          emit(ShopListFeaturedLoaded(shops: shops));
+        },
       );
     } catch (e) {
+      print('💥 Featured shops exception: $e');
       emit(ShopListFeaturedError(e.toString()));
     }
   }

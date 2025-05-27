@@ -13,8 +13,8 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
   phone: json['phone'] as String?,
   profilePicture: json['profilePicture'] as String?,
   roleString: json['role'] as String,
-  isEmailVerified: json['emailVerified'] as bool? ?? false,
-  isPhoneVerified: json['phoneVerified'] as bool? ?? false,
+  isEmailVerified: json['isEmailVerified'] as bool? ?? false,
+  isPhoneVerified: json['isPhoneVerified'] as bool? ?? false,
   createdAt: UserModel._dateFromJson(json['createdAt']),
   updatedAt: UserModel._dateFromJson(json['updatedAt']),
 );
@@ -26,8 +26,8 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
   'phone': instance.phone,
   'profilePicture': instance.profilePicture,
   'role': instance.roleString,
-  'emailVerified': instance.isEmailVerified,
-  'phoneVerified': instance.isPhoneVerified,
+  'isEmailVerified': instance.isEmailVerified,
+  'isPhoneVerified': instance.isPhoneVerified,
   'createdAt': UserModel._dateToJson(instance.createdAt),
   'updatedAt': UserModel._dateToJson(instance.updatedAt),
 };

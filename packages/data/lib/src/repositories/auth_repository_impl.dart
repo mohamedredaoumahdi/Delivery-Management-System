@@ -6,11 +6,13 @@ import 'package:core/core.dart' show
   LoggerService, 
   NetworkException, 
   TimeoutException, 
-  ApiException,
   ServerFailure,
   NetworkFailure,
   TimeoutFailure,
-  UnknownFailure;
+  UnknownFailure,
+  AuthFailure,
+  ValidationFailure;
+import 'package:core/src/exceptions/api_exceptions.dart' show ApiException;
 
 import '../datasources/local/auth_local_data_source.dart';
 import '../datasources/remote/auth_remote_data_source.dart';
@@ -78,8 +80,12 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
       
-      // Store the auth token
-      await localDataSource.saveAuthToken(response.data.token);
+      // Store both tokens
+      await localDataSource.saveAuthToken(response.data.accessToken);
+      await localDataSource.saveRefreshToken(response.data.refreshToken);
+      
+      _currentUser = response.data.user.toDomain();
+      _authStateController.add(_currentUser);
       
       return Right(response.data.user.toDomain());
     } catch (e) {
@@ -107,8 +113,12 @@ class AuthRepositoryImpl implements AuthRepository {
         confirmPassword: confirmPassword,
       );
       
-      // Store the auth token
-      await localDataSource.saveAuthToken(response.data.token);
+      // Store both tokens
+      await localDataSource.saveAuthToken(response.data.accessToken);
+      await localDataSource.saveRefreshToken(response.data.refreshToken);
+      
+      _currentUser = response.data.user.toDomain();
+      _authStateController.add(_currentUser);
       
       return Right(response.data.user.toDomain());
     } catch (e) {
@@ -121,7 +131,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> signOut() async {
     try {
       await remoteDataSource.signOut();
-      await localDataSource.clearAuthToken();
+      await localDataSource.clearAllAuthData();
+      _currentUser = null;
+      _authStateController.add(null);
       return const Right(null);
     } catch (e) {
       logger.e('Error signing out', e);

@@ -27,15 +27,19 @@ class AuthResponseModel {
 
 @JsonSerializable()
 class AuthDataModel {
-  @JsonKey(name: 'accessToken')
-  final String token;
+  final String accessToken;
+  final String refreshToken;
   final UserModel user;
 
   AuthDataModel({
-    required this.token,
+    required this.accessToken,
+    required this.refreshToken,
     required this.user,
   });
 
   factory AuthDataModel.fromJson(Map<String, dynamic> json) => _$AuthDataModelFromJson(json);
   Map<String, dynamic> toJson() => _$AuthDataModelToJson(this);
+  
+  /// Getter for backward compatibility
+  String get token => accessToken;
 }

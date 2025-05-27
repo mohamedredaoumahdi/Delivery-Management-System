@@ -26,11 +26,11 @@ class UserModel {
   final String roleString;
   
   /// Whether the user's email is verified
-  @JsonKey(name: 'emailVerified')
+  @JsonKey(name: 'isEmailVerified')
   final bool isEmailVerified;
   
   /// Whether the user's phone is verified
-  @JsonKey(name: 'phoneVerified')
+  @JsonKey(name: 'isPhoneVerified')
   final bool isPhoneVerified;
   
   /// Date when the user was created
