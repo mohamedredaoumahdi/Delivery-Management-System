@@ -1,12 +1,21 @@
 import 'dart:async';
 
-import 'package:core/core.dart' show LoggerService, NetworkException, TimeoutException, ApiException;
 import 'package:dartz/dartz.dart';
-import 'package:data/data.dart' as data;
 import 'package:domain/domain.dart';
+import 'package:core/core.dart' show 
+  LoggerService, 
+  NetworkException, 
+  TimeoutException, 
+  ApiException,
+  ServerFailure,
+  NetworkFailure,
+  TimeoutFailure,
+  UnknownFailure;
 
 import '../datasources/local/auth_local_data_source.dart';
 import '../datasources/remote/auth_remote_data_source.dart';
+import '../models/auth_response_model.dart';
+import '../models/user_model.dart';
 
 /// Implementation of the [AuthRepository]
 class AuthRepositoryImpl implements AuthRepository {
@@ -69,16 +78,12 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
       
-      // Save auth token
+      // Store the auth token
       await localDataSource.saveAuthToken(response.data.token);
       
-      // Save user
-      _currentUser = response.data.user.toDomain();
-      _authStateController.add(_currentUser);
-      
-      return Right(_currentUser!);
+      return Right(response.data.user.toDomain());
     } catch (e) {
-      logger.e('Sign in error', e);
+      logger.e('Error signing in with email and password', e);
       return Left(_handleError(e));
     }
   }
@@ -97,21 +102,17 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
         name: name,
-        role: data.UserModel.mapUserRoleToString(role),
+        role: UserModel.mapUserRoleToString(role),
         phone: phone,
         confirmPassword: confirmPassword,
       );
       
-      // Save auth token
+      // Store the auth token
       await localDataSource.saveAuthToken(response.data.token);
       
-      // Save user
-      _currentUser = response.data.user.toDomain();
-      _authStateController.add(_currentUser);
-      
-      return Right(_currentUser!);
+      return Right(response.data.user.toDomain());
     } catch (e) {
-      logger.e('Sign up error', e);
+      logger.e('Error signing up with email and password', e);
       return Left(_handleError(e));
     }
   }
@@ -120,17 +121,10 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> signOut() async {
     try {
       await remoteDataSource.signOut();
-      
-      // Clear auth token
       await localDataSource.clearAuthToken();
-      
-      // Clear user
-      _currentUser = null;
-      _authStateController.add(null);
-      
       return const Right(null);
     } catch (e) {
-      logger.e('Sign out error', e);
+      logger.e('Error signing out', e);
       return Left(_handleError(e));
     }
   }
@@ -154,7 +148,7 @@ class AuthRepositoryImpl implements AuthRepository {
       
       return Right(_currentUser);
     } catch (e) {
-      logger.e('Get current user error', e);
+      logger.e('Error getting current user', e);
       
       // Clear token if it's invalid
       await localDataSource.clearAuthToken();
@@ -173,7 +167,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.sendPasswordResetEmail(email: email);
       return const Right(null);
     } catch (e) {
-      logger.e('Send password reset email error', e);
+      logger.e('Error sending password reset email', e);
       return Left(_handleError(e));
     }
   }
@@ -185,18 +179,14 @@ class AuthRepositoryImpl implements AuthRepository {
     String? profilePicture,
   }) async {
     try {
-      final userModel = await remoteDataSource.updateProfile(
+      final user = await remoteDataSource.updateProfile(
         name: name,
         phone: phone,
         profilePicture: profilePicture,
       );
-      
-      _currentUser = userModel.toDomain();
-      _authStateController.add(_currentUser);
-      
-      return Right(_currentUser!);
+      return Right(user.toDomain());
     } catch (e) {
-      logger.e('Update profile error', e);
+      logger.e('Error updating profile', e);
       return Left(_handleError(e));
     }
   }
@@ -211,10 +201,9 @@ class AuthRepositoryImpl implements AuthRepository {
         currentPassword: currentPassword,
         newPassword: newPassword,
       );
-      
       return const Right(null);
     } catch (e) {
-      logger.e('Change password error', e);
+      logger.e('Error changing password', e);
       return Left(_handleError(e));
     }
   }
@@ -225,17 +214,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       await remoteDataSource.deleteAccount(password: password);
-      
-      // Clear auth token
       await localDataSource.clearAuthToken();
-      
-      // Clear user
-      _currentUser = null;
-      _authStateController.add(null);
-      
       return const Right(null);
     } catch (e) {
-      logger.e('Delete account error', e);
+      logger.e('Error deleting account', e);
       return Left(_handleError(e));
     }
   }
@@ -246,7 +228,7 @@ class AuthRepositoryImpl implements AuthRepository {
       if (error.statusCode == 401) {
         return const AuthFailure('Authentication failed. Please sign in again.');
       } else if (error.statusCode == 400) {
-        return const ValidationFailure('email', 'Invalid email or password.');
+        return ValidationFailure('auth', error.message ?? 'Invalid request');
       } else if (error.statusCode != null && error.statusCode! >= 500) {
         return ServerFailure(
           error.message ?? 'Server error occurred',
@@ -258,7 +240,6 @@ class AuthRepositoryImpl implements AuthRepository {
     } else if (error is TimeoutException) {
       return const TimeoutFailure('Request timed out. Please try again.');
     }
-    
     return UnknownFailure(error.toString());
   }
   

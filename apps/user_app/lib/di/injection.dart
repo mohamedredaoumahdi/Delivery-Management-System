@@ -1,6 +1,6 @@
 import 'package:core/core.dart' as core;
 import 'package:core/core.dart';
-import 'package:data/data.dart';
+import 'package:data/data.dart' hide ApiClient;
 import 'package:dio/dio.dart';
 import 'package:domain/domain.dart';
 import 'package:get_it/get_it.dart';
@@ -36,18 +36,11 @@ Future<void> initializeDependencies() async {
   
   // API Client
   final dio = Dio();
-  dio.options.headers['Content-Type'] = 'application/json';
   getIt.registerSingleton<Dio>(dio);
   
-  getIt.registerSingleton<core.ApiClient>(
-    core.ApiClient(
-      baseUrl: 'http://localhost:3000/api', // Node.js server
-      dio: getIt<Dio>(),
-    ),
-  );
   getIt.registerSingleton<data_api.ApiClient>(
     data_api.ApiClient(
-      baseUrl: 'http://localhost:3000/api', // Node.js server
+      baseUrl: Environment.baseUrl,
       dio: getIt<Dio>(),
     ),
   );
