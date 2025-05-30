@@ -12,8 +12,18 @@ class NearbyShopsSection extends StatelessWidget {
     final theme = Theme.of(context);
 
     return BlocBuilder<ShopListBloc, ShopListState>(
+      buildWhen: (previous, current) {
+        // Only rebuild for nearby shop states
+        return current is ShopListLoadingNearby ||
+               current is ShopListNearbyLoaded ||
+               current is ShopListNearbyError ||
+               current is ShopListInitial;
+      },
       builder: (context, state) {
+        print('🎯 NearbyShopsSection - Current state: ${state.runtimeType}');
+        
         if (state is ShopListLoadingNearby) {
+          print('📍 Showing loading for nearby shops');
           return SizedBox(
             height: 120,
             child: Center(
@@ -23,6 +33,7 @@ class NearbyShopsSection extends StatelessWidget {
             ),
           );
         } else if (state is ShopListNearbyError) {
+          print('❌ Showing error for nearby shops: ${state.message}');
           return SizedBox(
             height: 120,
             child: Center(
@@ -55,6 +66,7 @@ class NearbyShopsSection extends StatelessWidget {
             ),
           );
         } else if (state is ShopListNearbyLoaded) {
+          print('✅ Showing loaded nearby shops: ${state.shops.length} shops');
           if (state.shops.isEmpty) {
             return SizedBox(
               height: 120,
@@ -87,6 +99,7 @@ class NearbyShopsSection extends StatelessWidget {
         }
 
         // Default view (initial state)
+        print('🔄 Showing default loading state for nearby shops');
         return SizedBox(
           height: 120,
           child: Center(

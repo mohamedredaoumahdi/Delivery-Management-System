@@ -95,12 +95,57 @@ export class ShopController {
   });
 
   getShopProducts = catchAsync(async (req: Request, res: Response) => {
+    const { 
+      q: query, 
+      category, 
+      in_stock: inStock,
+      featured,
+      page = 1, 
+      limit = 20 
+    } = req.query;
+
+    // Build where clause
+    const where: any = {
+      shopId: req.params.id,
+      isActive: true,
+    };
+
+    // Add category filter
+    if (category && typeof category === 'string') {
+      where.categoryName = {
+        equals: category,
+        mode: 'insensitive'
+      };
+    }
+
+    // Add search query filter
+    if (query && typeof query === 'string') {
+      where.OR = [
+        { name: { contains: query, mode: 'insensitive' } },
+        { description: { contains: query, mode: 'insensitive' } },
+        { tags: { has: query } },
+      ];
+    }
+
+    // Add stock filter
+    if (inStock !== undefined) {
+      where.inStock = inStock === 'true';
+    }
+
+    // Add featured filter
+    if (featured !== undefined) {
+      where.isFeatured = featured === 'true';
+    }
+
+    // Calculate pagination
+    const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
+
     const products = await prisma.product.findMany({
-      where: {
-        shopId: req.params.id,
-        isActive: true,
-      },
+      where,
       orderBy: { createdAt: 'desc' },
+      skip,
+      take,
     });
 
     return res.json({ status: 'success', data: products });

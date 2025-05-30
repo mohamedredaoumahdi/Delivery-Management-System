@@ -16,7 +16,6 @@ import 'package:core/src/exceptions/api_exceptions.dart' show ApiException;
 
 import '../datasources/local/auth_local_data_source.dart';
 import '../datasources/remote/auth_remote_data_source.dart';
-import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
 
 /// Implementation of the [AuthRepository]
@@ -238,7 +237,11 @@ class AuthRepositoryImpl implements AuthRepository {
   Failure _handleError(dynamic error) {
     if (error is ApiException) {
       if (error.statusCode == 401) {
-        return const AuthFailure('Authentication failed. Please sign in again.');
+        return AuthFailure(error.message ?? 'Incorrect password. Please check your password and try again.');
+      } else if (error.statusCode == 404) {
+        return AuthFailure(error.message ?? 'No account found with this email address. Please check your email or sign up for a new account.');
+      } else if (error.statusCode == 403) {
+        return AuthFailure(error.message ?? 'Your account has been deactivated. Please contact support for assistance.');
       } else if (error.statusCode == 400) {
         return ValidationFailure('auth', error.message ?? 'Invalid request');
       } else if (error.statusCode != null && error.statusCode! >= 500) {
@@ -246,6 +249,18 @@ class AuthRepositoryImpl implements AuthRepository {
           error.message ?? 'Server error occurred',
           statusCode: error.statusCode,
         );
+      }
+    } else if (error.toString().contains('AuthException')) {
+      // Handle AuthException from core package
+      final errorMessage = error.toString();
+      if (errorMessage.contains('ACCOUNT_NOT_FOUND')) {
+        return AuthFailure('No account found with this email address. Please check your email or sign up for a new account.');
+      } else if (errorMessage.contains('INCORRECT_PASSWORD')) {
+        return AuthFailure('Incorrect password. Please check your password and try again.');
+      } else if (errorMessage.contains('ACCOUNT_DEACTIVATED')) {
+        return AuthFailure('Your account has been deactivated. Please contact support for assistance.');
+      } else {
+        return AuthFailure(errorMessage);
       }
     } else if (error is NetworkException) {
       return const NetworkFailure('No internet connection. Please try again.');

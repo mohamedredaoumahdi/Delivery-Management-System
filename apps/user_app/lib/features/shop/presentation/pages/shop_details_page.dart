@@ -62,7 +62,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
       // Load more products when user is near the bottom
       final state = context.read<ProductListBloc>().state;
       if (state is ProductListLoaded && state.hasMore) {
-        context.read<ProductListBloc>().add( ProductListLoadMoreEvent());
+        context.read<ProductListBloc>().add(ProductListLoadMoreEvent());
       }
     }
   }
@@ -96,6 +96,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
   }
 
   void _filterByCategory(String? category) {
+    print('🏷️ Filtering by category: $category');
+    
     setState(() {
       _selectedCategory = category;
     });
@@ -129,7 +131,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
         duration: const Duration(seconds: 2),
         action: SnackBarAction(
           label: 'View Cart',
-          onPressed: () => context.push('/cart'),
+          onPressed: () => context.go('/cart'),
         ),
       ),
     );
@@ -324,28 +326,39 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                   }
                 },
                 child: _categories.isNotEmpty
-                    ? SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                label: const Text('All'),
-                                selected: _selectedCategory == null,
-                                onSelected: (_) => _filterByCategory(null),
-                              ),
+                    ? Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: FilterChip(
+                                    label: const Text('All'),
+                                    selected: _selectedCategory == null,
+                                    onSelected: (_) {
+                                      print('🏷️ "All" category selected');
+                                      _filterByCategory(null);
+                                    },
+                                  ),
+                                ),
+                                ..._categories.map((category) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: FilterChip(
+                                    label: Text(category),
+                                    selected: _selectedCategory == category,
+                                    onSelected: (_) {
+                                      print('🏷️ Category "$category" selected');
+                                      _filterByCategory(category);
+                                    },
+                                  ),
+                                )),
+                              ],
                             ),
-                            ..._categories.map((category) => Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                label: Text(category),
-                                selected: _selectedCategory == category,
-                                onSelected: (_) => _filterByCategory(category),
-                              ),
-                            )),
-                          ],
-                        ),
+                          ),
+                        ],
                       )
                     : const SizedBox.shrink(),
               ),
@@ -358,6 +371,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
           child: BlocConsumer<ProductListBloc, ProductListState>(
             listener: (context, state) {
               if (state is ProductListError) {
+                print('❌ ProductListBloc Error: ${state.message}');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.message),
@@ -383,6 +397,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                 if (state is ProductListLoaded) {
                   products = state.products;
                   hasMore = state.hasMore;
+                  print('✅ Displaying ${products.length} products');
                 } else if (state is ProductListLoadingMore) {
                   products = state.products;
                   hasMore = true;
@@ -835,4 +850,4 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
       await launchUrl(Uri.parse(url));
     }
   }
-}
+} 

@@ -10,13 +10,17 @@ import '../features/home/presentation/pages/home_page.dart';
 import '../features/shop/presentation/pages/shop_list_page.dart';
 import '../features/shop/presentation/pages/shop_details_page.dart';
 import '../features/shop/presentation/pages/product_details_page.dart';
+import '../features/shop/presentation/bloc/product_details_bloc.dart';
 import '../features/cart/presentation/pages/cart_page.dart';
+import '../features/cart/domain/cart_repository.dart';
+import '../features/order/presentation/pages/checkout_page.dart';
 import '../features/order/presentation/pages/order_list_page.dart';
 import '../features/order/presentation/pages/order_details_page.dart';
 import '../features/order/presentation/pages/order_tracking_page.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
 import '../features/profile/presentation/pages/edit_profile_page.dart';
 import '../features/profile/presentation/pages/change_password_page.dart';
+import '../di/injection.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
@@ -102,9 +106,12 @@ final appRouter = GoRouter(
                   builder: (context, state) {
                     final shopId = state.pathParameters['id']!;
                     final productId = state.pathParameters['productId']!;
-                    return ProductDetailsPage(
-                      shopId: shopId,
-                      productId: productId,
+                    return BlocProvider<ProductDetailsBloc>(
+                      create: (context) => getIt<ProductDetailsBloc>(),
+                      child: ProductDetailsPage(
+                        shopId: shopId,
+                        productId: productId,
+                      ),
                     );
                   },
                 ),
@@ -119,6 +126,16 @@ final appRouter = GoRouter(
           pageBuilder: (context, state) => const NoTransitionPage(
             child: CartPage(),
           ),
+          routes: [
+            // Checkout route nested under cart
+        GoRoute(
+              path: 'checkout',
+          builder: (context, state) {
+            final summary = state.extra as CartSummary?;
+            return CheckoutPage(summary: summary);
+          },
+            ),
+          ],
         ),
         
         // Orders route

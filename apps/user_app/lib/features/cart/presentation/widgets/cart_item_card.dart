@@ -131,7 +131,7 @@ class _CartItemCardState extends State<CartItemCard> {
                         children: [
                           if (widget.item.discountedPrice != null) ...[
                             Text(
-                              '\${widget.item.productPrice.toStringAsFixed(2)}',
+                              '\$${widget.item.productPrice.toStringAsFixed(2)}',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 decoration: TextDecoration.lineThrough,
                                 color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -139,7 +139,7 @@ class _CartItemCardState extends State<CartItemCard> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '\${widget.item.discountedPrice!.toStringAsFixed(2)}',
+                              '\$${widget.item.discountedPrice!.toStringAsFixed(2)}',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.primary,
@@ -147,7 +147,7 @@ class _CartItemCardState extends State<CartItemCard> {
                             ),
                           ] else
                             Text(
-                              '\${widget.item.productPrice.toStringAsFixed(2)}',
+                              '\$${widget.item.productPrice.toStringAsFixed(2)}',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -219,10 +219,13 @@ class _CartItemCardState extends State<CartItemCard> {
                 const Spacer(),
                 
                 // Total price
-                Text(
-                  'Total: \${widget.item.totalPrice.toStringAsFixed(2)}',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Flexible(
+                  child: Text(
+                    'Total: \$${widget.item.totalPrice.toStringAsFixed(2)}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -237,23 +240,29 @@ class _CartItemCardState extends State<CartItemCard> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      'Special Instructions',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Text(
+                        'Special Instructions',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                    const Spacer(),
                     TextButton.icon(
                       onPressed: _toggleInstructionsEdit,
                       icon: Icon(
                         _isEditingInstructions ? Icons.check : Icons.edit,
-                        size: 16,
+                        size: 12,
                       ),
-                      label: Text(_isEditingInstructions ? 'Save' : 'Edit'),
+                      label: Text(
+                        _isEditingInstructions ? 'Save' : 'Edit',
+                        style: const TextStyle(fontSize: 10),
+                      ),
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
                         visualDensity: VisualDensity.compact,
+                        minimumSize: const Size(0, 24),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                     ),
                   ],

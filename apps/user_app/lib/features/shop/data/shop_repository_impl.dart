@@ -112,6 +112,34 @@ class ShopRepositoryImpl implements ShopRepository {
   }
 
   @override
+  Future<Either<Failure, (Product, Shop)>> getProductWithShop(String productId) async {
+    try {
+      final response = await apiClient.get('/products/$productId');
+      final data = response.data['data'] as Map<String, dynamic>;
+      
+      // Parse product
+      final product = Product.fromJson(data);
+      
+      // Parse shop from embedded data
+      final shopData = data['shop'] as Map<String, dynamic>?;
+      if (shopData == null) {
+        // Fallback: load shop separately if not embedded
+        final shopResult = await getShopById(product.shopId);
+        return shopResult.fold(
+          (failure) => Left(failure),
+          (shop) => Right((product, shop)),
+        );
+      }
+      
+      final shop = Shop.fromJson(shopData);
+      return Right((product, shop));
+    } catch (e) {
+      logger.e('Error getting product with shop', e);
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<Shop>>> getFeaturedShops({int limit = 10}) async {
     try {
       final response = await apiClient.get('/shops/featured', queryParameters: {

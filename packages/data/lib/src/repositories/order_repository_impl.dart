@@ -44,28 +44,66 @@ class OrderRepositoryImpl implements OrderRepository {
         '/orders',
         data: {
           'shopId': shopId,
-          'items': items.map((item) => {
+          'items': items.map((item) {
+            final itemData = <String, dynamic>{
             'productId': item.productId,
             'productName': item.productName,
             'productPrice': item.productPrice,
             'quantity': item.quantity,
             'totalPrice': item.totalPrice,
-            'instructions': item.instructions,
+            };
+            
+            // Only include instructions if they exist and are not empty
+            if (item.instructions != null && item.instructions!.trim().isNotEmpty) {
+              itemData['instructions'] = item.instructions!.trim();
+            }
+            
+            return itemData;
           }).toList(),
           'deliveryAddress': deliveryAddress,
           'deliveryLatitude': deliveryLatitude,
           'deliveryLongitude': deliveryLongitude,
           'deliveryInstructions': deliveryInstructions,
-          'paymentMethod': paymentMethod.toString().split('.').last,
+          'paymentMethod': _mapPaymentMethodToBackend(paymentMethod),
           'tip': tip,
         },
       );
 
-      final orderModel = OrderModel.fromJson(response.data['data']);
+      // Handle different response formats from the backend
+      final responseData = response.data;
+      Map<String, dynamic> orderData;
+      
+      if (responseData is Map<String, dynamic>) {
+        // Check if the response has a 'data' wrapper
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          orderData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          // Order data is returned directly
+          orderData = responseData;
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      final orderModel = OrderModel.fromJson(orderData);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error placing order', e);
       return dartz.Left(_handleError(e));
+    }
+  }
+
+  /// Map PaymentMethod enum to backend expected format
+  String _mapPaymentMethodToBackend(PaymentMethod method) {
+    switch (method) {
+      case PaymentMethod.cashOnDelivery:
+        return 'CASH_ON_DELIVERY';
+      case PaymentMethod.card:
+        return 'CARD';
+      case PaymentMethod.wallet:
+        return 'WALLET';
+      case PaymentMethod.bankTransfer:
+        return 'BANK_TRANSFER';
     }
   }
 
@@ -76,6 +114,8 @@ class OrderRepositoryImpl implements OrderRepository {
     int limit = 20,
   }) async {
     try {
+      print('🚀 OrderRepositoryImpl: getUserOrders called with status: $status, page: $page, limit: $limit');
+      
       final queryParams = <String, dynamic>{
         'page': page,
         'limit': limit,
@@ -85,10 +125,16 @@ class OrderRepositoryImpl implements OrderRepository {
         queryParams['status'] = status.toString().split('.').last;
       }
 
+      print('📞 OrderRepositoryImpl: Making API call to /orders with params: $queryParams');
+      
       final response = await apiClient.get(
         '/orders',
         queryParameters: queryParams,
       );
+
+      print('✅ OrderRepositoryImpl: API call successful, response status: ${response.statusCode}');
+      print('📋 OrderRepositoryImpl: Response data type: ${response.data.runtimeType}');
+      print('📋 OrderRepositoryImpl: Response data: ${response.data}');
 
       // Handle the response data
       final responseData = response.data;
@@ -96,18 +142,23 @@ class OrderRepositoryImpl implements OrderRepository {
       
       if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
         ordersData = responseData['data'] as List<dynamic>;
+        print('📦 OrderRepositoryImpl: Found data wrapper, orders count: ${ordersData.length}');
       } else if (responseData is List<dynamic>) {
         ordersData = responseData;
+        print('📦 OrderRepositoryImpl: Direct list response, orders count: ${ordersData.length}');
       } else {
         ordersData = [];
+        print('⚠️ OrderRepositoryImpl: Unexpected response format, using empty list');
       }
 
       final orders = ordersData
           .map((orderJson) => OrderModel.fromJson(orderJson as Map<String, dynamic>).toDomain())
           .toList();
 
+      print('🎯 OrderRepositoryImpl: Successfully parsed ${orders.length} orders');
       return dartz.Right(orders);
     } catch (e) {
+      print('❌ OrderRepositoryImpl: Error getting user orders: $e');
       logger.e('Error getting user orders', e);
       return dartz.Left(_handleError(e));
     }
@@ -118,7 +169,23 @@ class OrderRepositoryImpl implements OrderRepository {
     try {
       final response = await apiClient.get('/orders/$id');
       
-      final orderModel = OrderModel.fromJson(response.data['data']);
+      // Handle different response formats from the backend
+      final responseData = response.data;
+      Map<String, dynamic> orderData;
+      
+      if (responseData is Map<String, dynamic>) {
+        // Check if the response has a 'data' wrapper
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          orderData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          // Order data is returned directly
+          orderData = responseData;
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      final orderModel = OrderModel.fromJson(orderData);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error getting order by ID', e);
@@ -136,7 +203,23 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response.data['data']);
+      // Handle different response formats from the backend
+      final responseData = response.data;
+      Map<String, dynamic> orderData;
+      
+      if (responseData is Map<String, dynamic>) {
+        // Check if the response has a 'data' wrapper
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          orderData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          // Order data is returned directly
+          orderData = responseData;
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      final orderModel = OrderModel.fromJson(orderData);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error cancelling order', e);
@@ -154,7 +237,23 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response.data['data']);
+      // Handle different response formats from the backend
+      final responseData = response.data;
+      Map<String, dynamic> orderData;
+      
+      if (responseData is Map<String, dynamic>) {
+        // Check if the response has a 'data' wrapper
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          orderData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          // Order data is returned directly
+          orderData = responseData;
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      final orderModel = OrderModel.fromJson(orderData);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error updating tip', e);
@@ -222,7 +321,23 @@ class OrderRepositoryImpl implements OrderRepository {
         data: data,
       );
 
-      final orderModel = OrderModel.fromJson(response.data['data']);
+      // Handle different response formats from the backend
+      final responseData = response.data;
+      Map<String, dynamic> orderData;
+      
+      if (responseData is Map<String, dynamic>) {
+        // Check if the response has a 'data' wrapper
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          orderData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          // Order data is returned directly
+          orderData = responseData;
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      final orderModel = OrderModel.fromJson(orderData);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error updating order status', e);
@@ -278,7 +393,23 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response.data['data']);
+      // Handle different response formats from the backend
+      final responseData = response.data;
+      Map<String, dynamic> orderData;
+      
+      if (responseData is Map<String, dynamic>) {
+        // Check if the response has a 'data' wrapper
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          orderData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          // Order data is returned directly
+          orderData = responseData;
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      final orderModel = OrderModel.fromJson(orderData);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error updating order location', e);
@@ -296,7 +427,23 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response.data['data']);
+      // Handle different response formats from the backend
+      final responseData = response.data;
+      Map<String, dynamic> orderData;
+      
+      if (responseData is Map<String, dynamic>) {
+        // Check if the response has a 'data' wrapper
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          orderData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          // Order data is returned directly
+          orderData = responseData;
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      final orderModel = OrderModel.fromJson(orderData);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error marking order as delivered', e);
@@ -375,7 +522,23 @@ class OrderRepositoryImpl implements OrderRepository {
         },
       );
 
-      final orderModel = OrderModel.fromJson(response.data['data']);
+      // Handle different response formats from the backend
+      final responseData = response.data;
+      Map<String, dynamic> orderData;
+      
+      if (responseData is Map<String, dynamic>) {
+        // Check if the response has a 'data' wrapper
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          orderData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          // Order data is returned directly
+          orderData = responseData;
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      final orderModel = OrderModel.fromJson(orderData);
       return dartz.Right(orderModel.toDomain());
     } catch (e) {
       logger.e('Error assigning order to delivery person', e);

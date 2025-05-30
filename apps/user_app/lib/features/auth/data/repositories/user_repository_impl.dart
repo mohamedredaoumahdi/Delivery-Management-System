@@ -28,7 +28,7 @@ class UserRepositoryImpl implements AuthRepository {
           );
           return Right(user);
         } catch (e) {
-          return Left(ServerFailure('Failed to parse user data'));
+          return const Left(ServerFailure('Failed to parse user data'));
         }
       } else {
         return const Right(null);
@@ -39,7 +39,7 @@ class UserRepositoryImpl implements AuthRepository {
       }
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('An unexpected error occurred'));
+      return const Left(ServerFailure('An unexpected error occurred'));
     }
   }
 
@@ -71,12 +71,12 @@ class UserRepositoryImpl implements AuthRepository {
         );
         return Right(user);
       } catch (e) {
-        return Left(ServerFailure('Failed to parse user data on login'));
+        return const Left(ServerFailure('Failed to parse user data on login'));
       }
     } on ApiException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('An unexpected error occurred'));
+      return const Left(ServerFailure('An unexpected error occurred'));
     }
   }
 
@@ -122,12 +122,12 @@ class UserRepositoryImpl implements AuthRepository {
         );
         return Right(user);
       } catch (e) {
-        return Left(ServerFailure('Failed to parse user data on signup'));
+        return const Left(ServerFailure('Failed to parse user data on signup'));
       }
     } on ApiException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('An unexpected error occurred'));
+      return const Left(ServerFailure('An unexpected error occurred'));
     }
   }
 
@@ -139,7 +139,7 @@ class UserRepositoryImpl implements AuthRepository {
     } on ApiException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('An unexpected error occurred'));
+      return const Left(ServerFailure('An unexpected error occurred'));
     }
   }
 
@@ -153,7 +153,7 @@ class UserRepositoryImpl implements AuthRepository {
     } on ApiException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('An unexpected error occurred'));
+      return const Left(ServerFailure('An unexpected error occurred'));
     }
   }
 
@@ -165,7 +165,7 @@ class UserRepositoryImpl implements AuthRepository {
     } on ApiException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('An unexpected error occurred'));
+      return const Left(ServerFailure('An unexpected error occurred'));
     }
   }
 
@@ -197,12 +197,12 @@ class UserRepositoryImpl implements AuthRepository {
         );
         return Right(user);
       } catch (e) {
-        return Left(ServerFailure('Failed to parse user data'));
+        return const Left(ServerFailure('Failed to parse user data'));
       }
     } on ApiException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('An unexpected error occurred'));
+      return const Left(ServerFailure('An unexpected error occurred'));
     }
   }
 
@@ -220,7 +220,7 @@ class UserRepositoryImpl implements AuthRepository {
     } on ApiException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('An unexpected error occurred'));
+      return const Left(ServerFailure('An unexpected error occurred'));
     }
   }
 } 

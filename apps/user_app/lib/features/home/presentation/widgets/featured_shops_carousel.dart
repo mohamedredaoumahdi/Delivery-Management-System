@@ -13,8 +13,18 @@ class FeaturedShopsCarousel extends StatelessWidget {
     final theme = Theme.of(context);
 
     return BlocBuilder<ShopListBloc, ShopListState>(
+      buildWhen: (previous, current) {
+        // Only rebuild for featured shop states
+        return current is ShopListLoadingFeatured ||
+               current is ShopListFeaturedLoaded ||
+               current is ShopListFeaturedError ||
+               current is ShopListInitial;
+      },
       builder: (context, state) {
+        print('🎯 FeaturedShopsCarousel - Current state: ${state.runtimeType}');
+        
         if (state is ShopListLoadingFeatured) {
+          print('📍 Showing loading for featured shops');
           return SizedBox(
             height: 200,
             child: Center(
@@ -24,6 +34,7 @@ class FeaturedShopsCarousel extends StatelessWidget {
             ),
           );
         } else if (state is ShopListFeaturedError) {
+          print('❌ Showing error for featured shops: ${state.message}');
           return SizedBox(
             height: 200,
             child: Center(
@@ -53,6 +64,7 @@ class FeaturedShopsCarousel extends StatelessWidget {
             ),
           );
         } else if (state is ShopListFeaturedLoaded) {
+          print('✅ Showing loaded featured shops: ${state.shops.length} shops');
           if (state.shops.isEmpty) {
             return SizedBox(
               height: 200,
@@ -66,9 +78,10 @@ class FeaturedShopsCarousel extends StatelessWidget {
           }
 
           return SizedBox(
-            height: 230,
+            height: 250,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: state.shops.length,
               itemBuilder: (context, index) {
                 final shop = state.shops[index];
@@ -93,6 +106,7 @@ class FeaturedShopsCarousel extends StatelessWidget {
         }
 
         // Default view (initial state)
+        print('🔄 Showing default loading state for featured shops');
         return SizedBox(
           height: 200,
           child: Center(

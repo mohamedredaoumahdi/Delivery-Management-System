@@ -138,8 +138,8 @@ class OrderModel {
       estimatedDeliveryTime: _dateTimeFromJson(json['estimatedDeliveryTime']),
       deliveredAt: _dateTimeFromJson(json['deliveredAt']),
       deliveryPersonId: json['deliveryPersonId'] as String?,
-      createdAt: _dateTimeFromJson(json['createdAt']),
-      updatedAt: _dateTimeFromJson(json['updatedAt']),
+      createdAt: _dateTimeFromJson(json['createdAt']) ?? DateTime.now(),
+      updatedAt: _dateTimeFromJson(json['updatedAt']) ?? DateTime.now(),
     );
   }
 
@@ -315,7 +315,11 @@ class OrderModel {
   }
 
   /// Convert timestamp to DateTime
-  static DateTime _dateTimeFromJson(String date) => DateTime.parse(date);
+  static DateTime? _dateTimeFromJson(dynamic date) {
+    if (date == null) return null;
+    if (date is String) return DateTime.parse(date);
+    return null;
+  }
 
   /// Convert DateTime to ISO string
   static String? _dateTimeToJson(DateTime? date) => date?.toIso8601String();

@@ -80,7 +80,54 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
-      return AuthResponseModel.fromJson(response.data);
+      // Check if response data is null/empty
+      if (response.data == null) {
+        throw core.ServerException('Invalid response from server: response is null');
+      }
+
+      final responseData = response.data as Map<String, dynamic>;
+
+      // Check for server-side errors in the response body
+      if (responseData.containsKey('error') && responseData['error'] != null) {
+        final errorMessage = responseData['error'] is String 
+            ? responseData['error'] as String
+            : 'An error occurred during sign in';
+
+        final statusCode = responseData.containsKey('statusCode') && responseData['statusCode'] is int
+            ? responseData['statusCode'] as int
+            : 400;
+
+        // Throw specific exceptions based on status code
+        if (statusCode == 404) {
+          throw core.AuthException(errorMessage, 'ACCOUNT_NOT_FOUND');
+        } else if (statusCode == 401) {
+          throw core.AuthException(errorMessage, 'INCORRECT_PASSWORD');
+        } else if (statusCode == 403) {
+          throw core.AuthException(errorMessage, 'ACCOUNT_DEACTIVATED');
+        } else {
+          throw core.ServerException(errorMessage, 'HTTP_$statusCode');
+        }
+      }
+
+      // Check if required fields are present in the data object
+      if (!responseData.containsKey('data') || responseData['data'] == null) {
+        throw core.ServerException('Invalid response from server: data is missing');
+      }
+
+      final data = responseData['data'] as Map<String, dynamic>;
+
+      // Check if required fields are present and not null
+      if (!data.containsKey('accessToken') || data['accessToken'] == null) {
+        throw core.ServerException('Invalid response from server: accessToken is missing');
+      }
+      if (!data.containsKey('refreshToken') || data['refreshToken'] == null) {
+        throw core.ServerException('Invalid response from server: refreshToken is missing');
+      }
+      if (!data.containsKey('user') || data['user'] == null || data['user'] is! Map<String, dynamic>) {
+        throw core.ServerException('Invalid response from server: user data is missing or invalid');
+      }
+      
+      return AuthResponseModel.fromJson(responseData);
     } catch (e) {
       logger.e('Error signing in with email and password', e);
       rethrow;
@@ -114,30 +161,40 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw core.ServerException('Invalid response from server: response is null');
       }
 
-      final data = response.data as Map<String, dynamic>;
+      final responseData = response.data as Map<String, dynamic>;
 
       // Check for server-side errors in the response body
-      if (data.containsKey('error') && data['error'] != null) {
-        final errorMessage = data['error'] is String 
-            ? data['error'] as String
+      if (responseData.containsKey('error') && responseData['error'] != null) {
+        final errorMessage = responseData['error'] is String 
+            ? responseData['error'] as String
             : 'An error occurred during sign up';
 
-        final statusCode = data.containsKey('statusCode') && data['statusCode'] is int
-            ? data['statusCode'] as int
+        final statusCode = responseData.containsKey('statusCode') && responseData['statusCode'] is int
+            ? responseData['statusCode'] as int
             : 400;
 
         throw core.ServerException(errorMessage, 'HTTP_$statusCode');
       }
 
-      // Check if required fields are present and not null
-      if (!data.containsKey('token') || data['token'] == null) {
-        throw core.ServerException('Invalid response from server: token is missing');
+      // Check if required fields are present in the data object
+      if (!responseData.containsKey('data') || responseData['data'] == null) {
+        throw core.ServerException('Invalid response from server: data is missing');
       }
-      if (!data.containsKey('user') || data['user'] == null || !(data['user'] is Map<String, dynamic>)) {
+
+      final data = responseData['data'] as Map<String, dynamic>;
+
+      // Check if required fields are present and not null
+      if (!data.containsKey('accessToken') || data['accessToken'] == null) {
+        throw core.ServerException('Invalid response from server: accessToken is missing');
+      }
+      if (!data.containsKey('refreshToken') || data['refreshToken'] == null) {
+        throw core.ServerException('Invalid response from server: refreshToken is missing');
+      }
+      if (!data.containsKey('user') || data['user'] == null || data['user'] is! Map<String, dynamic>) {
         throw core.ServerException('Invalid response from server: user data is missing or invalid');
       }
       
-      return AuthResponseModel.fromJson(data);
+      return AuthResponseModel.fromJson(responseData);
     } catch (e) {
       logger.e('Error signing up with email and password', e);
       rethrow;

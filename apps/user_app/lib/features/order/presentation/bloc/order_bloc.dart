@@ -33,9 +33,14 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     OrderLoadListEvent event,
     Emitter<OrderState> emit,
   ) async {
+    print('🎬 OrderBloc: _onOrderLoadList called with active: ${event.active}');
+    
+    // Always emit loading state when loading orders
     emit(OrderLoadingList(isActiveTab: event.active));
+    print('📤 OrderBloc: Emitted OrderLoadingList state');
 
     try {
+      print('📞 OrderBloc: Calling _orderRepository.getUserOrders...');
       final result = await _orderRepository.getUserOrders(
         status: event.active 
             ? null // Load all active orders
@@ -43,28 +48,37 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         page: 1,
         limit: 20,
       );
+      print('📋 OrderBloc: Repository call completed');
 
       result.fold(
-        (failure) => emit(OrderError(
-          failure.message,
-          isListError: true,
-          isActiveTab: event.active,
-        )),
+        (failure) {
+          print('❌ OrderBloc: Repository returned failure: ${failure.message}');
+          emit(OrderError(
+            failure.message,
+            isListError: true,
+            isActiveTab: event.active,
+          ));
+        },
         (orders) {
+          print('✅ OrderBloc: Repository returned ${orders.length} orders');
           // Filter orders based on active/past
           final filteredOrders = event.active
               ? orders.where((order) => order.isActive).toList().cast<Order>()
               : orders.where((order) => !order.isActive).toList().cast<Order>();
-              
+          
+          print('🔍 OrderBloc: After filtering for ${event.active ? 'active' : 'past'} orders: ${filteredOrders.length} orders');
+          
           emit(OrderListLoaded(
             orders: filteredOrders,
             hasMore: orders.length >= 20,
             currentPage: 1,
             isActiveTab: event.active,
           ));
+          print('📤 OrderBloc: Emitted OrderListLoaded state with ${filteredOrders.length} orders');
         },
       );
     } catch (e) {
+      print('💥 OrderBloc: Exception in _onOrderLoadList: $e');
       emit(OrderError(
         'Failed to load orders: $e',
         isListError: true,
@@ -187,9 +201,11 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     OrderPlaceEvent event,
     Emitter<OrderState> emit,
   ) async {
+    print('🚀 OrderBloc: Starting order placement...');
     emit(const OrderPlacing());
 
     try {
+      print('📞 OrderBloc: Calling repository.placeOrder...');
       final result = await _orderRepository.placeOrder(
         shopId: event.shopId,
         items: event.items,
@@ -201,11 +217,22 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         tip: event.tip,
       );
 
+      print('📋 OrderBloc: Repository call completed, processing result...');
+      
       result.fold(
-        (failure) => emit(OrderError(failure.message)),
-        (order) => emit(OrderPlaced(order)),
+        (failure) {
+          print('❌ OrderBloc: Order placement failed: ${failure.message}');
+          emit(OrderError(failure.message));
+        },
+        (order) {
+          print('✅ OrderBloc: Order placement successful! Order ID: ${order.id}');
+          print('🎯 OrderBloc: Emitting OrderPlaced state...');
+          emit(OrderPlaced(order));
+          print('✨ OrderBloc: OrderPlaced state emitted successfully!');
+        },
       );
     } catch (e) {
+      print('💥 OrderBloc: Exception during order placement: $e');
       emit(OrderError('Failed to place order: $e'));
     }
   }

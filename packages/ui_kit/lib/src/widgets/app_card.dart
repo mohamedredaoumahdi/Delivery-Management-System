@@ -126,9 +126,11 @@ class AppCard extends StatelessWidget {
             thickness: 1,
             color: theme.dividerColor.withOpacity(0.5),
           ),
-        Padding(
-          padding: contentPadding,
-          child: child,
+        Flexible(
+          child: Padding(
+            padding: contentPadding,
+            child: child,
+          ),
         ),
       ],
     );

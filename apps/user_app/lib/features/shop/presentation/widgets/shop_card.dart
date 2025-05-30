@@ -222,7 +222,10 @@ class ShopCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const Spacer(),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                     Icon(
                       Icons.access_time,
                       size: 14,
@@ -232,8 +235,13 @@ class ShopCard extends StatelessWidget {
                     Text(
                       '${shop.estimatedDeliveryTime} min',
                       style: theme.textTheme.bodySmall,
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                     Icon(
                       Icons.pedal_bike_outlined,
                       size: 14,
@@ -243,6 +251,8 @@ class ShopCard extends StatelessWidget {
                     Text(
                       '\$${shop.deliveryFee.toStringAsFixed(2)}',
                       style: theme.textTheme.bodySmall,
+                        ),
+                      ],
                     ),
                   ],
                 ),

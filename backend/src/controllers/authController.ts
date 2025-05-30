@@ -105,12 +105,19 @@ export class AuthController {
       },
     });
 
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      return next(new AppError('Invalid email or password', 401));
+    // Check if user exists
+    if (!user) {
+      return next(new AppError('No account found with this email address. Please check your email or sign up for a new account.', 404));
     }
 
+    // Check if password is correct
+    if (!(await bcrypt.compare(password, user.passwordHash))) {
+      return next(new AppError('Incorrect password. Please check your password and try again.', 401));
+    }
+
+    // Check if account is active
     if (!user.isActive) {
-      return next(new AppError('Account has been deactivated', 401));
+      return next(new AppError('Your account has been deactivated. Please contact support for assistance.', 403));
     }
 
     // Generate tokens

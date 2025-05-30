@@ -187,6 +187,14 @@ class MockShopRepository implements ShopRepository {
   }
 
   @override
+  Future<Either<Failure, (Product, Shop)>> getProductWithShop(String productId) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    final product = _mockProducts.values.expand((list) => list).firstWhere((p) => p.id == productId, orElse: () => throw Exception('Product not found'));
+    final shop = _mockShops.firstWhere((s) => s.id == product.shopId, orElse: () => throw Exception('Shop not found'));
+    return Right((product, shop));
+  }
+
+  @override
   Future<Either<Failure, List<Shop>>> getFeaturedShops({int limit = 10}) async {
     // Return only shops with a rating above 4.4
     final featured = _mockShops.where((shop) => shop.rating > 4.4).take(limit).toList();

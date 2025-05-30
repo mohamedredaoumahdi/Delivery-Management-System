@@ -16,6 +16,7 @@ import '../features/cart/presentation/bloc/cart_bloc.dart';
 import '../features/home/presentation/bloc/home_bloc.dart';
 import '../features/shop/data/shop_repository_impl.dart';
 import '../features/shop/presentation/bloc/shop_details_bloc.dart';
+import '../features/shop/presentation/bloc/product_details_bloc.dart';
 import '../features/shop/presentation/bloc/product_list_bloc.dart';
 import '../features/order/presentation/bloc/order_bloc.dart';
 
@@ -159,6 +160,11 @@ Future<void> initializeDependencies() async {
   // Register ProductListBloc
   getIt.registerFactory<ProductListBloc>(
     () => ProductListBloc(getIt<ShopRepository>()),
+  );
+
+  // Register ProductDetailsBloc
+  getIt.registerFactory<ProductDetailsBloc>(
+    () => ProductDetailsBloc(getIt<ShopRepository>()),
   );
 
   // Register OrderBloc

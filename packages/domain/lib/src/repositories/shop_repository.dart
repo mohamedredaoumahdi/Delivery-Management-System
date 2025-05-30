@@ -42,6 +42,10 @@ abstract class ShopRepository {
   /// Get a product by ID
   Future<Either<Failure, Product>> getProductById(String id);
   
+  /// Get a product by ID with shop data
+  /// Returns a tuple containing the product and its associated shop
+  Future<Either<Failure, (Product, Shop)>> getProductWithShop(String productId);
+  
   /// Get featured shops
   Future<Either<Failure, List<Shop>>> getFeaturedShops({
     int limit = 10,

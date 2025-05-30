@@ -49,21 +49,46 @@ class ProductDetailsBloc extends Bloc<ProductDetailsEvent, ProductDetailsState> 
   }
 
   Future<void> _onLoad(ProductDetailsLoadEvent event, Emitter<ProductDetailsState> emit) async {
+    print('🚀 ProductDetailsLoadEvent triggered for product: ${event.productId}');
+    
+    if (emit.isDone) {
+      print('❌ ProductDetails _onLoad aborted - emit is already done');
+      return;
+    }
+    
     emit(ProductDetailsLoading());
+    
     try {
-      final result = await _shopRepository.getProductById(event.productId);
+      print('🔍 Loading product with shop details for: ${event.productId}');
+      
+      final result = await _shopRepository.getProductWithShop(event.productId);
+      
+      if (emit.isDone) {
+        print('⚠️ Emit is done after loading, cannot continue');
+        return;
+      }
+      
       result.fold(
-        (failure) => emit(ProductDetailsError(failure.message)),
-        (product) async {
-          final shopResult = await _shopRepository.getShopById(product.shopId);
-          shopResult.fold(
-            (failure) => emit(ProductDetailsError(failure.message)),
-            (shop) => emit(ProductDetailsLoaded(product, shop)),
-          );
+        (failure) {
+          print('❌ Product with shop loading failed: ${failure.message}');
+          if (!emit.isDone) {
+            emit(ProductDetailsError(failure.message));
+          }
+        },
+        (data) {
+          final (product, shop) = data;
+          print('✅ Product and shop loaded: ${product.name} from ${shop.name}');
+          if (!emit.isDone) {
+            emit(ProductDetailsLoaded(product, shop));
+            print('🎯 ProductDetailsLoaded state emitted successfully');
+          }
         },
       );
     } catch (e) {
-      emit(ProductDetailsError(e.toString()));
+      print('❌ ProductDetails exception: $e');
+      if (!emit.isDone) {
+        emit(ProductDetailsError(e.toString()));
+      }
     }
   }
 }

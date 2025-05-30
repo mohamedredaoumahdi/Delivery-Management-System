@@ -21,22 +21,19 @@ abstract class AppException implements Exception {
 /// Exception thrown when there is a network connectivity issue
 class NetworkException extends AppException {
   /// Creates a network exception
-  const NetworkException(String message, [String? code, dynamic originalError])
-      : super(message, code, originalError);
+  const NetworkException(super.message, [super.code, super.originalError]);
 }
 
 /// Exception thrown when there is a server error
 class ServerException extends AppException {
   /// Creates a server exception
-  const ServerException(String message, [String? code, dynamic originalError])
-      : super(message, code, originalError);
+  const ServerException(super.message, [super.code, super.originalError]);
 }
 
 /// Exception thrown when there is an authentication error
 class AuthException extends AppException {
   /// Creates an authentication exception
-  const AuthException(String message, [String? code, dynamic originalError])
-      : super(message, code, originalError);
+  const AuthException(super.message, [super.code, super.originalError]);
 }
 
 /// Exception thrown when there is a validation error

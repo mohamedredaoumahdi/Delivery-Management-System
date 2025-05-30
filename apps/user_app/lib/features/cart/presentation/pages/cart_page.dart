@@ -21,7 +21,29 @@ class _CartPageState extends State<CartPage> {
   @override
   void initState() {
     super.initState();
+    
+    // Close any stale dialogs that might be open from previous pages
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _closeAnyStaleDialogs();
+    });
+    
     context.read<CartBloc>().add(const CartLoadEvent());
+  }
+
+  void _closeAnyStaleDialogs() {
+    try {
+      int dialogsClosed = 0;
+      while (Navigator.canPop(context) && dialogsClosed < 5) {
+        Navigator.pop(context);
+        dialogsClosed++;
+        print('🧹 CartPage: Closed stale dialog #$dialogsClosed');
+      }
+      if (dialogsClosed > 0) {
+        print('✅ CartPage: Closed $dialogsClosed stale dialogs');
+      }
+    } catch (e) {
+      print('⚠️ CartPage: Error closing stale dialogs: $e');
+    }
   }
 
   @override
@@ -307,8 +329,8 @@ class _CartPageState extends State<CartPage> {
   }
 
   void _navigateToCheckout(BuildContext context, CartLoaded state) {
-    // Navigate to checkout
-    context.push('/checkout', extra: state.summary);
+    // Navigate to checkout using the nested route under cart
+    context.push('/cart/checkout', extra: state.summary);
   }
 
   void _confirmClearCart(BuildContext context) {

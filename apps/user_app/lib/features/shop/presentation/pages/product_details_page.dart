@@ -64,32 +64,35 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   }
 
   void _addToCart(Product product, String shopName) {
-    final instructions = _instructionsController.text.trim();
-    
-    context.read<CartBloc>().add(CartAddItemEvent(
-      product: product,
-      shopId: widget.shopId,
-      shopName: shopName,
-      quantity: _quantity,
-      instructions: instructions.isNotEmpty ? instructions : null,
-    ));
-    
-    // Show success message
+    context.read<CartBloc>().add(
+      CartAddItemEvent(
+        product: product,
+        shopId: widget.shopId,
+        shopName: shopName,
+        quantity: _quantity,
+        instructions: _instructionsController.text.trim().isNotEmpty 
+            ? _instructionsController.text.trim() 
+            : null,
+      ),
+    );
+
+    // Check if widget is still mounted before showing snackbar
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           '${product.name} ${_quantity > 1 ? '(${_quantity}x) ' : ''}added to cart',
         ),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
         action: SnackBarAction(
           label: 'View Cart',
-          onPressed: () => context.push('/cart'),
+          onPressed: () => context.go('/cart'),
         ),
       ),
     );
     
-    // Navigate back or show confirmation
-    Navigator.pop(context);
+    // Don't automatically close the page - let user decide via the banner or back button
   }
 
   void _toggleFavorite() {
