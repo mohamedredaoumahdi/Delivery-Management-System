@@ -1,0 +1,108 @@
+name: vendor_app
+description: "Vendor app for the delivery management system"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_bloc: ^8.1.3
+  bloc: ^8.1.2
+  equatable: ^2.0.5
+  image_picker: ^1.0.7
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # Dependency Injection
+  get_it: ^7.6.4
+
+  # Network & API
+  dio: ^5.4.0
+  connectivity_plus: ^5.0.2
+
+  # Local Storage
+  shared_preferences: ^2.2.2
+
+  # Functional Programming
+  dartz: ^0.10.1
+
+  # JSON Serialization
+  json_annotation: ^4.8.1
+
+  # Location Services
+  geolocator: ^10.1.0
+  permission_handler: ^11.1.0
+
+  # External Apps Integration
+  url_launcher: ^6.2.2
+
+  # Date/Time Formatting
+  intl: ^0.19.0
+
+  # Logging
+  logger: ^2.0.2+1
+
+  # UI Components
+  cached_network_image: ^3.3.0
+
+  # Charts for analytics
+  fl_chart: ^0.66.0
+
+  # Local packages
+  core:
+    path: ../../packages/core
+  domain:
+    path: ../../packages/domain
+  data:
+    path: ../../packages/data
+  ui_kit:
+    path: ../../packages/ui_kit
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  # Linting
+  flutter_lints: ^4.0.0
+  
+  # Code Generation
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
+  
+  # Testing
+  bloc_test: ^9.1.5
+  mocktail: ^1.0.2
+
+# Flutter configuration
+flutter:
+  # Use material design
+  uses-material-design: true
+  
+  # Generate localization files
+  generate: false
+
+  # App assets
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+
+# Melos configuration
+melos:
+  name: vendor_app
+
+# Android specific configuration
+android:
+  minSdkVersion: 21
+  targetSdkVersion: 34
+  compileSdkVersion: 34
+
+# iOS specific configuration  
+ios:
+  deploymentTarget: 12.0 
