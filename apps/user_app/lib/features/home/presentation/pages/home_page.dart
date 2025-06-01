@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                       // Search Bar
                       HomeSearchBar(
                         onTap: () {
-                          context.push('/search');
+                          context.go('/search');
                         },
                       ),
                       const SizedBox(height: 24),

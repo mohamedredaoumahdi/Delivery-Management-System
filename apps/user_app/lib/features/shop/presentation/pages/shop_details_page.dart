@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:domain/domain.dart';
 import 'package:ui_kit/ui_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:user_app/features/cart/presentation/bloc/cart_bloc.dart';
+import 'package:flutter/rendering.dart';
 
 import '../bloc/shop_details_bloc.dart';
 import '../bloc/product_list_bloc.dart';
@@ -824,30 +826,192 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
 
   // Helper methods for actions
   void _openMaps(double latitude, double longitude) async {
-    final url = 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
+    try {
+      final url = 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+      print('🗺️ Attempting to open maps: $url');
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+        );
+        print('✅ Maps opened successfully');
+      } else {
+        print('❌ Cannot launch maps URL: $url');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cannot open maps')),
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ Error opening maps: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error opening maps: $e')),
+        );
+      }
     }
   }
 
   void _makePhoneCall(String phoneNumber) async {
-    final url = 'tel:$phoneNumber';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
+    try {
+      final url = 'tel:$phoneNumber';
+      print('📞 Attempting to make phone call: $url');
+      
+      // First try to launch the phone app
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+        );
+        print('✅ Phone call initiated successfully');
+      } else {
+        print('❌ Cannot launch phone URL: $url');
+        // Show fallback dialog with phone number
+        _showContactDialog(
+          context,
+          'Phone Number',
+          phoneNumber,
+          'The phone app is not available. You can manually dial this number:',
+          Icons.phone,
+        );
+      }
+    } catch (e) {
+      print('❌ Error making phone call: $e');
+      // Show fallback dialog with phone number
+      _showContactDialog(
+        context,
+        'Phone Number',
+        phoneNumber,
+        'Unable to open phone app. You can manually dial this number:',
+        Icons.phone,
+      );
     }
   }
 
   void _sendEmail(String email) async {
-    final url = 'mailto:$email';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
+    try {
+      final url = 'mailto:$email';
+      print('📧 Attempting to send email: $url');
+      
+      // First try to launch the email app
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+        );
+        print('✅ Email app opened successfully');
+      } else {
+        print('❌ Cannot launch email URL: $url');
+        // Show fallback dialog with email address
+        _showContactDialog(
+          context,
+          'Email Address',
+          email,
+          'The email app is not available. You can manually copy this email address:',
+          Icons.email,
+        );
+      }
+    } catch (e) {
+      print('❌ Error opening email: $e');
+      // Show fallback dialog with email address
+      _showContactDialog(
+        context,
+        'Email Address',
+        email,
+        'Unable to open email app. You can manually copy this email address:',
+        Icons.email,
+      );
     }
   }
 
+  void _showContactDialog(
+    BuildContext context,
+    String title,
+    String contact,
+    String message,
+    IconData icon,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          icon: Icon(icon, size: 32),
+          title: Text(title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(message),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        contact,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy),
+                      onPressed: () async {
+                        // Copy to clipboard functionality
+                        await Clipboard.setData(ClipboardData(text: contact));
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('$title copied to clipboard')),
+                        );
+                      },
+                      tooltip: 'Copy to clipboard',
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _openWebsite(String website) async {
-    final url = website.startsWith('http') ? website : 'https://$website';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
+    try {
+      final url = website.startsWith('http') ? website : 'https://$website';
+      print('🌐 Attempting to open website: $url');
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+        );
+        print('✅ Website opened successfully');
+      } else {
+        print('❌ Cannot launch website URL: $url');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cannot open website')),
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ Error opening website: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error opening website: $e')),
+        );
+      }
     }
   }
 } 

@@ -260,7 +260,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   
                   // Shop name
                   InkWell(
-                    onTap: () => context.push('/shops/${widget.shopId}'),
+                    onTap: () => context.go('/shops/${widget.shopId}'),
                     child: Row(
                       children: [
                         Icon(

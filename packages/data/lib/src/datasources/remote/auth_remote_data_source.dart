@@ -246,7 +246,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? profilePicture,
   }) async {
     try {
-      final response = await apiClient.patch(
+      final response = await apiClient.put(
         '/users/profile',
         data: {
           'name': name,
@@ -255,7 +255,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
-      return UserModel.fromJson(response.data);
+      return UserModel.fromJson(response.data['data']);
     } catch (e) {
       logger.e('Error updating profile', e);
       rethrow;
@@ -268,8 +268,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String newPassword,
   }) async {
     try {
-      await apiClient.patch(
-        '/auth/change-password',
+      await apiClient.put(
+        '/users/password',
         data: {
           'currentPassword': currentPassword,
           'newPassword': newPassword,

@@ -138,9 +138,9 @@ class AppCard extends StatelessWidget {
     // Build the card with proper decoration
     final card = Material(
       color: backgroundColor ?? theme.cardTheme.color ?? theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(borderRadius),
       elevation: elevation,
       clipBehavior: Clip.antiAlias,
+      borderRadius: borderWidth > 0 ? null : BorderRadius.circular(borderRadius),
       shape: borderWidth > 0 
           ? RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(borderRadius),

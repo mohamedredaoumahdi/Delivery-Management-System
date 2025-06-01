@@ -51,6 +51,11 @@ class ProfilePage extends StatelessWidget {
             return _buildProfileContent(context, user);
           }
 
+          if (state is AuthPasswordChanged) {
+            final user = state.user;
+            return _buildProfileContent(context, user);
+          }
+
           // Fallback for other states
           return const Center(
             child: Text('Please log in to view your profile'),

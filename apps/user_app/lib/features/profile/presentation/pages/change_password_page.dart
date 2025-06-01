@@ -165,8 +165,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             // Password changed successfully
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Password changed successfully'),
-                backgroundColor: theme.colorScheme.primary,
+                content: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text('Password changed successfully'),
+                  ],
+                ),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 4),
                 action: SnackBarAction(
                   label: 'OK',
                   textColor: Colors.white,
@@ -182,15 +189,51 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             _newPasswordController.clear();
             _confirmPasswordController.clear();
             
+            // Transition back to authenticated state to keep user logged in
+            context.read<AuthBloc>().add(AuthCheckStatusEvent());
+            
             // Navigate back
             context.pop();
           } else if (state is AuthError) {
+            // Show error message prominently
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.error,
+                content: Row(
+                  children: [
+                    Icon(Icons.error, color: Colors.white),
+                    SizedBox(width: 8),
+                    Expanded(child: Text(state.message)),
+                  ],
+                ),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 6),
+                action: SnackBarAction(
+                  label: 'DISMISS',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
               ),
             );
+            
+            // Also show a dialog for critical errors
+            if (state.message.toLowerCase().contains('current password is incorrect')) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  icon: Icon(Icons.error, color: Colors.red, size: 48),
+                  title: Text('Incorrect Password'),
+                  content: Text('The current password you entered is incorrect. Please enter your actual login password.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+            }
           }
         },
         builder: (context, state) {

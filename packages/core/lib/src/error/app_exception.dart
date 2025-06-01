@@ -88,46 +88,59 @@ class ErrorHandler {
   static AppException _handleHttpError(DioException error) {
     final statusCode = error.response?.statusCode;
     final data = error.response?.data;
+    
+    // Extract message from server response
+    String? serverMessage;
+    if (data is Map<String, dynamic> && data.containsKey('message')) {
+      serverMessage = data['message'] as String?;
+    }
 
     switch (statusCode) {
       case 400:
         return _parseValidationError(data) ?? 
-               const ServerException('Bad request', 'BAD_REQUEST');
+               ServerException(serverMessage ?? 'Bad request', 'BAD_REQUEST');
       
       case 401:
-        return const AuthException(
-          'Authentication failed. Please login again.',
+        return AuthException(
+          serverMessage ?? 'Authentication failed. Please login again.',
           'UNAUTHORIZED',
         );
       
       case 403:
-        return const AuthException(
-          'Access denied. You don\'t have permission to perform this action.',
+        return AuthException(
+          serverMessage ?? 'Access denied. You don\'t have permission to perform this action.',
           'FORBIDDEN',
         );
       
       case 404:
-        return const ServerException('Resource not found', 'NOT_FOUND');
+        return ServerException(
+          serverMessage ?? 'Resource not found', 
+          'NOT_FOUND'
+        );
       
       case 422:
         return _parseValidationError(data) ?? 
-               const ValidationException('Validation failed', null, 'VALIDATION_ERROR');
+               ValidationException(
+                 serverMessage ?? 'Validation failed', 
+                 null, 
+                 'VALIDATION_ERROR'
+               );
       
       case 500:
-        return const ServerException(
-          'Internal server error. Please try again later.',
+        return ServerException(
+          serverMessage ?? 'Internal server error. Please try again later.',
           'INTERNAL_SERVER_ERROR',
         );
       
       case 503:
-        return const ServerException(
-          'Service unavailable. Please try again later.',
+        return ServerException(
+          serverMessage ?? 'Service unavailable. Please try again later.',
           'SERVICE_UNAVAILABLE',
         );
       
       default:
         return ServerException(
-          'Server error ($statusCode). Please try again later.',
+          serverMessage ?? 'Server error ($statusCode). Please try again later.',
           'HTTP_$statusCode',
         );
     }

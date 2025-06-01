@@ -20,6 +20,7 @@ import '../features/order/presentation/pages/order_tracking_page.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
 import '../features/profile/presentation/pages/edit_profile_page.dart';
 import '../features/profile/presentation/pages/change_password_page.dart';
+import '../features/search/presentation/pages/search_page.dart';
 import '../di/injection.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -70,6 +71,15 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const ForgotPasswordPage(),
+    ),
+    
+    // Search route (standalone)
+    GoRoute(
+      path: '/search',
+      builder: (context, state) {
+        final query = state.uri.queryParameters['q'];
+        return SearchPage(initialQuery: query);
+      },
     ),
     
     // Main app shell with bottom navigation

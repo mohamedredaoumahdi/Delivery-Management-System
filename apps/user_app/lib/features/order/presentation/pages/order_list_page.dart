@@ -146,14 +146,6 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          final bool isActiveTab = _tabController.index == 0;
-          print('🔄 Manual trigger: Loading ${isActiveTab ? 'active' : 'past'} orders...');
-          context.read<OrderBloc>().add(OrderLoadListEvent(active: isActiveTab));
-        },
-        child: const Icon(Icons.refresh),
-      ),
     );
   }
   

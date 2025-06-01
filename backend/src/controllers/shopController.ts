@@ -25,13 +25,9 @@ export class ShopController {
       where.category = category.toUpperCase();
     }
 
-    // Add search query filter
+    // Add search query filter - only search by shop name
     if (query && typeof query === 'string') {
-      where.OR = [
-        { name: { contains: query, mode: 'insensitive' } },
-        { description: { contains: query, mode: 'insensitive' } },
-        { address: { contains: query, mode: 'insensitive' } },
-      ];
+      where.name = { contains: query, mode: 'insensitive' };
     }
 
     // Calculate pagination
