@@ -45,7 +45,7 @@ class MenuError extends MenuState {
 
 // Bloc
 class MenuBloc extends Bloc<MenuEvent, MenuState> {
-  final MockMenuService menuService;
+  final MenuService menuService;
 
   MenuBloc({
     required this.menuService,

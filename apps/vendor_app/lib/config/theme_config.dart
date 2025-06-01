@@ -29,7 +29,6 @@ class ThemeConfig {
         secondary: secondaryColor,
         error: errorColor,
         surface: surfaceColor,
-        background: backgroundColor,
       ),
       
       // App Bar Theme
@@ -171,7 +170,6 @@ class ThemeConfig {
         secondary: secondaryColor,
         error: errorColor,
         surface: const Color(0xFF1E1E1E),
-        background: const Color(0xFF121212),
       ),
       
       // App Bar Theme

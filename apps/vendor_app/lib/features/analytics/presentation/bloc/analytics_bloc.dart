@@ -45,7 +45,7 @@ class AnalyticsError extends AnalyticsState {
 
 // Bloc
 class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
-  final MockVendorService vendorService;
+  final VendorService vendorService;
 
   AnalyticsBloc({
     required this.vendorService,

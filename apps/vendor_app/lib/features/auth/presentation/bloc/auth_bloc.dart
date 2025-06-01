@@ -83,7 +83,7 @@ class AuthError extends AuthState {
 
 // Bloc
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final MockAuthService authService;
+  final AuthService authService;
 
   AuthBloc({
     required this.authService,

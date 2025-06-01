@@ -45,7 +45,7 @@ class OrdersError extends OrdersState {
 
 // Bloc
 class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
-  final MockOrderService orderService;
+  final OrderService orderService;
 
   OrdersBloc({
     required this.orderService,

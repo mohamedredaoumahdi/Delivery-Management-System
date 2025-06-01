@@ -45,7 +45,7 @@ class DashboardError extends DashboardState {
 
 // Bloc
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
-  final MockVendorService vendorService;
+  final VendorService vendorService;
   
   DashboardBloc({
     required this.vendorService,

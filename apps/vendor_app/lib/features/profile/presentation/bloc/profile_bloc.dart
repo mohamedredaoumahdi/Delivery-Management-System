@@ -45,7 +45,7 @@ class ProfileError extends ProfileState {
 
 // Bloc
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  final MockAuthService authService;
+  final AuthService authService;
 
   ProfileBloc({
     required this.authService,

@@ -72,6 +72,30 @@ class OrderItem extends Equatable {
     this.instructions,
   });
   
+  /// Creates an order item from JSON
+  factory OrderItem.fromJson(Map<String, dynamic> json) {
+    return OrderItem(
+      productId: json['productId'] as String,
+      productName: json['productName'] as String,
+      productPrice: (json['productPrice'] as num).toDouble(),
+      quantity: json['quantity'] as int,
+      totalPrice: (json['totalPrice'] as num).toDouble(),
+      instructions: json['instructions'] as String?,
+    );
+  }
+  
+  /// Converts the order item to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'productId': productId,
+      'productName': productName,
+      'productPrice': productPrice,
+      'quantity': quantity,
+      'totalPrice': totalPrice,
+      'instructions': instructions,
+    };
+  }
+  
   @override
   List<Object?> get props => [
     productId, productName, productPrice, quantity, totalPrice, instructions,
@@ -262,6 +286,112 @@ class Order extends Equatable {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
+  }
+  
+  /// Creates an order from JSON
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      shopId: json['shopId'] as String,
+      shopName: json['shopName'] as String,
+      items: (json['items'] as List)
+          .map((e) => OrderItem.fromJson(e))
+          .toList(),
+      subtotal: (json['subtotal'] as num).toDouble(),
+      deliveryFee: (json['deliveryFee'] as num).toDouble(),
+      serviceFee: (json['serviceFee'] as num).toDouble(),
+      tax: (json['tax'] as num).toDouble(),
+      tip: (json['tip'] as num?)?.toDouble() ?? 0,
+      discount: (json['discount'] as num?)?.toDouble() ?? 0,
+      total: (json['total'] as num).toDouble(),
+      paymentMethod: _parsePaymentMethod(json['paymentMethod'] as String),
+      paymentId: json['paymentId'] as String?,
+      status: _parseOrderStatus(json['status'] as String),
+      deliveryAddress: json['deliveryAddress'] as String,
+      deliveryLatitude: (json['deliveryLatitude'] as num).toDouble(),
+      deliveryLongitude: (json['deliveryLongitude'] as num).toDouble(),
+      deliveryInstructions: json['deliveryInstructions'] as String?,
+      estimatedDeliveryTime: json['estimatedDeliveryTime'] != null 
+          ? DateTime.parse(json['estimatedDeliveryTime'] as String)
+          : null,
+      deliveredAt: json['deliveredAt'] != null 
+          ? DateTime.parse(json['deliveredAt'] as String)
+          : null,
+      deliveryPersonId: json['deliveryPersonId'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+
+  /// Parse order status from string
+  static OrderStatus _parseOrderStatus(String statusString) {
+    switch (statusString.toUpperCase()) {
+      case 'PENDING':
+        return OrderStatus.pending;
+      case 'ACCEPTED':
+        return OrderStatus.accepted;
+      case 'PREPARING':
+        return OrderStatus.preparing;
+      case 'READY_FOR_PICKUP':
+        return OrderStatus.readyForPickup;
+      case 'IN_DELIVERY':
+        return OrderStatus.inDelivery;
+      case 'DELIVERED':
+        return OrderStatus.delivered;
+      case 'CANCELLED':
+        return OrderStatus.cancelled;
+      case 'REFUNDED':
+        return OrderStatus.refunded;
+      default:
+        return OrderStatus.pending;
+    }
+  }
+
+  /// Parse payment method from string
+  static PaymentMethod _parsePaymentMethod(String methodString) {
+    switch (methodString.toUpperCase()) {
+      case 'CASH_ON_DELIVERY':
+        return PaymentMethod.cashOnDelivery;
+      case 'CARD':
+        return PaymentMethod.card;
+      case 'WALLET':
+        return PaymentMethod.wallet;
+      case 'BANK_TRANSFER':
+        return PaymentMethod.bankTransfer;
+      default:
+        return PaymentMethod.cashOnDelivery;
+    }
+  }
+
+  /// Converts the order to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'shopId': shopId,
+      'shopName': shopName,
+      'items': items.map((e) => e.toJson()).toList(),
+      'subtotal': subtotal,
+      'deliveryFee': deliveryFee,
+      'serviceFee': serviceFee,
+      'tax': tax,
+      'tip': tip,
+      'discount': discount,
+      'total': total,
+      'paymentMethod': paymentMethod.toString().split('.').last,
+      'paymentId': paymentId,
+      'status': status.toString().split('.').last,
+      'deliveryAddress': deliveryAddress,
+      'deliveryLatitude': deliveryLatitude,
+      'deliveryLongitude': deliveryLongitude,
+      'deliveryInstructions': deliveryInstructions,
+      'estimatedDeliveryTime': estimatedDeliveryTime?.toIso8601String(),
+      'deliveredAt': deliveredAt?.toIso8601String(),
+      'deliveryPersonId': deliveryPersonId,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
   }
   
   /// Calculate total number of items
