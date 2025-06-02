@@ -15,6 +15,7 @@ router.use(requireRole(['VENDOR']));
 
 // Shop management
 router.get('/shop', vendorController.getVendorShop);
+router.post('/shop', vendorController.createShop);
 router.put('/shop', validateRequest(updateShopSchema), vendorController.updateShop);
 router.patch('/shop/status', vendorController.toggleShopStatus);
 

@@ -65,7 +65,7 @@ Future<void> initializeDependencies() async {
     return dio;
   });
   
-  // Services (bridge between old and new architecture)
+  // Services (clean backend integration)
   sl.registerLazySingleton<AuthService>(
     () => AuthService(sl<SharedPreferences>(), sl<Dio>()),
   );
@@ -79,7 +79,7 @@ Future<void> initializeDependencies() async {
   );
   
   sl.registerLazySingleton<OrderService>(
-    () => OrderService(),
+    () => OrderService(sl<Dio>()),
   );
   
   // Blocs with service dependencies
@@ -108,7 +108,7 @@ Future<void> initializeDependencies() async {
   ));
 }
 
-// Authentication service with real API integration
+// Authentication service with clean backend integration
 class AuthService {
   final SharedPreferences _sharedPreferences;
   final Dio _dio;
@@ -116,291 +116,133 @@ class AuthService {
   AuthService(this._sharedPreferences, this._dio);
   
   Future<Map<String, dynamic>> login(String email, String password) async {
-    try {
-      final response = await _dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
-      
-      // Store auth token
-      if (response.data['token'] != null) {
-        await _sharedPreferences.setString('auth_token', response.data['token']);
-      }
-      
-      return {
-        'success': true,
-        'user': response.data['user'],
-      };
-    } catch (e) {
-      // Fallback to mock authentication for development
-      if (email == 'vendor@test.com' && password == 'password') {
-        await _sharedPreferences.setString('auth_token', 'mock_token_for_development');
-        return {
-          'success': true,
-          'user': {
-            'id': '1',
-            'name': 'Maria Rodriguez',
-            'email': email,
-            'businessName': 'Bella Vista Restaurant',
-            'phone': '+1 (555) 123-4567',
-            'address': '123 Main Street, Downtown, CA 90210',
-            'cuisineType': 'Italian & Mediterranean',
-            'status': 'active',
-            'role': 'vendor',
-            'isVerified': true,
-            'rating': 4.8,
-            'totalRatings': 156,
-            'totalOrders': 247,
-            'joinedAt': '2023-01-15T10:00:00.000Z',
-            'updatedAt': DateTime.now().toIso8601String(),
-          }
-        };
-      }
-      throw Exception('Invalid credentials');
+    final response = await _dio.post('/auth/login', data: {
+      'email': email,
+      'password': password,
+    });
+    
+    // Store auth token from backend response
+    if (response.data['data']['accessToken'] != null) {
+      await _sharedPreferences.setString('auth_token', response.data['data']['accessToken']);
     }
+    
+    return {
+      'success': true,
+      'user': response.data['data']['user'],
+    };
   }
   
   Future<Map<String, dynamic>> register(Map<String, String> data) async {
-    try {
-      final response = await _dio.post('/auth/register', data: {
-        'email': data['email'],
-        'password': data['password'],
-        'name': data['name'],
-        'phone': data['phone'],
-        'businessName': data['businessName'],
-        'businessAddress': data['businessAddress'],
-        'role': 'vendor',
-      });
-      
-      // Store auth token
-      if (response.data['token'] != null) {
-        await _sharedPreferences.setString('auth_token', response.data['token']);
-      }
-      
-      return {
-        'success': true,
-        'user': response.data['user'],
-      };
-    } catch (e) {
-      // Fallback to mock registration for development
-      return {
-        'success': true,
-        'user': {
-          'id': '1',
-          'name': data['name'],
-          'email': data['email'],
-          'businessName': data['businessName'],
-        }
-      };
+    final response = await _dio.post('/auth/register', data: {
+      'email': data['email'],
+      'password': data['password'],
+      'confirmPassword': data['password'],
+      'name': data['name'],
+      'phone': data['phone'],
+      'role': 'VENDOR',
+    });
+    
+    // Store auth token from backend response
+    if (response.data['data']['accessToken'] != null) {
+      await _sharedPreferences.setString('auth_token', response.data['data']['accessToken']);
     }
+    
+    return {
+      'success': true,
+      'user': response.data['data']['user'],
+    };
   }
   
   Future<void> logout() async {
-    try {
-      await _dio.post('/auth/logout');
-    } catch (e) {
-      // Continue with logout even if API call fails
-    } finally {
-      await _sharedPreferences.remove('auth_token');
-    }
+    await _dio.post('/auth/logout');
+    await _sharedPreferences.remove('auth_token');
   }
   
   Future<Map<String, dynamic>?> getCurrentUser() async {
-    try {
-      final response = await _dio.get('/auth/me');
-      return response.data;
-    } catch (e) {
-      // Store mock token and return mock user data for development when API fails
-      await _sharedPreferences.setString('auth_token', 'mock_token_for_development');
-      return {
-        'id': '1',
-        'name': 'Maria Rodriguez',
-        'email': 'vendor@test.com',
-        'businessName': 'Bella Vista Restaurant',
-        'phone': '+1 (555) 123-4567',
-        'address': '123 Main Street, Downtown, CA 90210',
-        'cuisineType': 'Italian & Mediterranean',
-        'status': 'active',
-        'role': 'vendor',
-        'isVerified': true,
-        'rating': 4.8,
-        'totalRatings': 156,
-        'totalOrders': 247,
-        'joinedAt': '2023-01-15T10:00:00.000Z',
-        'updatedAt': DateTime.now().toIso8601String(),
-      };
-    }
+    final response = await _dio.get('/auth/me');
+    return response.data['data'];
   }
 }
 
-// Vendor service with real API integration
+// Vendor service with clean backend integration
 class VendorService {
   final Dio _dio;
   
   VendorService(this._dio);
   
   Future<Map<String, dynamic>> getDashboardData() async {
-    try {
-      final response = await _dio.get('/vendors/me/dashboard');
-      return response.data;
-    } catch (e) {
-      // Fallback to mock data if API fails
-      return {
-        'todayOrders': 24,
-        'todayRevenue': 480.50,
-        'pendingOrders': 3,
-        'preparingOrders': 2,
-        'readyOrders': 1,
-        'completedOrders': 20,
-        'rating': 4.8,
-        'totalRatings': 156,
-        'weekOrders': 168,
-        'weekRevenue': 3360.0,
-        'monthOrders': 720,
-        'monthRevenue': 14400.0,
-        'totalOrders': 2400,
-        'totalRevenue': 48000.0,
-        'averageOrderValue': 20.0,
-        'recentOrders': [],
-        'topItems': [],
-        'revenueTrend': [],
-        'ordersTrend': [],
-        'peakHours': [],
-        'isShopOpen': true,
-        'activeMenuItems': 25,
-        'outOfStockItems': 3,
-        'lastUpdated': DateTime.now().toIso8601String(),
-      };
-    }
+    final response = await _dio.get('/vendor/shop');
+    return response.data;
+  }
+  
+  Future<Map<String, dynamic>> createShop(Map<String, dynamic> shopData) async {
+    final response = await _dio.post('/vendor/shop', data: shopData);
+    return response.data;
+  }
+  
+  Future<Map<String, dynamic>> getAnalytics({String? period}) async {
+    final response = await _dio.get('/vendor/analytics/sales', queryParameters: {
+      if (period != null) 'period': period,
+    });
+    return response.data;
   }
 }
 
-// Menu service with real API integration
+// Menu service with clean backend integration
 class MenuService {
   final Dio _dio;
   
   MenuService(this._dio);
   
   Future<List<Map<String, dynamic>>> getMenuItems() async {
-    try {
-      final response = await _dio.get('/vendors/me/menu-items');
-      return List<Map<String, dynamic>>.from(response.data);
-    } catch (e) {
-      // Fallback to mock data if API fails
-      return [
-        {
-          'id': '1',
-          'name': 'Classic Burger',
-          'description': 'Juicy beef patty with lettuce, tomato, and special sauce',
-          'price': 12.99,
-          'category': 'Main Course',
-          'subcategory': null,
-          'status': 'available',
-          'isAvailable': true,
-          'images': [],
-          'mainImageUrl': null,
-          'preparationTime': 15,
-          'calories': 650,
-          'allergens': ['gluten', 'dairy'],
-          'dietaryTags': [],
-          'variations': [],
-          'addOns': [],
-          'isCustomizable': true,
-          'vendorId': 'current-vendor',
-          'sortOrder': 1,
-          'isFeatured': true,
-          'discountPercentage': null,
-          'discountedPrice': null,
-          'createdAt': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
-        },
-        {
-          'id': '2',
-          'name': 'Margherita Pizza',
-          'description': 'Fresh mozzarella, tomato sauce, and basil',
-          'price': 15.99,
-          'category': 'Main Course',
-          'subcategory': 'Pizza',
-          'status': 'available',
-          'isAvailable': true,
-          'images': [],
-          'mainImageUrl': null,
-          'preparationTime': 20,
-          'calories': 800,
-          'allergens': ['gluten', 'dairy'],
-          'dietaryTags': ['vegetarian'],
-          'variations': [],
-          'addOns': [],
-          'isCustomizable': true,
-          'vendorId': 'current-vendor',
-          'sortOrder': 2,
-          'isFeatured': false,
-          'discountPercentage': null,
-          'discountedPrice': null,
-          'createdAt': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
-        },
-        {
-          'id': '3',
-          'name': 'Caesar Salad',
-          'description': 'Crisp romaine lettuce with parmesan and croutons',
-          'price': 9.99,
-          'category': 'Salads',
-          'subcategory': null,
-          'status': 'available',
-          'isAvailable': true,
-          'images': [],
-          'mainImageUrl': null,
-          'preparationTime': 10,
-          'calories': 350,
-          'allergens': ['dairy', 'eggs'],
-          'dietaryTags': ['vegetarian'],
-          'variations': [],
-          'addOns': [],
-          'isCustomizable': false,
-          'vendorId': 'current-vendor',
-          'sortOrder': 3,
-          'isFeatured': false,
-          'discountPercentage': null,
-          'discountedPrice': null,
-          'createdAt': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
-        },
-      ];
-    }
+    final response = await _dio.get('/vendor/products');
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+  
+  Future<Map<String, dynamic>> createMenuItem(Map<String, dynamic> data) async {
+    final response = await _dio.post('/vendor/products', data: data);
+    return response.data;
+  }
+  
+  Future<Map<String, dynamic>> updateMenuItem(String id, Map<String, dynamic> data) async {
+    final response = await _dio.put('/vendor/products/$id', data: data);
+    return response.data;
+  }
+  
+  Future<void> deleteMenuItem(String id) async {
+    await _dio.delete('/vendor/products/$id');
+  }
+  
+  Future<Map<String, dynamic>> toggleAvailability(String id, bool isAvailable) async {
+    final response = await _dio.patch('/vendor/products/$id', data: {
+      'isAvailable': isAvailable,
+    });
+    return response.data;
   }
 }
 
-// Order service (temporary mock)
+// Order service with clean backend integration
 class OrderService {
-  Future<List<Map<String, dynamic>>> getOrders() async {
-    // Mock data for now
-    await Future.delayed(const Duration(seconds: 1));
-    return [
-      {
-        'id': '1234',
-        'customerName': 'John Doe',
-        'amount': 25.50,
-        'status': 'preparing',
-        'items': ['Burger', 'Fries'],
-        'createdAt': DateTime.now().subtract(const Duration(minutes: 15)).toIso8601String(),
-      },
-      {
-        'id': '1235',
-        'customerName': 'Jane Smith',
-        'amount': 18.75,
-        'status': 'ready',
-        'items': ['Pizza'],
-        'createdAt': DateTime.now().subtract(const Duration(minutes: 30)).toIso8601String(),
-      },
-      {
-        'id': '1236',
-        'customerName': 'Bob Johnson',
-        'amount': 32.25,
-        'status': 'pending',
-        'items': ['Burger', 'Pizza', 'Salad'],
-        'createdAt': DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String(),
-      },
-    ];
+  final Dio _dio;
+  
+  OrderService(this._dio);
+  
+  Future<List<Map<String, dynamic>>> getOrders({String? status}) async {
+    final response = await _dio.get('/vendor/orders', queryParameters: {
+      if (status != null) 'status': status,
+    });
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+  
+  Future<Map<String, dynamic>> updateOrderStatus(String orderId, String status) async {
+    final response = await _dio.patch('/vendor/orders/$orderId/status', data: {
+      'status': status,
+    });
+    return response.data;
+  }
+  
+  Future<Map<String, dynamic>> getOrderStats() async {
+    final response = await _dio.get('/vendor/orders/stats');
+    return response.data;
   }
 } 

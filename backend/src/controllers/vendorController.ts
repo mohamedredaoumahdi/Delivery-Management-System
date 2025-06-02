@@ -308,6 +308,59 @@ export class VendorController {
     res.json({ status: 'success', data: shop });
   });
 
+  createShop = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    // Check if vendor already has a shop
+    const existingShop = await prisma.shop.findFirst({
+      where: { ownerId: req.user!.id },
+    });
+    
+    if (existingShop) {
+      throw new AppError('Shop already exists', 400);
+    }
+
+    const {
+      name,
+      description,
+      category,
+      address,
+      latitude,
+      longitude,
+      phone,
+      email,
+      openingHours,
+      hasDelivery = true,
+      hasPickup = true,
+      minimumOrderAmount = 0,
+      deliveryFee = 0,
+      estimatedDeliveryTime = 30
+    } = req.body;
+
+    const shop = await prisma.shop.create({
+      data: {
+        name,
+        description,
+        category,
+        address,
+        latitude,
+        longitude,
+        phone,
+        email,
+        openingHours,
+        hasDelivery,
+        hasPickup,
+        minimumOrderAmount,
+        deliveryFee,
+        estimatedDeliveryTime,
+        ownerId: req.user!.id,
+        isActive: true,
+        isOpen: true,
+      },
+      include: { categories: true },
+    });
+
+    res.status(201).json({ status: 'success', data: shop });
+  });
+
   toggleShopStatus = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
     const shop = await prisma.shop.findFirst({
       where: { ownerId: req.user!.id },
