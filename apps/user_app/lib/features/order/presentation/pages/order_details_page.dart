@@ -6,6 +6,7 @@ import 'package:ui_kit/ui_kit.dart';
 import 'package:domain/domain.dart';
 
 import '../bloc/order_bloc.dart';
+import '../../../cart/presentation/bloc/cart_bloc.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final String orderId;
@@ -291,7 +292,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               text: 'Reorder',
               icon: Icons.refresh,
               onPressed: () {
-                // Handle reorder
+                _handleReorder(context, order);
               },
               variant: AppButtonVariant.primary,
               fullWidth: true,
@@ -600,5 +601,114 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         ],
       ),
     ).then((_) => reasonController.dispose());
+  }
+
+  void _handleReorder(BuildContext context, Order order) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Reorder Items?'),
+        content: Text(
+          'This will add all items from this order to your cart. '
+          'Any existing cart items will be cleared first.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await _processReorder(context, order);
+            },
+            child: const Text('Reorder'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _processReorder(BuildContext context, Order order) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Adding items to cart...'),
+            ],
+          ),
+        ),
+      );
+
+      // Clear existing cart first
+      context.read<CartBloc>().add(const CartClearEvent());
+
+      // Add each item from the order to the cart
+      for (final item in order.items) {
+        // We need to create a Product object from the OrderItem
+        // Note: In a real app, you might want to fetch fresh product data
+        final product = Product(
+          id: item.productId,
+          shopId: order.shopId,
+          name: item.productName,
+          description: '', // Not available in OrderItem
+          price: item.productPrice,
+          imageUrl: null, // Not available in OrderItem
+          category: '', // Not available in OrderItem
+          inStock: true, // Assume in stock for reorder
+          isFeatured: false,
+          rating: 0.0,
+          ratingCount: 0,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
+        context.read<CartBloc>().add(
+          CartAddItemEvent(
+            product: product,
+            shopId: order.shopId,
+            shopName: order.shopName,
+            quantity: item.quantity,
+            instructions: item.instructions,
+          ),
+        );
+      }
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${order.items.length} items added to cart'),
+          action: SnackBarAction(
+            label: 'View Cart',
+            onPressed: () => context.go('/cart'),
+          ),
+        ),
+      );
+
+      // Optionally navigate to cart or checkout
+      context.go('/cart');
+
+    } catch (e) {
+      // Close loading dialog if still open
+      Navigator.of(context, rootNavigator: true).pop();
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to reorder: ${e.toString()}'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 }

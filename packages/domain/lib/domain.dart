@@ -25,3 +25,4 @@ export 'src/repositories/menu_repository.dart';
 // Use Cases
 export 'src/usecases/get_vendor_dashboard_usecase.dart';
 export 'src/usecases/manage_menu_items_usecase.dart';
+export 'src/usecases/manage_favorites_usecase.dart';
