@@ -30,7 +30,7 @@ class VendorApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          create: (context) => GetIt.instance<AuthBloc>(),
+          create: (context) => GetIt.instance<AuthBloc>()..add(CheckAuthStatus()),
         ),
         BlocProvider<DashboardBloc>(
           create: (context) => GetIt.instance<DashboardBloc>(),

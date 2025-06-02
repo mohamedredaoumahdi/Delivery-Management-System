@@ -45,7 +45,21 @@ class AppRouter {
           GoRoute(
             path: '/dashboard',
             name: 'dashboard',
-            builder: (context, state) => const DashboardPage(),
+            builder: (context, state) => DashboardPage(
+              navigateToTab: (index) {
+                switch (index) {
+                  case 1:
+                    context.go('/menu');
+                    break;
+                  case 2:
+                    context.go('/orders');
+                    break;
+                  case 3:
+                    context.go('/analytics');
+                    break;
+                }
+              },
+            ),
           ),
           
           // Orders
@@ -73,7 +87,15 @@ class AppRouter {
           GoRoute(
             path: '/profile',
             name: 'profile',
-            builder: (context, state) => const ProfilePage(),
+            builder: (context, state) => ProfilePage(
+              navigateToTab: (index) {
+                switch (index) {
+                  case 3:
+                    context.go('/analytics');
+                    break;
+                }
+              },
+            ),
           ),
         ],
       ),

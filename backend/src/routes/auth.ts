@@ -3,6 +3,7 @@ import { AuthController } from '@/controllers/authController';
 import { validateRequest } from '@/middleware/validation';
 import { loginSchema, registerSchema } from '@/validators/authValidators';
 import { rateLimiter } from '@/middleware/rateLimiter';
+import { auth } from '@/middleware/auth';
 
 const router = Router();
 const authController = new AuthController();
@@ -17,5 +18,6 @@ router.post('/logout', authController.logout);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.post('/verify-email', authController.verifyEmail);
+router.get('/me', auth, authController.getCurrentUser);
 
 export default router; 

@@ -93,7 +93,7 @@ export class VendorController {
       }
     });
 
-    res.status(201).json(product);
+    res.status(201).json({ status: 'success', data: product });
   }
 
   async updateProduct(req: AuthenticatedRequest, res: Response) {
@@ -106,7 +106,7 @@ export class VendorController {
     }
 
     const { id } = req.params;
-    const { name, description, price, categoryId, images } = req.body;
+    const { name, description, price, categoryId, images, inStock, isActive } = req.body;
 
     const product = await prisma.product.update({
       where: {
@@ -118,7 +118,9 @@ export class VendorController {
         description,
         price,
         categoryId,
-        images
+        images,
+        inStock,
+        isActive
       }
     });
 
@@ -126,7 +128,7 @@ export class VendorController {
       throw new AppError('Product not found', 404);
     }
 
-    res.json(product);
+    res.json({ status: 'success', data: product });
   }
 
   async deleteProduct(req: AuthenticatedRequest, res: Response) {

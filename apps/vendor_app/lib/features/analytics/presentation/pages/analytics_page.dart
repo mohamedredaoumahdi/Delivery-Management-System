@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/analytics_bloc.dart';
+import '../widgets/real_time_metric_card.dart';
+import '../widgets/real_time_order_status_widget.dart';
+import '../widgets/real_time_sales_widget.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({super.key});
@@ -25,6 +28,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
 
   @override
   void dispose() {
+    // Stop real-time updates when leaving the page
+    context.read<AnalyticsBloc>().add(StopRealTimeUpdates());
     _tabController.dispose();
     super.dispose();
   }
@@ -107,13 +112,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
             );
           }
 
-          if (state is AnalyticsLoaded) {
+          if (state is AnalyticsLoaded || state is MetricUpdating) {
+            final analyticsData = state is AnalyticsLoaded 
+                ? state.analyticsData 
+                : (state as MetricUpdating).analyticsData;
+            final lastUpdated = state is AnalyticsLoaded 
+                ? state.lastUpdated 
+                : (state as MetricUpdating).lastUpdated;
+            final updatingMetric = state is MetricUpdating ? state.updatingMetric : null;
+                
             return TabBarView(
               controller: _tabController,
               children: [
-                _buildOverviewTab(state.analyticsData),
-                _buildSalesTab(state.analyticsData),
-                _buildPerformanceTab(state.analyticsData),
+                _buildOverviewTab(analyticsData, lastUpdated, updatingMetric),
+                _buildSalesTab(analyticsData, lastUpdated, updatingMetric),
+                _buildPerformanceTab(analyticsData, lastUpdated, updatingMetric),
               ],
             );
           }
@@ -126,7 +139,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
     );
   }
 
-  Widget _buildOverviewTab(Map<String, dynamic> data) {
+  Widget _buildOverviewTab(Map<String, dynamic> data, DateTime lastUpdated, String? updatingMetric) {
     return RefreshIndicator(
       onRefresh: () async {
         context.read<AnalyticsBloc>().add(LoadAnalytics());
@@ -136,38 +149,59 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Period Selector
-            Text(
-              'Analytics for $_selectedPeriod',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            // Last Updated Info
+            Row(
+              children: [
+                Text(
+                  'Analytics for $_selectedPeriod',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Updated: ${_formatTime(lastUpdated)}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
             
             const SizedBox(height: 20),
             
-            // Key Metrics
+            // Real-time Key Metrics
             Row(
               children: [
                 Expanded(
-                  child: _buildMetricCard(
-                    'Total Orders',
-                    data['todayOrders']?.toString() ?? '0',
-                    Icons.receipt_long,
-                    Colors.blue,
-                    '+12%',
-                    true,
+                  child: RealTimeMetricCard(
+                    title: 'Total Orders',
+                    value: data['todayOrders']?.toString() ?? '0',
+                    icon: Icons.receipt_long,
+                    color: Colors.blue,
+                    change: '+12%',
+                    isPositive: true,
+                    metricType: 'orders',
+                    isUpdating: updatingMetric == 'orders',
+                    onRefresh: () {
+                      context.read<AnalyticsBloc>().add(RefreshMetric('orders'));
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildMetricCard(
-                    'Revenue',
-                    '\$${data['todayRevenue']?.toStringAsFixed(2) ?? '0.00'}',
-                    Icons.attach_money,
-                    Colors.green,
-                    '+8%',
-                    true,
+                  child: RealTimeMetricCard(
+                    title: 'Revenue',
+                    value: '\$${(data['todayRevenue'] ?? 0.0).toStringAsFixed(2)}',
+                    icon: Icons.attach_money,
+                    color: Colors.green,
+                    change: '+8%',
+                    isPositive: true,
+                    metricType: 'revenue',
+                    isUpdating: updatingMetric == 'revenue',
+                    onRefresh: () {
+                      context.read<AnalyticsBloc>().add(RefreshMetric('revenue'));
+                    },
                   ),
                 ),
               ],
@@ -178,24 +212,34 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
             Row(
               children: [
                 Expanded(
-                  child: _buildMetricCard(
-                    'Avg Order Value',
-                    '\$${data['averageOrderValue']?.toStringAsFixed(2) ?? '0.00'}',
-                    Icons.trending_up,
-                    Colors.purple,
-                    '+5%',
-                    true,
+                  child: RealTimeMetricCard(
+                    title: 'Avg Order Value',
+                    value: '\$${(data['averageOrderValue'] ?? 0.0).toStringAsFixed(2)}',
+                    icon: Icons.trending_up,
+                    color: Colors.purple,
+                    change: '+5%',
+                    isPositive: true,
+                    metricType: 'revenue',
+                    isUpdating: updatingMetric == 'revenue',
+                    onRefresh: () {
+                      context.read<AnalyticsBloc>().add(RefreshMetric('revenue'));
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildMetricCard(
-                    'Rating',
-                    data['rating']?.toStringAsFixed(1) ?? '0.0',
-                    Icons.star,
-                    Colors.orange,
-                    '↗',
-                    true,
+                  child: RealTimeMetricCard(
+                    title: 'Rating',
+                    value: (data['rating'] ?? 0.0).toStringAsFixed(1),
+                    icon: Icons.star,
+                    color: Colors.orange,
+                    change: '↗',
+                    isPositive: true,
+                    metricType: 'rating',
+                    isUpdating: updatingMetric == 'rating',
+                    onRefresh: () {
+                      context.read<AnalyticsBloc>().add(RefreshMetric('rating'));
+                    },
                   ),
                 ),
               ],
@@ -203,34 +247,20 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
             
             const SizedBox(height: 24),
             
-            // Order Status Overview
-            Text(
-              'Order Status Overview',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    _buildStatusRow('Pending Orders', data['pendingOrders'] ?? 0, Colors.orange),
-                    _buildStatusRow('Preparing Orders', data['preparingOrders'] ?? 0, Colors.blue),
-                    _buildStatusRow('Ready Orders', data['readyOrders'] ?? 0, Colors.green),
-                    _buildStatusRow('Completed Today', data['completedOrders'] ?? 0, Colors.purple),
-                  ],
-                ),
-              ),
+            // Real-time Order Status Overview
+            RealTimeOrderStatusWidget(
+              data: data,
+              isUpdating: updatingMetric == 'orders',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(RefreshMetric('orders'));
+              },
             ),
             
             const SizedBox(height: 24),
             
             // Quick Stats
             Text(
-              'Quick Stats',
+              'Menu Statistics',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -240,20 +270,36 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
             Row(
               children: [
                 Expanded(
-                  child: _buildQuickStatCard(
-                    'Active Menu Items',
-                    data['activeMenuItems']?.toString() ?? '0',
-                    Icons.restaurant_menu,
-                    Colors.teal,
+                  child: RealTimeMetricCard(
+                    title: 'Active Menu Items',
+                    value: data['activeMenuItems']?.toString() ?? '0',
+                    icon: Icons.restaurant_menu,
+                    color: Colors.teal,
+                    change: '',
+                    isPositive: true,
+                    metricType: 'menu',
+                    isUpdating: updatingMetric == 'menu',
+                    showMiniCard: true,
+                    onRefresh: () {
+                      context.read<AnalyticsBloc>().add(RefreshMetric('menu'));
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildQuickStatCard(
-                    'Out of Stock',
-                    data['outOfStockItems']?.toString() ?? '0',
-                    Icons.warning,
-                    Colors.red,
+                  child: RealTimeMetricCard(
+                    title: 'Out of Stock',
+                    value: data['outOfStockItems']?.toString() ?? '0',
+                    icon: Icons.warning,
+                    color: Colors.red,
+                    change: '',
+                    isPositive: false,
+                    metricType: 'menu',
+                    isUpdating: updatingMetric == 'menu',
+                    showMiniCard: true,
+                    onRefresh: () {
+                      context.read<AnalyticsBloc>().add(RefreshMetric('menu'));
+                    },
                   ),
                 ),
               ],
@@ -264,7 +310,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
     );
   }
 
-  Widget _buildSalesTab(Map<String, dynamic> data) {
+  Widget _buildSalesTab(Map<String, dynamic> data, DateTime lastUpdated, String? updatingMetric) {
     return RefreshIndicator(
       onRefresh: () async {
         context.read<AnalyticsBloc>().add(LoadAnalytics());
@@ -307,7 +353,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Chart visualization coming soon!',
+                      'Visual charts coming soon!',
                       style: TextStyle(
                         color: Colors.grey[500],
                         fontSize: 12,
@@ -320,35 +366,18 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
             
             const SizedBox(height: 24),
             
-            // Sales Summary
-            Text(
-              'Sales Summary',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    _buildSalesRow('Today', data['todayRevenue'] ?? 0.0, data['todayOrders'] ?? 0),
-                    const Divider(),
-                    _buildSalesRow('This Week', data['weekRevenue'] ?? 0.0, data['weekOrders'] ?? 0),
-                    const Divider(),
-                    _buildSalesRow('This Month', data['monthRevenue'] ?? 0.0, data['monthOrders'] ?? 0),
-                    const Divider(),
-                    _buildSalesRow('All Time', data['totalRevenue'] ?? 0.0, data['totalOrders'] ?? 0),
-                  ],
-                ),
-              ),
+            // Real-time Sales Summary
+            RealTimeSalesWidget(
+              data: data,
+              isUpdating: updatingMetric == 'revenue',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(RefreshMetric('revenue'));
+              },
             ),
             
             const SizedBox(height: 24),
             
-            // Top Performing Items (placeholder)
+            // Top Performing Items
             Text(
               'Top Performing Items',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -362,11 +391,26 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildTopItemRow('Classic Burger', '\$156.00', '12 orders'),
-                    const Divider(),
-                    _buildTopItemRow('Margherita Pizza', '\$95.00', '6 orders'),
-                    const Divider(),
-                    _buildTopItemRow('Caesar Salad', '\$48.00', '5 orders'),
+                    Icon(
+                      Icons.restaurant_menu,
+                      size: 48,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Product analytics coming soon',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Detailed product performance metrics will be available soon.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[500],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
               ),
@@ -377,7 +421,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
     );
   }
 
-  Widget _buildPerformanceTab(Map<String, dynamic> data) {
+  Widget _buildPerformanceTab(Map<String, dynamic> data, DateTime lastUpdated, String? updatingMetric) {
     return RefreshIndicator(
       onRefresh: () async {
         context.read<AnalyticsBloc>().add(LoadAnalytics());
@@ -399,22 +443,29 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
             Row(
               children: [
                 Expanded(
-                  child: _buildPerformanceCard(
-                    'Customer Rating',
-                    '${data['rating']?.toStringAsFixed(1) ?? '0.0'}/5.0',
-                    Icons.star,
-                    Colors.orange,
-                    '${data['totalRatings'] ?? 0} reviews',
+                  child: RealTimeMetricCard(
+                    title: 'Customer Rating',
+                    value: '${(data['rating'] ?? 0.0).toStringAsFixed(1)}/5.0',
+                    icon: Icons.star,
+                    color: Colors.orange,
+                    change: '${data['ratingCount'] ?? 0} reviews',
+                    isPositive: true,
+                    metricType: 'rating',
+                    isUpdating: updatingMetric == 'rating',
+                    showMiniCard: true,
+                    onRefresh: () {
+                      context.read<AnalyticsBloc>().add(RefreshMetric('rating'));
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildPerformanceCard(
                     'Avg Prep Time',
-                    '18 min',
+                    'Not available',
                     Icons.timer,
                     Colors.blue,
-                    'Target: 15 min',
+                    'Coming soon',
                   ),
                 ),
               ],
@@ -427,20 +478,27 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
                 Expanded(
                   child: _buildPerformanceCard(
                     'Order Accuracy',
-                    '96.5%',
+                    'Not available',
                     Icons.check_circle,
                     Colors.green,
-                    'Excellent',
+                    'Coming soon',
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildPerformanceCard(
-                    'Completion Rate',
-                    '${_calculateCompletionRate(data).toStringAsFixed(1)}%',
-                    Icons.trending_up,
-                    Colors.purple,
-                    'Last 7 days',
+                  child: RealTimeMetricCard(
+                    title: 'Total Orders',
+                    value: '${data['totalOrders'] ?? 0}',
+                    icon: Icons.trending_up,
+                    color: Colors.purple,
+                    change: 'All time',
+                    isPositive: true,
+                    metricType: 'orders',
+                    isUpdating: updatingMetric == 'orders',
+                    showMiniCard: true,
+                    onRefresh: () {
+                      context.read<AnalyticsBloc>().add(RefreshMetric('orders'));
+                    },
                   ),
                 ),
               ],
@@ -466,7 +524,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.timeline,
+                      Icons.schedule,
                       size: 48,
                       color: Colors.grey[400],
                     ),
@@ -481,7 +539,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Busiest hours: 12PM - 2PM, 6PM - 8PM',
+                      'Peak hours analysis coming soon!',
                       style: TextStyle(
                         color: Colors.grey[500],
                         fontSize: 12,
@@ -494,9 +552,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
             
             const SizedBox(height: 24),
             
-            // Improvement Suggestions
+            // Business Insights
             Text(
-              'Improvement Suggestions',
+              'Business Insights',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -509,23 +567,23 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
                 child: Column(
                   children: [
                     _buildSuggestionItem(
-                      Icons.timer,
-                      'Reduce Preparation Time',
-                      'Consider pre-preparing popular items during off-peak hours',
+                      Icons.restaurant_menu,
+                      'Add Menu Items',
+                      'Start by adding items to your menu to attract customers',
                       Colors.blue,
                     ),
                     const SizedBox(height: 12),
                     _buildSuggestionItem(
-                      Icons.trending_up,
-                      'Promote Low-Performing Items',
-                      'Add special offers for items with lower order frequency',
+                      Icons.schedule,
+                      'Set Operating Hours',
+                      'Make sure your operating hours are clearly defined',
                       Colors.green,
                     ),
                     const SizedBox(height: 12),
                     _buildSuggestionItem(
-                      Icons.schedule,
-                      'Optimize Peak Hour Staffing',
-                      'Increase staff during 12PM-2PM and 6PM-8PM',
+                      Icons.delivery_dining,
+                      'Enable Delivery',
+                      'Consider offering delivery to reach more customers',
                       Colors.orange,
                     ),
                   ],
@@ -534,202 +592,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildMetricCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-    String change,
-    bool isPositive,
-  ) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              change,
-              style: TextStyle(
-                fontSize: 12,
-                color: isPositive ? Colors.green : Colors.red,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusRow(String label, int count, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 6,
-            backgroundColor: color,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
-          Text(
-            count.toString(),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickStatCard(String title, String value, IconData icon, Color color) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSalesRow(String period, double revenue, int orders) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              period,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '\$${revenue.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '$orders orders',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTopItemRow(String itemName, String revenue, String orders) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: Colors.grey[200],
-            child: Icon(
-              Icons.restaurant,
-              size: 16,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  itemName,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  orders,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            revenue,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -814,9 +676,18 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
     );
   }
 
-  double _calculateCompletionRate(Map<String, dynamic> data) {
-    final completed = data['completedOrders'] ?? 0;
-    final total = (data['todayOrders'] ?? 0);
-    return total > 0 ? (completed / total) * 100 : 0;
+  String _formatTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+    
+    if (difference.inSeconds < 60) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else {
+      return '${dateTime.day}/${dateTime.month}';
+    }
   }
 } 

@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../bloc/profile_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final Function(int)? navigateToTab;
+  
+  const ProfilePage({super.key, this.navigateToTab});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  Function(int)? get _navigateToTab => widget.navigateToTab;
+
   @override
   void initState() {
     super.initState();
@@ -21,109 +26,117 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              _showEditProfileDialog();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              _showSettingsDialog();
-            },
-          ),
-        ],
-      ),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
-        builder: (context, state) {
-          if (state is ProfileLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (state is ProfileError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error loading profile',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    state.message,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ProfileBloc>().add(LoadProfile());
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (state is ProfileLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<ProfileBloc>().add(LoadProfile());
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthUnauthenticated) {
+          // Navigate to login page when user logs out
+          context.go('/login');
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Profile'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                _showEditProfileDialog();
               },
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                _showSettingsDialog();
+              },
+            ),
+          ],
+        ),
+        body: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            if (state is ProfileLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            if (state is ProfileError) {
+              return Center(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Profile Header
-                    _buildProfileHeader(state.user),
-                    
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading profile',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      state.message,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                    ),
                     const SizedBox(height: 24),
-                    
-                    // Business Information
-                    _buildBusinessInfoSection(state.user),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Statistics
-                    _buildStatisticsSection(),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Account Settings
-                    _buildAccountSettingsSection(),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Actions
-                    _buildActionsSection(),
-                    
-                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<ProfileBloc>().add(LoadProfile());
+                      },
+                      child: const Text('Retry'),
+                    ),
                   ],
                 ),
-              ),
-            );
-          }
+              );
+            }
 
-          return const Center(
-            child: Text('No profile data available'),
-          );
-        },
+            if (state is ProfileLoaded) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context.read<ProfileBloc>().add(LoadProfile());
+                },
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Profile Header
+                      _buildProfileHeader(state.user),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Business Information
+                      _buildBusinessInfoSection(state.user),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Statistics
+                      _buildStatisticsSection(),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Account Settings
+                      _buildAccountSettingsSection(),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Actions
+                      _buildActionsSection(),
+                      
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return const Center(
+              child: Text('No profile data available'),
+            );
+          },
+        ),
       ),
     );
   }
@@ -147,9 +160,9 @@ class _ProfilePageState extends State<ProfilePage> {
             
             const SizedBox(height: 16),
             
-            // Business Name
+            // Business Name or User Name
             Text(
-              user['businessName'] ?? 'Business Name',
+              user['businessName'] ?? user['name'] ?? 'Your Business',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -158,19 +171,21 @@ class _ProfilePageState extends State<ProfilePage> {
             
             const SizedBox(height: 8),
             
-            // Owner Name
-            Text(
-              user['name'] ?? 'Owner Name',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
+            // Owner Name (only show if different from business name)
+            if (user['businessName'] != null && user['name'] != null)
+              Text(
+                'Owner: ${user['name']}',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Colors.grey[600],
+                ),
               ),
-            ),
             
-            const SizedBox(height: 4),
+            if (user['businessName'] != null && user['name'] != null)
+              const SizedBox(height: 4),
             
             // Email
             Text(
-              user['email'] ?? 'email@example.com',
+              user['email'] ?? 'No email provided',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[500],
               ),
@@ -178,26 +193,26 @@ class _ProfilePageState extends State<ProfilePage> {
             
             const SizedBox(height: 16),
             
-            // Status Badge
+            // Status Badge - Show account status
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: _getStatusColor(user['status']).withValues(alpha: 0.1),
+                color: _getAccountStatusColor(user).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _getStatusIcon(user['status']),
+                    _getAccountStatusIcon(user),
                     size: 16,
-                    color: _getStatusColor(user['status']),
+                    color: _getAccountStatusColor(user),
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    _getStatusText(user['status']),
+                    _getAccountStatusText(user),
                     style: TextStyle(
-                      color: _getStatusColor(user['status']),
+                      color: _getAccountStatusColor(user),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -237,11 +252,22 @@ class _ProfilePageState extends State<ProfilePage> {
             
             const SizedBox(height: 16),
             
-            _buildInfoRow(Icons.phone, 'Phone', user['phone'] ?? '+1 (555) 123-4567'),
-            _buildInfoRow(Icons.location_on, 'Address', user['address'] ?? '123 Main St, City, State 12345'),
-            _buildInfoRow(Icons.category, 'Cuisine Type', user['cuisineType'] ?? 'Multiple Cuisines'),
-            _buildInfoRow(Icons.schedule, 'Operating Hours', '9:00 AM - 10:00 PM'),
-            _buildInfoRow(Icons.delivery_dining, 'Delivery Radius', '5 miles'),
+            _buildInfoRow(Icons.person, 'Name', user['name'] ?? 'Not provided'),
+            _buildInfoRow(Icons.email, 'Email', user['email'] ?? 'Not provided'),
+            if (user['phone'] != null)
+              _buildInfoRow(Icons.phone, 'Phone', user['phone']),
+            _buildInfoRow(Icons.verified_user, 'Account Status', 
+              user['isActive'] == true ? 'Active' : 'Inactive'),
+            _buildInfoRow(Icons.email_outlined, 'Email Verified', 
+              user['isEmailVerified'] == true ? 'Yes' : 'No'),
+            if (user['phone'] != null)
+              _buildInfoRow(Icons.phone_android, 'Phone Verified', 
+                user['isPhoneVerified'] == true ? 'Yes' : 'No'),
+            if (user['lastLoginAt'] != null)
+              _buildInfoRow(Icons.access_time, 'Last Login', 
+                _formatDate(user['lastLoginAt'])),
+            _buildInfoRow(Icons.calendar_today, 'Member Since', 
+              _formatDate(user['createdAt'])),
           ],
         ),
       ),
@@ -264,7 +290,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Your Statistics',
+                  'Business Analytics',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -274,30 +300,51 @@ class _ProfilePageState extends State<ProfilePage> {
             
             const SizedBox(height: 16),
             
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard('Total Orders', '247', Icons.receipt_long),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard('Rating', '4.8', Icons.star),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 12),
-            
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard('Revenue', '\$5,240', Icons.attach_money),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard('Menu Items', '12', Icons.restaurant_menu),
-                ),
-              ],
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.bar_chart,
+                    size: 48,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'View your business analytics',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'See detailed statistics about your orders, revenue, and performance in the Analytics tab.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // Navigate to analytics tab using callback
+                      _navigateToTab?.call(3);
+                    },
+                    icon: const Icon(Icons.analytics),
+                    label: const Text('View Analytics'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -470,38 +517,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSettingsItem(
     IconData icon,
     String title,
@@ -529,42 +544,38 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Color _getStatusColor(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'pending':
-        return Colors.orange;
-      case 'suspended':
-        return Colors.red;
-      default:
-        return Colors.grey;
+  Color _getAccountStatusColor(Map<String, dynamic> user) {
+    if (user['isActive'] == true) {
+      return Colors.green;
+    } else {
+      return Colors.orange;
     }
   }
 
-  IconData _getStatusIcon(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return Icons.check_circle;
-      case 'pending':
-        return Icons.pending;
-      case 'suspended':
-        return Icons.warning;
-      default:
-        return Icons.help;
+  IconData _getAccountStatusIcon(Map<String, dynamic> user) {
+    if (user['isActive'] == true) {
+      return Icons.check_circle;
+    } else {
+      return Icons.warning;
     }
   }
 
-  String _getStatusText(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return 'Active';
-      case 'pending':
-        return 'Pending Approval';
-      case 'suspended':
-        return 'Suspended';
-      default:
-        return 'Unknown';
+  String _getAccountStatusText(Map<String, dynamic> user) {
+    if (user['isActive'] == true) {
+      return 'Active Account';
+    } else {
+      return 'Account Pending';
+    }
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null) return 'Not available';
+    
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return 'Invalid date';
     }
   }
 

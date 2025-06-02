@@ -64,10 +64,15 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       if (user != null) {
         emit(ProfileLoaded(user: user));
       } else {
-        emit(const ProfileError(message: 'User not found'));
+        emit(const ProfileError(message: 'Please login to view your profile'));
       }
     } catch (e) {
-      emit(ProfileError(message: e.toString()));
+      // Extract user-friendly message from exception
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11); // Remove "Exception: " prefix
+      }
+      emit(ProfileError(message: errorMessage));
     }
   }
 } 

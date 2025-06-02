@@ -63,7 +63,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       final data = await vendorService.getDashboardData();
       emit(DashboardLoaded(dashboardData: data));
     } catch (e) {
-      emit(DashboardError(message: e.toString()));
+      // Extract user-friendly message from exception
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11); // Remove "Exception: " prefix
+      }
+      emit(DashboardError(message: errorMessage));
     }
   }
 } 

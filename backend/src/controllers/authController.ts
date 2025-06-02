@@ -352,4 +352,34 @@ export class AuthController {
       return next(new AppError('Invalid verification token', 400));
     }
   });
+
+  getCurrentUser = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    // Get user from request (set by auth middleware)
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        profilePicture: true,
+        role: true,
+        isEmailVerified: true,
+        isPhoneVerified: true,
+        isActive: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+
+    res.json({
+      status: 'success',
+      data: user,
+    });
+  });
 } 

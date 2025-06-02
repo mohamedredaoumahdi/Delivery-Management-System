@@ -191,40 +191,42 @@ class VendorDashboard extends Equatable {
   /// Creates a dashboard from JSON
   factory VendorDashboard.fromJson(Map<String, dynamic> json) {
     return VendorDashboard(
-      todayOrders: json['todayOrders'] as int,
-      todayRevenue: (json['todayRevenue'] as num).toDouble(),
-      pendingOrders: json['pendingOrders'] as int,
-      preparingOrders: json['preparingOrders'] as int,
-      readyOrders: json['readyOrders'] as int,
-      completedOrders: json['completedOrders'] as int,
-      rating: (json['rating'] as num).toDouble(),
-      totalRatings: json['totalRatings'] as int,
-      weekOrders: json['weekOrders'] as int,
-      weekRevenue: (json['weekRevenue'] as num).toDouble(),
-      monthOrders: json['monthOrders'] as int,
-      monthRevenue: (json['monthRevenue'] as num).toDouble(),
-      totalOrders: json['totalOrders'] as int,
-      totalRevenue: (json['totalRevenue'] as num).toDouble(),
-      averageOrderValue: (json['averageOrderValue'] as num).toDouble(),
-      recentOrders: (json['recentOrders'] as List)
-          .map((e) => Order.fromJson(e))
-          .toList(),
-      topItems: (json['topItems'] as List)
-          .map((e) => DashboardMenuItem.fromJson(e))
-          .toList(),
-      revenueTrend: (json['revenueTrend'] as List)
-          .map((e) => DashboardDataPoint.fromJson(e))
-          .toList(),
-      ordersTrend: (json['ordersTrend'] as List)
-          .map((e) => DashboardDataPoint.fromJson(e))
-          .toList(),
-      peakHours: (json['peakHours'] as List)
-          .map((e) => PeakHourData.fromJson(e))
-          .toList(),
-      isShopOpen: json['isShopOpen'] as bool,
-      activeMenuItems: json['activeMenuItems'] as int,
-      outOfStockItems: json['outOfStockItems'] as int,
-      lastUpdated: DateTime.parse(json['lastUpdated'] as String),
+      todayOrders: json['todayOrders'] as int? ?? 0,
+      todayRevenue: (json['todayRevenue'] as num?)?.toDouble() ?? 0.0,
+      pendingOrders: json['pendingOrders'] as int? ?? 0,
+      preparingOrders: json['preparingOrders'] as int? ?? 0,
+      readyOrders: json['readyOrders'] as int? ?? 0,
+      completedOrders: json['completedOrders'] as int? ?? 0,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      totalRatings: json['totalRatings'] as int? ?? json['ratingCount'] as int? ?? 0,
+      weekOrders: json['weekOrders'] as int? ?? 0,
+      weekRevenue: (json['weekRevenue'] as num?)?.toDouble() ?? 0.0,
+      monthOrders: json['monthOrders'] as int? ?? 0,
+      monthRevenue: (json['monthRevenue'] as num?)?.toDouble() ?? 0.0,
+      totalOrders: json['totalOrders'] as int? ?? 0,
+      totalRevenue: (json['totalRevenue'] as num?)?.toDouble() ?? 0.0,
+      averageOrderValue: (json['averageOrderValue'] as num?)?.toDouble() ?? 0.0,
+      recentOrders: (json['recentOrders'] as List?)
+          ?.map((e) => Order.fromJson(e))
+          .toList() ?? [],
+      topItems: (json['topItems'] as List?)
+          ?.map((e) => DashboardMenuItem.fromJson(e))
+          .toList() ?? [],
+      revenueTrend: (json['revenueTrend'] as List?)
+          ?.map((e) => DashboardDataPoint.fromJson(e))
+          .toList() ?? [],
+      ordersTrend: (json['ordersTrend'] as List?)
+          ?.map((e) => DashboardDataPoint.fromJson(e))
+          .toList() ?? [],
+      peakHours: (json['peakHours'] as List?)
+          ?.map((e) => PeakHourData.fromJson(e))
+          .toList() ?? [],
+      isShopOpen: json['isShopOpen'] as bool? ?? json['isOpen'] as bool? ?? true,
+      activeMenuItems: json['activeMenuItems'] as int? ?? 0,
+      outOfStockItems: json['outOfStockItems'] as int? ?? 0,
+      lastUpdated: json['lastUpdated'] != null 
+          ? DateTime.parse(json['lastUpdated'] as String)
+          : DateTime.now(),
     );
   }
 
