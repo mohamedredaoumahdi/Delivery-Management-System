@@ -15,6 +15,9 @@ const validateRequest = (schema) => {
                 .join(', ');
             return next(new appError_1.AppError(errorMessage, 400));
         }
+        if (req.body.category) {
+            req.body.category = req.body.category.toUpperCase();
+        }
         next();
     };
 };

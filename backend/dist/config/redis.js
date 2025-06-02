@@ -32,10 +32,37 @@ const createRedisClient = () => {
 };
 const connectRedis = async () => {
     try {
+        if (redisClient && redisClient.status === 'ready') {
+            logger_1.logger.info('Redis already connected');
+            return;
+        }
+        if (redisClient && redisClient.status !== 'end') {
+            logger_1.logger.info('Disconnecting existing Redis client');
+            redisClient.disconnect();
+            redisClient = null;
+        }
         redisClient = createRedisClient();
-        await redisClient.connect();
-        await redisClient.ping();
-        logger_1.logger.info('Redis connection test passed');
+        await new Promise((resolve, reject) => {
+            if (!redisClient) {
+                reject(new Error('Redis client not initialized'));
+                return;
+            }
+            if (redisClient.status === 'ready') {
+                resolve();
+                return;
+            }
+            const onReady = () => {
+                redisClient.off('error', onError);
+                resolve();
+            };
+            const onError = (error) => {
+                redisClient.off('ready', onReady);
+                reject(error);
+            };
+            redisClient.once('ready', onReady);
+            redisClient.once('error', onError);
+        });
+        logger_1.logger.info('Redis connected successfully');
     }
     catch (error) {
         logger_1.logger.error('Redis connection failed:', error);

@@ -112,11 +112,14 @@ class AuthController {
                 isActive: true,
             },
         });
-        if (!user || !(await bcryptjs_1.default.compare(password, user.passwordHash))) {
-            return next(new appError_1.AppError('Invalid email or password', 401));
+        if (!user) {
+            return next(new appError_1.AppError('No account found with this email address. Please check your email or sign up for a new account.', 404));
+        }
+        if (!(await bcryptjs_1.default.compare(password, user.passwordHash))) {
+            return next(new appError_1.AppError('Incorrect password. Please check your password and try again.', 401));
         }
         if (!user.isActive) {
-            return next(new appError_1.AppError('Account has been deactivated', 401));
+            return next(new appError_1.AppError('Your account has been deactivated. Please contact support for assistance.', 403));
         }
         const { accessToken, refreshToken } = this.generateTokens(user.id, user.role);
         await database_1.prisma.refreshToken.create({
@@ -289,6 +292,32 @@ class AuthController {
         catch (error) {
             return next(new appError_1.AppError('Invalid verification token', 400));
         }
+    });
+    getCurrentUser = (0, catchAsync_1.catchAsync)(async (req, res, next) => {
+        const user = await database_1.prisma.user.findUnique({
+            where: { id: req.user.id },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                phone: true,
+                profilePicture: true,
+                role: true,
+                isEmailVerified: true,
+                isPhoneVerified: true,
+                isActive: true,
+                lastLoginAt: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+        if (!user) {
+            return next(new appError_1.AppError('User not found', 404));
+        }
+        res.json({
+            status: 'success',
+            data: user,
+        });
     });
 }
 exports.AuthController = AuthController;

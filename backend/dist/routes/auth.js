@@ -5,6 +5,7 @@ const authController_1 = require("@/controllers/authController");
 const validation_1 = require("@/middleware/validation");
 const authValidators_1 = require("@/validators/authValidators");
 const rateLimiter_1 = require("@/middleware/rateLimiter");
+const auth_1 = require("@/middleware/auth");
 const router = (0, express_1.Router)();
 const authController = new authController_1.AuthController();
 router.use(rateLimiter_1.rateLimiter);
@@ -15,5 +16,6 @@ router.post('/logout', authController.logout);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.post('/verify-email', authController.verifyEmail);
+router.get('/me', auth_1.auth, authController.getCurrentUser);
 exports.default = router;
 //# sourceMappingURL=auth.js.map

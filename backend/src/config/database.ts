@@ -24,10 +24,10 @@ const createPrismaClient = (): PrismaClient => {
 };
 
 // Use global instance in development to prevent multiple connections
-export const prisma = globalThis.__prisma || createPrismaClient();
+export const prisma = (globalThis as any).__prisma || createPrismaClient();
 
 if (config.nodeEnv === 'development') {
-  globalThis.__prisma = prisma;
+  (globalThis as any).__prisma = prisma;
 }
 
 // Database connection function

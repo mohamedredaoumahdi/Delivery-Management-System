@@ -25,11 +25,14 @@ exports.upload = (0, multer_1.default)({
     },
 });
 const resizeImages = (req, res, next) => {
+    console.log('req.files:', req.files);
     if (!req.files)
         return next();
     req.body.images = [];
     Promise.all(req.files.map(async (file, i) => {
         const filename = `image-${Date.now()}-${i + 1}.jpeg`;
+        console.log('Processing file:', file.originalname);
+        console.log('File buffer:', file.buffer);
         await (0, sharp_1.default)(file.buffer)
             .resize(800, 600)
             .toFormat('jpeg')

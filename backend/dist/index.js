@@ -34,6 +34,7 @@ const io = new socket_io_1.Server(server, {
 });
 exports.io = io;
 (0, socketService_1.initializeSocket)(io);
+console.log('Socket.io initialized');
 app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
@@ -66,8 +67,15 @@ app.use('/api', routes_1.default);
 app.use('/uploads', express_1.default.static(config_1.config.uploadDir));
 app.use(notFoundHandler_1.notFoundHandler);
 app.use(errorHandler_1.errorHandler);
-const gracefulShutdown = (signal) => {
+const gracefulShutdown = async (signal) => {
     logger_1.logger.info(`Received ${signal}. Starting graceful shutdown...`);
+    try {
+        await (0, redis_1.disconnectRedis)();
+        logger_1.logger.info('Redis connection closed');
+    }
+    catch (error) {
+        logger_1.logger.error('Error closing Redis connection:', error);
+    }
     server.close(() => {
         logger_1.logger.info('HTTP server closed');
         process.exit(0);
@@ -79,6 +87,7 @@ const gracefulShutdown = (signal) => {
 };
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
 process.on('unhandledRejection', (reason, promise) => {
     logger_1.logger.error('Unhandled Rejection at:', reason);
 });
@@ -91,7 +100,6 @@ const startServer = async () => {
         await (0, database_1.connectDatabase)();
         logger_1.logger.info('Database connected successfully');
         await (0, redis_1.connectRedis)();
-        logger_1.logger.info('Redis connected successfully');
         server.listen(config_1.config.port, () => {
             logger_1.logger.info(`Server running on port ${config_1.config.port} in ${config_1.config.nodeEnv} mode`);
             if (config_1.config.enableSwagger) {

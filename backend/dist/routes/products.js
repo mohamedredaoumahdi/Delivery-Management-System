@@ -14,9 +14,9 @@ router.get('/:id', productController.getProductById);
 router.get('/category/:categoryId', productController.getProductsByCategory);
 router.get('/shop/:shopId', productController.getProductsByShop);
 router.use(auth_1.auth);
-router.post('/', (0, requireRole_1.requireRole)('VENDOR'), upload_1.upload.array('images', 5), (0, validation_1.validateRequest)(productValidators_1.createProductSchema), productController.createProduct);
-router.put('/:id', (0, requireRole_1.requireRole)('VENDOR'), upload_1.upload.array('images', 5), (0, validation_1.validateRequest)(productValidators_1.updateProductSchema), productController.updateProduct);
-router.delete('/:id', (0, requireRole_1.requireRole)('VENDOR'), productController.deleteProduct);
-router.put('/:id/status', (0, requireRole_1.requireRole)('ADMIN'), productController.updateProductStatus);
+router.post('/', (0, requireRole_1.requireRole)(['VENDOR']), upload_1.upload.array('images', 5), upload_1.resizeImages, (0, validation_1.validateRequest)(productValidators_1.createProductSchema), productController.createProduct);
+router.put('/:id', (0, requireRole_1.requireRole)(['VENDOR']), upload_1.upload.array('images', 5), (0, validation_1.validateRequest)(productValidators_1.updateProductSchema), productController.updateProduct);
+router.delete('/:id', (0, requireRole_1.requireRole)(['VENDOR']), productController.deleteProduct);
+router.put('/:id/status', (0, requireRole_1.requireRole)(['VENDOR', 'ADMIN']), productController.updateProductStatus);
 exports.default = router;
 //# sourceMappingURL=products.js.map

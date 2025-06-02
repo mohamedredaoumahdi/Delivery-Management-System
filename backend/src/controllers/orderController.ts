@@ -169,7 +169,7 @@ export class OrderController {
 
     // TODO: Process payment here based on payment method
     // For now, we'll mark cash orders as confirmed and card orders as pending payment
-    let updatedStatus = OrderStatus.PENDING;
+    let updatedStatus: OrderStatus = OrderStatus.PENDING;
     
     switch (paymentMethod) {
       case PaymentMethod.CASH_ON_DELIVERY:
