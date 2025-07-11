@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:domain/domain.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 
 import '../bloc/order_bloc.dart';
 import '../widgets/order_list_item.dart';
 import '../widgets/empty_orders.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../../core/auth/auth_manager.dart';
 
 class OrderListPage extends StatefulWidget {
   const OrderListPage({super.key});
@@ -27,6 +29,15 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
+    
+    // Listen to global authentication errors as a fallback
+    GetIt.instance<AuthManager>().authErrorStream.listen((_) {
+      print('🔐 OrderListPage: Global auth error detected, ensuring user is logged out');
+      // Ensure we're on the login page
+      if (mounted) {
+        context.read<AuthBloc>().add(AuthLogoutEvent());
+      }
+    });
     
     // Close any stale dialogs that might be open from previous pages
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -118,7 +129,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
           }
           
           // Handle authentication errors
-          if (state is OrderError && state.message.contains('Authentication failed')) {
+          if (state is OrderError && _isAuthenticationError(state.message)) {
             print('🔐 OrderListPage: Authentication error detected, redirecting to login...');
             // Clear any stored tokens
             context.read<AuthBloc>().add(AuthLogoutEvent());
@@ -273,6 +284,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
   
   Widget _buildErrorView(BuildContext context, String message) {
     final theme = Theme.of(context);
+    final isAuthError = _isAuthenticationError(message);
     
     return Center(
       child: Padding(
@@ -281,13 +293,13 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              message.contains('Authentication') ? Icons.lock_outline : Icons.error_outline,
+              isAuthError ? Icons.lock_outline : Icons.error_outline,
               size: 64,
               color: theme.colorScheme.error,
             ),
             const SizedBox(height: 16),
             Text(
-              message.contains('Authentication') ? 'Authentication Required' : 'Error',
+              isAuthError ? 'Authentication Required' : 'Error',
               style: theme.textTheme.headlineSmall?.copyWith(
                 color: theme.colorScheme.error,
                 fontWeight: FontWeight.bold,
@@ -296,26 +308,40 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
             ),
             const SizedBox(height: 8),
             Text(
-              message,
+              isAuthError ? 'Your session has expired. Please sign in again.' : message,
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: () {
-                if (message.contains('Authentication')) {
+                if (isAuthError) {
+                  // Clear any stored tokens
+                  context.read<AuthBloc>().add(AuthLogoutEvent());
+                  // Navigate to login
                   context.go('/login');
                 } else {
                   final bool isActiveTab = _tabController.index == 0;
                   context.read<OrderBloc>().add(OrderLoadListEvent(active: isActiveTab));
                 }
               },
-              icon: Icon(message.contains('Authentication') ? Icons.login : Icons.refresh),
-              label: Text(message.contains('Authentication') ? 'Sign In' : 'Retry'),
+              icon: Icon(isAuthError ? Icons.login : Icons.refresh),
+              label: Text(isAuthError ? 'Sign In' : 'Retry'),
             ),
           ],
         ),
       ),
     );
+  }
+
+  bool _isAuthenticationError(String message) {
+    final lowerMessage = message.toLowerCase();
+    return lowerMessage.contains('authentication failed') ||
+           lowerMessage.contains('unauthorized') ||
+           lowerMessage.contains('token expired') ||
+           lowerMessage.contains('invalid token') ||
+           lowerMessage.contains('access denied') ||
+           lowerMessage.contains('no token provided') ||
+           lowerMessage.contains('token is not valid');
   }
 }

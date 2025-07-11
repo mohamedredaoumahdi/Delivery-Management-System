@@ -17,13 +17,6 @@ class ProfilePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Profile'),
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => context.push('/profile/edit'),
-            tooltip: 'Edit Profile',
-          ),
-        ],
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -69,40 +62,36 @@ class ProfilePage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
           // Profile header
           _buildProfileHeader(context, user),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
           
           // Account section
           _buildSectionTitle(context, 'Account'),
-          const SizedBox(height: 16),
           _buildAccountSection(context, user),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
           
           // Preferences section
           _buildSectionTitle(context, 'Preferences'),
-          const SizedBox(height: 16),
           _buildPreferencesSection(context),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
           
           // Support section
           _buildSectionTitle(context, 'Support'),
-          const SizedBox(height: 16),
           _buildSupportSection(context),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
           
           // App information section
           _buildSectionTitle(context, 'App'),
-          const SizedBox(height: 16),
           _buildAppSection(context),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
           
           // Logout button
           _buildLogoutButton(context),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
         ],
       ),
     );
@@ -111,89 +100,166 @@ class ProfilePage extends StatelessWidget {
   Widget _buildProfileHeader(BuildContext context, User user) {
     final theme = Theme.of(context);
 
-    return AppCard(
-      contentPadding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          // Profile picture
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              border: Border.all(
-                color: theme.colorScheme.primary.withOpacity(0.2),
-                width: 2,
-              ),
-            ),
-            child: user.profilePicture != null
-                ? ClipOval(
-                    child: Image.network(
-                      user.profilePicture!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildDefaultAvatar(context, user),
-                    ),
-                  )
-                : _buildDefaultAvatar(context, user),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primary.withOpacity(0.12),
+            theme.colorScheme.primary.withOpacity(0.03),
+            theme.colorScheme.surface,
+          ],
+          stops: const [0.0, 0.7, 1.0],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withOpacity(0.15),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+            spreadRadius: 2,
           ),
-          const SizedBox(width: 16),
-          
-          // User info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.name,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  user.email,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
-                  ),
-                ),
-                if (user.phone != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    user.phone!,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 8),
-                
-                // Verification badges
-                Row(
-                  children: [
-                    if (user.isEmailVerified)
-                      _buildVerificationBadge(
-                        context,
-                        'Email Verified',
-                        Icons.verified,
-                        Colors.green,
-                      ),
-                    if (user.isEmailVerified && user.isPhoneVerified)
-                      const SizedBox(width: 8),
-                    if (user.isPhoneVerified)
-                      _buildVerificationBadge(
-                        context,
-                        'Phone Verified',
-                        Icons.verified,
-                        Colors.blue,
-                      ),
-                  ],
-                ),
-              ],
-            ),
+          BoxShadow(
+            color: theme.colorScheme.shadow.withOpacity(0.05),
+            blurRadius: 32,
+            offset: const Offset(0, 16),
           ),
         ],
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: theme.colorScheme.primary.withOpacity(0.1),
+            width: 1,
+          ),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withOpacity(0.1),
+              Colors.transparent,
+            ],
+          ),
+        ),
+        child: Row(
+          children: [
+            // Enhanced profile picture with glowing effect
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    theme.colorScheme.primary.withOpacity(0.3),
+                    theme.colorScheme.primary.withOpacity(0.1),
+                    theme.colorScheme.primary.withOpacity(0.05),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withOpacity(0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    blurRadius: 40,
+                    offset: const Offset(0, 20),
+                  ),
+                ],
+                border: Border.all(
+                  color: theme.colorScheme.primary.withOpacity(0.4),
+                  width: 3,
+                ),
+              ),
+              child: user.profilePicture != null
+                  ? ClipOval(
+                      child: Image.network(
+                        user.profilePicture!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildDefaultAvatar(context, user),
+                      ),
+                    )
+                  : _buildDefaultAvatar(context, user),
+            ),
+            const SizedBox(width: 24),
+            
+            // User info with enhanced typography
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _formatName(user.name),
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.onSurface,
+                      height: 1.1,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: double.infinity),
+                    child: Text(
+                      user.email,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.75),
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.1,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      softWrap: false,
+                    ),
+                  ),
+                  if (user.phone != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      user.phone!,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  
+                  // Enhanced verification badges
+                  Row(
+                    children: [
+                      if (user.isEmailVerified)
+                        _buildVerificationBadge(
+                          context,
+                          'Email Verified',
+                          Icons.verified,
+                          Colors.green,
+                        ),
+                      if (user.isEmailVerified && user.isPhoneVerified)
+                        const SizedBox(width: 10),
+                      if (user.isPhoneVerified)
+                        _buildVerificationBadge(
+                          context,
+                          'Phone Verified',
+                          Icons.verified,
+                          Colors.blue,
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -222,25 +288,44 @@ class ProfilePage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(4),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            color.withOpacity(0.15),
+            color.withOpacity(0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             icon,
-            size: 14,
+            size: 16,
             color: color,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
           Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
               color: color,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
             ),
           ),
         ],
@@ -251,14 +336,34 @@ class ProfilePage extends StatelessWidget {
   Widget _buildSectionTitle(BuildContext context, String title) {
     final theme = Theme.of(context);
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        title,
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: theme.colorScheme.primary,
-        ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 24,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.primary.withOpacity(0.6),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -285,28 +390,14 @@ class ProfilePage extends StatelessWidget {
           icon: Icons.location_on_outlined,
           title: 'Delivery Addresses',
           subtitle: 'Manage your saved addresses',
-          onTap: () {
-            // TODO: Navigate to addresses page
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Address management coming soon!'),
-              ),
-            );
-          },
+          onTap: () => context.push('/profile/addresses'),
         ),
         _buildSettingsItem(
           context,
           icon: Icons.payment_outlined,
           title: 'Payment Methods',
           subtitle: 'Manage your payment options',
-          onTap: () {
-            // TODO: Navigate to payment methods page
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Payment methods coming soon!'),
-              ),
-            );
-          },
+          onTap: () => context.push('/profile/payment-methods'),
         ),
       ],
     );
@@ -317,17 +408,10 @@ class ProfilePage extends StatelessWidget {
       children: [
         _buildSettingsItem(
           context,
-          icon: Icons.location_on_outlined,
+          icon: Icons.notifications_outlined,
           title: 'Notifications',
           subtitle: 'Manage your notification preferences',
-          onTap: () {
-            // TODO: Navigate to notification settings
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Notification settings coming soon!'),
-              ),
-            );
-          },
+          onTap: () => context.push('/profile/notifications'),
         ),
         _buildSettingsItem(
           context,
@@ -335,14 +419,7 @@ class ProfilePage extends StatelessWidget {
           title: 'Language',
           subtitle: 'Choose your preferred language',
           trailing: 'English',
-          onTap: () {
-            // TODO: Show language picker
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Language selection coming soon!'),
-              ),
-            );
-          },
+          onTap: () => context.push('/profile/language'),
         ),
         _buildSettingsItem(
           context,
@@ -350,14 +427,7 @@ class ProfilePage extends StatelessWidget {
           title: 'Theme',
           subtitle: 'Light, dark, or system default',
           trailing: 'System',
-          onTap: () {
-            // TODO: Show theme picker
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Theme selection coming soon!'),
-              ),
-            );
-          },
+          onTap: () => context.push('/profile/theme'),
         ),
       ],
     );
@@ -467,72 +537,183 @@ class ProfilePage extends StatelessWidget {
   }) {
     final theme = Theme.of(context);
 
-    return AppCard(
-      contentPadding: const EdgeInsets.all(16),
-      selectable: true,
-      onTap: onTap,
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.surface,
+            theme.colorScheme.surface.withOpacity(0.8),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: theme.colorScheme.outline.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
+            child: Row(
               children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+                // Enhanced icon container
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary.withOpacity(0.15),
+                        theme.colorScheme.primary.withOpacity(0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    icon,
+                    color: theme.colorScheme.primary,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                if (trailing != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      trailing,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 18,
+                  color: theme.colorScheme.onSurface.withOpacity(0.4),
                 ),
               ],
             ),
           ),
-          if (trailing != null) ...[
-            Text(
-              trailing,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Icon(
-            Icons.arrow_forward_ios,
-            size: 16,
-            color: theme.colorScheme.onSurface.withOpacity(0.4),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildLogoutButton(BuildContext context) {
-    return AppButton(
-      text: 'Logout',
-      onPressed: () => _showLogoutDialog(context),
-      variant: AppButtonVariant.outline,
-      fullWidth: true,
-      icon: Icons.logout,
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.error.withOpacity(0.1),
+            theme.colorScheme.error.withOpacity(0.05),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.error.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showLogoutDialog(context),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: theme.colorScheme.error.withOpacity(0.2),
+                width: 1.5,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.logout,
+                    color: theme.colorScheme.error,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Logout',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -577,8 +758,17 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  String _getInitials(String name) {
+  String _formatName(String name) {
     final parts = name.trim().split(' ');
+    if (parts.isEmpty) return 'User';
+    
+    return parts.map((part) => 
+      part.isEmpty ? part : part[0].toUpperCase() + part.substring(1).toLowerCase()
+    ).join(' ');
+  }
+
+  String _getInitials(String name) {
+    final parts = _formatName(name).trim().split(' ');
     if (parts.isEmpty) return 'U';
     if (parts.length == 1) return parts[0][0].toUpperCase();
     return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();

@@ -43,16 +43,7 @@ class EmptyOrders extends StatelessWidget {
                 color: theme.colorScheme.onSurface.withOpacity(0.7),
               ),
             ),
-            const SizedBox(height: 32),
-            AppButton(
-              text: 'Browse Shops',
-              onPressed: () {
-                context.go('/shops');
-              },
-              variant: AppButtonVariant.primary,
-              size: AppButtonSize.large,
-              icon: Icons.store,
-            ),
+
           ],
         ),
       ),

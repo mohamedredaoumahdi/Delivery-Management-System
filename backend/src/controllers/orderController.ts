@@ -168,30 +168,10 @@ export class OrderController {
     }
 
     // TODO: Process payment here based on payment method
-    // For now, we'll mark cash orders as confirmed and card orders as pending payment
-    let updatedStatus: OrderStatus = OrderStatus.PENDING;
-    
-    switch (paymentMethod) {
-      case PaymentMethod.CASH_ON_DELIVERY:
-        // Cash orders are accepted immediately
-        updatedStatus = OrderStatus.ACCEPTED;
-        break;
-      case PaymentMethod.CARD:
-      case PaymentMethod.WALLET:
-      case PaymentMethod.BANK_TRANSFER:
-        // These would require payment processing
-        // For now, we'll simulate successful payment
-        updatedStatus = OrderStatus.ACCEPTED;
-        break;
-    }
-
-    // Update order status if needed
-    if (updatedStatus !== OrderStatus.PENDING) {
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { status: updatedStatus }
-      });
-    }
+    // All orders start as PENDING and wait for vendor acceptance
+    // In a real implementation:
+    // - CASH_ON_DELIVERY: Orders wait for vendor acceptance
+    // - CARD/WALLET/BANK: Process payment first, then wait for vendor acceptance
 
     // TODO: Send notification to vendor about new order
     // TODO: Send confirmation email/SMS to customer
@@ -200,7 +180,7 @@ export class OrderController {
       status: 'success',
       data: {
         ...order,
-        status: updatedStatus
+        status: OrderStatus.PENDING
       }
     });
   }

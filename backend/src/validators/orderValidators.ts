@@ -10,13 +10,13 @@ export const createOrderSchema = Joi.object({
       productPrice: Joi.number().positive().required(),
       quantity: Joi.number().integer().min(1).required(),
       totalPrice: Joi.number().positive().required(),
-      instructions: Joi.string().optional().allow(''),
+      instructions: Joi.string().optional().allow('', null),
     })
   ).required(),
   deliveryAddress: Joi.string().required(),
   deliveryLatitude: Joi.number().optional(),
   deliveryLongitude: Joi.number().optional(),
-  deliveryInstructions: Joi.string().optional().allow(''),
+  deliveryInstructions: Joi.string().optional().allow('', null),
   paymentMethod: Joi.string().valid(...Object.values(PaymentMethod)).required(),
   tip: Joi.number().min(0).optional().default(0),
 });

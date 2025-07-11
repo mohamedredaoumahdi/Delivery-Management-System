@@ -64,92 +64,140 @@ class _HomePageState extends State<HomePage> {
           },
           child: CustomScrollView(
             slivers: [
-              // App Bar
+              // Enhanced App Bar
               SliverAppBar(
                 floating: true,
-                title: user != null
-                    ? Text('Hello, ${_getFirstName(user.name)}')
-                    : const Text('Delivery App'),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined),
-                    onPressed: () {
-                      // Navigate to notifications
-                    },
-                    tooltip: 'Notifications',
+                pinned: false,
+                expandedHeight: 120,
+                backgroundColor: Colors.transparent,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          theme.colorScheme.primary.withOpacity(0.05),
+                          theme.colorScheme.surface,
+                        ],
+                      ),
+                    ),
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    user != null
+                                        ? 'Hello, ${_getFirstName(user.name)}! 👋'
+                                        : 'Welcome! 👋',
+                                    style: theme.textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'What would you like to order today?',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary.withOpacity(0.15),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: IconButton(
+                                icon: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        theme.colorScheme.primary.withOpacity(0.1),
+                                        theme.colorScheme.primary.withOpacity(0.05),
+                                      ],
+                                    ),
+                                  ),
+                                  child: const Icon(Icons.notifications_outlined),
+                                ),
+                                onPressed: () {
+                                  // Navigate to notifications
+                                },
+                                tooltip: 'Notifications',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ],
+                ),
               ),
               
               // Content
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Search Bar
-                      HomeSearchBar(
-                        onTap: () {
-                          context.go('/search');
-                        },
-                      ),
-                      const SizedBox(height: 24),
+                      const HomeSearchBar(),
+                      const SizedBox(height: 32),
                       
                       // Categories
-                      Text(
+                      _buildSectionHeader(
+                        context,
                         'Categories',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        subtitle: 'Browse by type',
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       const CategorySlider(),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       
                       // Featured Shops
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Featured Shops',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              context.push('/shops');
-                            },
-                            child: const Text('See All'),
-                          ),
-                        ],
+                      _buildSectionHeader(
+                        context,
+                        'Featured Shops',
+                        subtitle: 'Handpicked for you',
+                        onSeeAll: () {
+                          context.push('/shops');
+                        },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       const FeaturedShopsCarousel(),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       
                       // Nearby Shops
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Nearby Shops',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              context.push('/shops', extra: {'nearby': true});
-                            },
-                            child: const Text('See All'),
-                          ),
-                        ],
+                      _buildSectionHeader(
+                        context,
+                        'Nearby Shops',
+                        subtitle: 'Quick delivery options',
+                        onSeeAll: () {
+                          context.push('/shops', extra: {'nearby': true});
+                        },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       const NearbyShopsSection(),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -158,6 +206,101 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title, {
+    String? subtitle,
+    VoidCallback? onSeeAll,
+  }) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 28,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.primary.withOpacity(0.5),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (onSeeAll != null)
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      theme.colorScheme.primary.withOpacity(0.1),
+                      theme.colorScheme.primary.withOpacity(0.05),
+                    ],
+                  ),
+                ),
+                child: TextButton(
+                  onPressed: onSeeAll,
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'See All',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward_ios, size: 12),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -10,6 +10,8 @@ export 'src/entities/order.dart';
 export 'src/entities/vendor.dart';
 export 'src/entities/menu_item.dart';
 export 'src/entities/vendor_dashboard.dart';
+export 'src/entities/address.dart';
+export 'src/entities/payment_method.dart';
 
 // Errors
 export 'src/errors/failures.dart';
@@ -21,6 +23,8 @@ export 'src/repositories/shop_repository.dart';
 export 'src/repositories/order_repository.dart';
 export 'src/repositories/vendor_repository.dart';
 export 'src/repositories/menu_repository.dart';
+export 'src/repositories/address_repository.dart';
+export 'src/repositories/payment_method_repository.dart';
 
 // Use Cases
 export 'src/usecases/get_vendor_dashboard_usecase.dart';

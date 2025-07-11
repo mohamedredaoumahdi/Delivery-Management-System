@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:domain/domain.dart';
 
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/auth/presentation/pages/login_page.dart';
@@ -20,15 +21,24 @@ import '../features/order/presentation/pages/order_tracking_page.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
 import '../features/profile/presentation/pages/edit_profile_page.dart';
 import '../features/profile/presentation/pages/change_password_page.dart';
+import '../features/profile/presentation/pages/notification_settings_page.dart';
+import '../features/profile/presentation/pages/language_settings_page.dart';
+import '../features/profile/presentation/pages/theme_settings_page.dart';
+import '../features/address/presentation/pages/addresses_page.dart';
+import '../features/address/presentation/pages/add_edit_address_page.dart';
+import '../features/address/presentation/bloc/address_bloc.dart';
+import '../features/payment_method/presentation/pages/payment_methods_page.dart';
+import '../features/payment_method/presentation/pages/add_edit_payment_method_page.dart';
+import '../features/payment_method/presentation/bloc/payment_method_bloc.dart';
 import '../features/search/presentation/pages/search_page.dart';
 import '../di/injection.dart';
+import '../core/auth/auth_manager.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
 // Create the router configuration
 final appRouter = GoRouter(
-  navigatorKey: _rootNavigatorKey,
+  navigatorKey: AuthManager.navigatorKey,
   initialLocation: '/',
   debugLogDiagnostics: true,
   redirect: (BuildContext context, GoRouterState state) {
@@ -102,7 +112,28 @@ final appRouter = GoRouter(
             // Shop routes
             GoRoute(
               path: 'shops',
-              builder: (context, state) => const ShopListPage(),
+              builder: (context, state) {
+                final extra = state.extra as Map<String, dynamic>?;
+                final categoryFromExtra = extra?['category'] as ShopCategory?;
+                final showNearby = extra?['nearby'] as bool? ?? false;
+                
+                // Also check for category in query parameters
+                final categoryFromQuery = state.uri.queryParameters['category'];
+                ShopCategory? category = categoryFromExtra;
+                
+                if (categoryFromQuery != null) {
+                  // Convert string to enum
+                  category = ShopCategory.values.firstWhere(
+                    (e) => e.name == categoryFromQuery,
+                    orElse: () => ShopCategory.restaurant,
+                  );
+                }
+                
+                return ShopListPage(
+                  initialCategory: category,
+                  showNearby: showNearby,
+                );
+              },
             ),
             GoRoute(
               path: 'shops/:id',
@@ -138,12 +169,22 @@ final appRouter = GoRouter(
           ),
           routes: [
             // Checkout route nested under cart
-        GoRoute(
+            GoRoute(
               path: 'checkout',
-          builder: (context, state) {
-            final summary = state.extra as CartSummary?;
-            return CheckoutPage(summary: summary);
-          },
+              builder: (context, state) {
+                final summary = state.extra as CartSummary?;
+                return MultiBlocProvider(
+                  providers: [
+                    BlocProvider<AddressBloc>(
+                      create: (context) => getIt<AddressBloc>(),
+                    ),
+                    BlocProvider<PaymentMethodBloc>(
+                      create: (context) => getIt<PaymentMethodBloc>(),
+                    ),
+                  ],
+                  child: CheckoutPage(summary: summary),
+                );
+              },
             ),
           ],
         ),
@@ -186,6 +227,71 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'change-password',
               builder: (context, state) => const ChangePasswordPage(),
+            ),
+            GoRoute(
+              path: 'notifications',
+              builder: (context, state) => const NotificationSettingsPage(),
+            ),
+            GoRoute(
+              path: 'language',
+              builder: (context, state) => const LanguageSettingsPage(),
+            ),
+            GoRoute(
+              path: 'theme',
+              builder: (context, state) => const ThemeSettingsPage(),
+            ),
+            GoRoute(
+              path: 'addresses',
+              builder: (context, state) => BlocProvider<AddressBloc>(
+                create: (context) => getIt<AddressBloc>(),
+                child: const AddressesPage(),
+              ),
+              routes: [
+                GoRoute(
+                  path: 'add',
+                  builder: (context, state) => BlocProvider<AddressBloc>(
+                    create: (context) => getIt<AddressBloc>(),
+                    child: const AddEditAddressPage(),
+                  ),
+                ),
+                GoRoute(
+                  path: 'edit/:addressId',
+                  builder: (context, state) {
+                    final addressId = state.pathParameters['addressId']!;
+                    // TODO: We might want to pass the address object if we have it
+                    return BlocProvider<AddressBloc>(
+                      create: (context) => getIt<AddressBloc>(),
+                      child: AddEditAddressPage(addressId: addressId),
+                    );
+                  },
+                ),
+              ],
+            ),
+            GoRoute(
+              path: 'payment-methods',
+              builder: (context, state) => BlocProvider<PaymentMethodBloc>(
+                create: (context) => getIt<PaymentMethodBloc>(),
+                child: const PaymentMethodsPage(),
+              ),
+              routes: [
+                GoRoute(
+                  path: 'add',
+                  builder: (context, state) => BlocProvider<PaymentMethodBloc>(
+                    create: (context) => getIt<PaymentMethodBloc>(),
+                    child: const AddEditPaymentMethodPage(),
+                  ),
+                ),
+                GoRoute(
+                  path: 'edit/:paymentMethodId',
+                  builder: (context, state) {
+                    final paymentMethodId = state.pathParameters['paymentMethodId']!;
+                    return BlocProvider<PaymentMethodBloc>(
+                      create: (context) => getIt<PaymentMethodBloc>(),
+                      child: AddEditPaymentMethodPage(paymentMethodId: paymentMethodId),
+                    );
+                  },
+                ),
+              ],
             ),
           ],
         ),

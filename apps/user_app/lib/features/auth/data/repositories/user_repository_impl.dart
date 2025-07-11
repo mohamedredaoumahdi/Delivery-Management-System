@@ -13,7 +13,7 @@ class UserRepositoryImpl implements AuthRepository {
       final response = await _apiClient.get('/users/me');
       if (response.data != null) {
         try {
-          final userData = response.data as Map<String, dynamic>;
+          final userData = response.data['data'] as Map<String, dynamic>;
           final user = User(
             id: userData['id'] as String,
             email: userData['email'] as String,
@@ -182,7 +182,7 @@ class UserRepositoryImpl implements AuthRepository {
         'profilePicture': profilePicture,
       });
       try {
-        final userData = response.data as Map<String, dynamic>;
+        final userData = response.data['data'] as Map<String, dynamic>;
         final user = User(
           id: userData['id'] as String,
           email: userData['email'] as String,

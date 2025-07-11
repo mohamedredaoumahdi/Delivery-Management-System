@@ -23,19 +23,33 @@ class CartItemCard extends StatefulWidget {
   State<CartItemCard> createState() => _CartItemCardState();
 }
 
-class _CartItemCardState extends State<CartItemCard> {
+class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMixin {
   late TextEditingController _instructionsController;
+  late AnimationController _scaleController;
+  late Animation<double> _scaleAnimation;
   bool _isEditingInstructions = false;
 
   @override
   void initState() {
     super.initState();
     _instructionsController = TextEditingController(text: widget.item.instructions);
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
   void dispose() {
     _instructionsController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
@@ -61,247 +75,481 @@ class _CartItemCardState extends State<CartItemCard> {
     });
   }
 
+  void _onQuantityButtonPressed(VoidCallback callback) {
+    _scaleController.forward().then((_) {
+      _scaleController.reverse();
+      callback();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return AppCard(
-      contentPadding: const EdgeInsets.all(0),
-      child: Column(
-        children: [
-          // Item details
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Product image
-                if (widget.item.productImageUrl != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      widget.item.productImageUrl!,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Container(
-                            width: 80,
-                            height: 80,
-                            color: theme.colorScheme.surfaceContainerHighest,
-                            child: const Icon(Icons.image_not_supported_outlined),
-                          ),
-                    ),
-                  )
-                else
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.fastfood),
-                  ),
-                  
-                const SizedBox(width: 12),
-                
-                // Item info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.item.productName,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.item.shopName,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      
-                      // Price
-                      Row(
-                        children: [
-                          if (widget.item.discountedPrice != null) ...[
-                            Text(
-                              '\$${widget.item.productPrice.toStringAsFixed(2)}',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                decoration: TextDecoration.lineThrough,
-                                color: theme.colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '\$${widget.item.discountedPrice!.toStringAsFixed(2)}',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ] else
-                            Text(
-                              '\$${widget.item.productPrice.toStringAsFixed(2)}',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Remove button
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: widget.onRemove,
-                  tooltip: 'Remove item',
-                  visualDensity: VisualDensity.compact,
-                ),
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: theme.colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                theme.colorScheme.surface,
+                theme.colorScheme.surface.withOpacity(0.8),
               ],
             ),
           ),
-          
-          const Divider(height: 1),
-          
-          // Quantity controls
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                // Quantity controls
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: theme.colorScheme.outline.withOpacity(0.5),
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Decrement button
-                      IconButton(
-                        icon: const Icon(Icons.remove),
-                        onPressed: widget.onDecrement,
-                        visualDensity: VisualDensity.compact,
-                        style: IconButton.styleFrom(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                      
-                      // Quantity
-                      Text(
-                        '${widget.item.quantity}',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      
-                      // Increment button
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: widget.onIncrement,
-                        visualDensity: VisualDensity.compact,
-                        style: IconButton.styleFrom(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const Spacer(),
-                
-                // Total price
-                Flexible(
-                  child: Text(
-                    'Total: \$${widget.item.totalPrice.toStringAsFixed(2)}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Special instructions
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          child: Column(
+            children: [
+              // Main item content
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                   children: [
-                    Expanded(
-                      child: Text(
-                        'Special Instructions',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
+                    // Item header with image and details
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Product image with hero animation
+                        Hero(
+                          tag: 'cart-item-${widget.item.productId}',
+                          child: Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.colorScheme.shadow.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: widget.item.productImageUrl != null
+                                  ? Image.network(
+                                      widget.item.productImageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildPlaceholderImage(theme),
+                                    )
+                                  : _buildPlaceholderImage(theme),
+                            ),
+                          ),
                         ),
-                      ),
+                        
+                        const SizedBox(width: 16),
+                        
+                        // Item details
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Product name
+                              Text(
+                                widget.item.productName,
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              
+                              const SizedBox(height: 6),
+                              
+                              // Shop name with location icon
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.store_outlined,
+                                    size: 14,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      widget.item.shopName,
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              
+                              const SizedBox(height: 12),
+                              
+                              // Price with discount handling
+                              _buildPriceSection(theme),
+                            ],
+                          ),
+                        ),
+                        
+                        // Remove button
+                        Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.errorContainer.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.delete_outline,
+                              color: theme.colorScheme.error,
+                            ),
+                            onPressed: widget.onRemove,
+                            tooltip: 'Remove from cart',
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: theme.colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    TextButton.icon(
-                      onPressed: _toggleInstructionsEdit,
-                      icon: Icon(
-                        _isEditingInstructions ? Icons.check : Icons.edit,
-                        size: 12,
-                      ),
-                      label: Text(
-                        _isEditingInstructions ? 'Save' : 'Edit',
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-                        visualDensity: VisualDensity.compact,
-                        minimumSize: const Size(0, 24),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Quantity controls and total
+                    Row(
+                      children: [
+                        // Quantity controls
+                        Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withOpacity(0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Decrement button
+                              ScaleTransition(
+                                scale: _scaleAnimation,
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: widget.item.quantity > 1
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.outline.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.remove, size: 18),
+                                    onPressed: widget.item.quantity > 1
+                                        ? () => _onQuantityButtonPressed(widget.onDecrement)
+                                        : null,
+                                    style: IconButton.styleFrom(
+                                      foregroundColor: widget.item.quantity > 1
+                                          ? theme.colorScheme.onPrimary
+                                          : theme.colorScheme.onSurface.withOpacity(0.4),
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              
+                              // Quantity display
+                              Container(
+                                constraints: const BoxConstraints(minWidth: 50),
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  '${widget.item.quantity}',
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              
+                              // Increment button
+                              ScaleTransition(
+                                scale: _scaleAnimation,
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.add, size: 18),
+                                    onPressed: () => _onQuantityButtonPressed(widget.onIncrement),
+                                    style: IconButton.styleFrom(
+                                      foregroundColor: theme.colorScheme.onPrimary,
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        const Spacer(),
+                        
+                        // Total price
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '\$${widget.item.totalPrice.toStringAsFixed(2)}',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                if (_isEditingInstructions)
-                  TextField(
-                    controller: _instructionsController,
-                    decoration: InputDecoration(
-                      hintText: 'Add special instructions...',
-                      isDense: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+              ),
+              
+              // Special instructions section
+              _buildInstructionsSection(theme),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderImage(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primaryContainer,
+            theme.colorScheme.primaryContainer.withOpacity(0.7),
+          ],
+        ),
+      ),
+      child: Icon(
+        Icons.restaurant_menu,
+        size: 32,
+        color: theme.colorScheme.onPrimaryContainer,
+      ),
+    );
+  }
+
+  Widget _buildPriceSection(ThemeData theme) {
+    if (widget.item.discountedPrice != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Original price (crossed out)
+          Text(
+            '\$${widget.item.productPrice.toStringAsFixed(2)}',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              decoration: TextDecoration.lineThrough,
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 2),
+          // Discounted price
+          Row(
+            children: [
+              Text(
+                '\$${widget.item.discountedPrice!.toStringAsFixed(2)}',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.error.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'SAVE \$${(widget.item.productPrice - widget.item.discountedPrice!).toStringAsFixed(2)}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.error,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    } else {
+      return Text(
+        '\$${widget.item.productPrice.toStringAsFixed(2)}',
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: theme.colorScheme.primary,
+        ),
+      );
+    }
+  }
+
+  Widget _buildInstructionsSection(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
+      ),
+      child: ExpansionTile(
+        leading: Icon(
+          Icons.note_outlined,
+          color: theme.colorScheme.primary,
+        ),
+        title: Text(
+          'Special Instructions',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.primary,
+          ),
+        ),
+        subtitle: widget.item.instructions?.isNotEmpty == true
+            ? Text(
+                widget.item.instructions!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            : Text(
+                'Tap to add instructions',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_isEditingInstructions) ...[
+                  Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.primary.withOpacity(0.3),
                       ),
                     ),
-                    maxLines: 2,
-                    textInputAction: TextInputAction.done,
-                    onEditingComplete: _toggleInstructionsEdit,
-                  )
-                else if (widget.item.instructions?.isNotEmpty ?? false)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      widget.item.instructions!,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontStyle: FontStyle.italic,
+                    child: TextField(
+                      controller: _instructionsController,
+                      decoration: InputDecoration(
+                        hintText: 'e.g., Extra spicy, no onions, etc.',
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.all(16),
+                        hintStyle: TextStyle(
+                          color: theme.colorScheme.onSurface.withOpacity(0.5),
+                        ),
+                      ),
+                      maxLines: 3,
+                      style: theme.textTheme.bodyMedium,
+                      textInputAction: TextInputAction.done,
+                      onEditingComplete: _toggleInstructionsEdit,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _isEditingInstructions = false;
+                            _instructionsController.text = widget.item.instructions ?? '';
+                          });
+                        },
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton.icon(
+                        onPressed: _toggleInstructionsEdit,
+                        icon: const Icon(Icons.check, size: 16),
+                        label: const Text('Save'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  if (widget.item.instructions?.isNotEmpty == true) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: theme.colorScheme.outline.withOpacity(0.2),
+                        ),
+                      ),
+                      child: Text(
+                        widget.item.instructions!,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface,
+                          height: 1.4,
+                        ),
                       ),
                     ),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      'None',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.5),
-                        fontStyle: FontStyle.italic,
+                    const SizedBox(height: 12),
+                  ],
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _isEditingInstructions = true;
+                        });
+                      },
+                      icon: const Icon(Icons.edit_outlined, size: 16),
+                      label: Text(
+                        widget.item.instructions?.isNotEmpty == true
+                            ? 'Edit Instructions'
+                            : 'Add Instructions',
+                      ),
+                      style: TextButton.styleFrom(
+                        foregroundColor: theme.colorScheme.primary,
                       ),
                     ),
                   ),
+                ],
               ],
             ),
           ),

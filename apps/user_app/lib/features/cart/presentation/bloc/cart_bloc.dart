@@ -84,8 +84,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     final currentState = state;
     
     if (currentState is CartLoaded || currentState is CartEmpty) {
-      emit(const CartLoading());
-      
       try {
         // Check if adding from different shop
         final currentShopId = await _cartRepository.getCurrentShopId();
@@ -105,8 +103,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
                 instructions: event.instructions,
               );
               
-              // Reload cart
-              add(const CartLoadEvent());
+              // The stream will automatically update the state via _onCartItemsUpdated
+              // No need to manually reload
             },
           ));
         } else {
@@ -119,8 +117,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
             instructions: event.instructions,
           );
           
-          // Reload cart
-          add(const CartLoadEvent());
+          // The stream will automatically update the state via _onCartItemsUpdated
+          // No need to manually reload
         }
       } catch (e) {
         emit(CartError('Failed to add item to cart: $e'));
@@ -133,16 +131,14 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     Emitter<CartState> emit,
   ) async {
     if (state is CartLoaded) {
-      emit(const CartLoading());
-      
       try {
         await _cartRepository.updateCartItemQuantity(
           productId: event.productId,
           quantity: event.quantity,
         );
         
-        // Reload cart
-        add(const CartLoadEvent());
+        // The stream will automatically update the state via _onCartItemsUpdated
+        // No need to emit loading state or manually reload
       } catch (e) {
         emit(CartError('Failed to update item quantity: $e'));
       }
@@ -154,16 +150,14 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     Emitter<CartState> emit,
   ) async {
     if (state is CartLoaded) {
-      emit(const CartLoading());
-      
       try {
         await _cartRepository.updateCartItemInstructions(
           productId: event.productId,
           instructions: event.instructions,
         );
         
-        // Reload cart
-        add(const CartLoadEvent());
+        // The stream will automatically update the state via _onCartItemsUpdated
+        // No need to emit loading state or manually reload
       } catch (e) {
         emit(CartError('Failed to update item instructions: $e'));
       }
@@ -175,13 +169,11 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     Emitter<CartState> emit,
   ) async {
     if (state is CartLoaded) {
-      emit(const CartLoading());
-      
       try {
         await _cartRepository.removeFromCart(event.productId);
         
-        // Reload cart
-        add(const CartLoadEvent());
+        // The stream will automatically update the state via _onCartItemsUpdated
+        // No need to emit loading state or manually reload
       } catch (e) {
         emit(CartError('Failed to remove item from cart: $e'));
       }
@@ -208,8 +200,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     Emitter<CartState> emit,
   ) async {
     if (state is CartLoaded) {
-      emit(const CartLoading());
-      
       try {
         final summary = await _cartRepository.getCartSummary(
           deliveryFee: event.deliveryFee,

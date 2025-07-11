@@ -78,7 +78,7 @@ class FeaturedShopsCarousel extends StatelessWidget {
           }
 
           return SizedBox(
-            height: 250,
+            height: 280,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),

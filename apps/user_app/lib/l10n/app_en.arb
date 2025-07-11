@@ -1,0 +1,370 @@
+{
+  "@@locale": "en",
+  "appTitle": "Delivery System",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+
+  "home": "Home",
+  "@home": {
+    "description": "Home navigation label"
+  },
+
+  "cart": "Cart",
+  "@cart": {
+    "description": "Cart navigation label"
+  },
+
+  "orders": "Orders",
+  "@orders": {
+    "description": "Orders navigation label"
+  },
+
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile navigation label"
+  },
+
+  "login": "Login",
+  "@login": {
+    "description": "Login button text"
+  },
+
+  "signup": "Sign Up",
+  "@signup": {
+    "description": "Sign up button text"
+  },
+
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button text"
+  },
+
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+
+  "name": "Name",
+  "@name": {
+    "description": "Name field label"
+  },
+
+  "phone": "Phone",
+  "@phone": {
+    "description": "Phone field label"
+  },
+
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+
+  "search": "Search",
+  "@search": {
+    "description": "Search action"
+  },
+
+  "searchForShopsAndProducts": "Search for shops and products",
+  "@searchForShopsAndProducts": {
+    "description": "Search bar hint text"
+  },
+
+  "featuredShops": "Featured Shops",
+  "@featuredShops": {
+    "description": "Featured shops section title"
+  },
+
+  "nearbyShops": "Nearby Shops",
+  "@nearbyShops": {
+    "description": "Nearby shops section title"
+  },
+
+  "categories": "Categories",
+  "@categories": {
+    "description": "Categories section title"
+  },
+
+  "seeAll": "See All",
+  "@seeAll": {
+    "description": "See all button text"
+  },
+
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications settings title"
+  },
+
+  "notificationSettings": "Notification Settings",
+  "@notificationSettings": {
+    "description": "Notification settings page title"
+  },
+
+  "manageNotificationPreferences": "Manage your notification preferences",
+  "@manageNotificationPreferences": {
+    "description": "Notification settings subtitle"
+  },
+
+  "language": "Language",
+  "@language": {
+    "description": "Language settings title"
+  },
+
+  "languageSettings": "Language Settings",
+  "@languageSettings": {
+    "description": "Language settings page title"
+  },
+
+  "chooseLanguage": "Choose Language",
+  "@chooseLanguage": {
+    "description": "Language selection header"
+  },
+
+  "selectPreferredLanguage": "Select your preferred language for the app",
+  "@selectPreferredLanguage": {
+    "description": "Language selection subtitle"
+  },
+
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme settings title"
+  },
+
+  "themeSettings": "Theme Settings",
+  "@themeSettings": {
+    "description": "Theme settings page title"
+  },
+
+  "chooseTheme": "Choose Theme",
+  "@chooseTheme": {
+    "description": "Theme selection header"
+  },
+
+  "selectPreferredTheme": "Select your preferred app appearance",
+  "@selectPreferredTheme": {
+    "description": "Theme selection subtitle"
+  },
+
+  "lightTheme": "Light",
+  "@lightTheme": {
+    "description": "Light theme option"
+  },
+
+  "darkTheme": "Dark",
+  "@darkTheme": {
+    "description": "Dark theme option"
+  },
+
+  "systemTheme": "System",
+  "@systemTheme": {
+    "description": "System theme option"
+  },
+
+  "editProfile": "Edit Profile",
+  "@editProfile": {
+    "description": "Edit profile button text"
+  },
+
+  "changePassword": "Change Password",
+  "@changePassword": {
+    "description": "Change password button text"
+  },
+
+  "deliveryAddresses": "Delivery Addresses",
+  "@deliveryAddresses": {
+    "description": "Delivery addresses section title"
+  },
+
+  "paymentMethods": "Payment Methods",
+  "@paymentMethods": {
+    "description": "Payment methods section title"
+  },
+
+  "account": "Account",
+  "@account": {
+    "description": "Account section title"
+  },
+
+  "preferences": "Preferences",
+  "@preferences": {
+    "description": "Preferences section title"
+  },
+
+  "support": "Support",
+  "@support": {
+    "description": "Support section title"
+  },
+
+  "app": "App",
+  "@app": {
+    "description": "App section title"
+  },
+
+  "addToCart": "Add to Cart",
+  "@addToCart": {
+    "description": "Add to cart button text"
+  },
+
+  "checkout": "Checkout",
+  "@checkout": {
+    "description": "Checkout button text"
+  },
+
+  "total": "Total",
+  "@total": {
+    "description": "Total amount label"
+  },
+
+  "subtotal": "Subtotal",
+  "@subtotal": {
+    "description": "Subtotal amount label"
+  },
+
+  "deliveryFee": "Delivery Fee",
+  "@deliveryFee": {
+    "description": "Delivery fee label"
+  },
+
+  "orderPlaced": "Order Placed",
+  "@orderPlaced": {
+    "description": "Order placed status"
+  },
+
+  "preparing": "Preparing",
+  "@preparing": {
+    "description": "Order preparing status"
+  },
+
+  "onTheWay": "On the Way",
+  "@onTheWay": {
+    "description": "Order on the way status"
+  },
+
+  "delivered": "Delivered",
+  "@delivered": {
+    "description": "Order delivered status"
+  },
+
+  "english": "English",
+  "@english": {
+    "description": "English language name"
+  },
+
+  "french": "French",
+  "@french": {
+    "description": "French language name"
+  },
+
+  "languageChanged": "Language changed to {language}",
+  "@languageChanged": {
+    "description": "Language change confirmation message",
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "English"
+      }
+    }
+  },
+
+  "themeChanged": "Theme changed to {theme}",
+  "@themeChanged": {
+    "description": "Theme change confirmation message",
+    "placeholders": {
+      "theme": {
+        "type": "String",
+        "example": "Light"
+      }
+    }
+  },
+
+  "helloUser": "Hello, {name}! 👋",
+  "@helloUser": {
+    "description": "Greeting message with user name",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+
+  "generalNotifications": "General Notifications",
+  "@generalNotifications": {
+    "description": "General notifications section title"
+  },
+
+  "orderNotifications": "Order Notifications",
+  "@orderNotifications": {
+    "description": "Order notifications section title"
+  },
+
+  "marketingNotifications": "Marketing & Promotions",
+  "@marketingNotifications": {
+    "description": "Marketing notifications section title"
+  },
+
+  "appBehavior": "App Behavior",
+  "@appBehavior": {
+    "description": "App behavior section title"
+  },
+
+  "pushNotifications": "Push Notifications",
+  "@pushNotifications": {
+    "description": "Push notifications setting"
+  },
+
+  "emailNotifications": "Email Notifications",
+  "@emailNotifications": {
+    "description": "Email notifications setting"
+  },
+
+  "smsNotifications": "SMS Notifications",
+  "@smsNotifications": {
+    "description": "SMS notifications setting"
+  },
+
+  "orderUpdates": "Order Updates",
+  "@orderUpdates": {
+    "description": "Order updates setting"
+  },
+
+  "orderConfirmation": "Order Confirmation",
+  "@orderConfirmation": {
+    "description": "Order confirmation setting"
+  },
+
+  "deliveryUpdates": "Delivery Updates",
+  "@deliveryUpdates": {
+    "description": "Delivery updates setting"
+  },
+
+  "promotionalOffers": "Promotional Offers",
+  "@promotionalOffers": {
+    "description": "Promotional offers setting"
+  },
+
+  "sound": "Sound",
+  "@sound": {
+    "description": "Sound setting"
+  },
+
+  "vibration": "Vibration",
+  "@vibration": {
+    "description": "Vibration setting"
+  },
+
+  "pageNotFound": "Page Not Found",
+  "@pageNotFound": {
+    "description": "Page not found error"
+  }
+} 

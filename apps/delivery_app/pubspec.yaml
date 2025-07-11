@@ -44,6 +44,9 @@ dependencies:
   # Permissions
   permission_handler: ^11.0.1
   
+  # URL launching
+  url_launcher: ^6.2.1
+  
   # Date/Time
   intl: ^0.18.1
   timeago: ^3.5.0

@@ -133,28 +133,11 @@ class OrderController {
                 });
             }
         }
-        let updatedStatus = client_1.OrderStatus.PENDING;
-        switch (paymentMethod) {
-            case client_1.PaymentMethod.CASH_ON_DELIVERY:
-                updatedStatus = client_1.OrderStatus.ACCEPTED;
-                break;
-            case client_1.PaymentMethod.CARD:
-            case client_1.PaymentMethod.WALLET:
-            case client_1.PaymentMethod.BANK_TRANSFER:
-                updatedStatus = client_1.OrderStatus.ACCEPTED;
-                break;
-        }
-        if (updatedStatus !== client_1.OrderStatus.PENDING) {
-            await prisma.order.update({
-                where: { id: order.id },
-                data: { status: updatedStatus }
-            });
-        }
         res.status(201).json({
             status: 'success',
             data: {
                 ...order,
-                status: updatedStatus
+                status: client_1.OrderStatus.PENDING
             }
         });
     }

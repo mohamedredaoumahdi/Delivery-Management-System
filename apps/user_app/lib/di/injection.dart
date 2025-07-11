@@ -7,8 +7,12 @@ import 'package:data/src/api/api_client.dart' as data_api;
 
 // Corrected imports for Order related repositories
 import 'package:data/src/repositories/order_repository_impl.dart';
+import 'package:data/src/repositories/address_repository_impl.dart';
+import 'package:data/src/repositories/payment_method_repository_impl.dart';
 
 import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/address/presentation/bloc/address_bloc.dart';
+import '../features/payment_method/presentation/bloc/payment_method_bloc.dart';
 import '../features/shop/presentation/bloc/shop_list_bloc.dart';
 import '../features/cart/domain/cart_repository.dart';
 import '../features/cart/data/cart_repository_impl.dart';
@@ -19,6 +23,7 @@ import '../features/shop/presentation/bloc/shop_details_bloc.dart';
 import '../features/shop/presentation/bloc/product_details_bloc.dart';
 import '../features/shop/presentation/bloc/product_list_bloc.dart';
 import '../features/order/presentation/bloc/order_bloc.dart';
+import '../core/auth/auth_manager.dart';
 
 final getIt = GetIt.instance;
 
@@ -33,6 +38,10 @@ Future<void> initializeDependencies() async {
   final connectivityService = ConnectivityService();
   await connectivityService.initialize();
   getIt.registerSingleton<ConnectivityService>(connectivityService);
+  
+  // Create authentication manager
+  final authManager = AuthManager();
+  getIt.registerSingleton<AuthManager>(authManager);
   
   // API Client with proper configuration
   final dio = Dio();
@@ -65,11 +74,14 @@ Future<void> initializeDependencies() async {
       handler.next(options);
     },
     onError: (error, handler) async {
-      // Handle 401 errors by clearing token and redirecting to login
+      // Handle 401 errors by clearing token and triggering logout
       if (error.response?.statusCode == 401) {
+        getIt<LoggerService>().w('Auth token expired or invalid, clearing tokens');
         await getIt<StorageService>().remove('auth_token');
         await getIt<StorageService>().remove('refresh_token');
-        // You might want to emit an event to redirect to login
+        
+        // Trigger logout through auth manager
+        getIt<AuthManager>().handleAuthError();
       }
       handler.next(error);
     },
@@ -116,6 +128,22 @@ Future<void> initializeDependencies() async {
   // Order Repository
   getIt.registerSingleton<OrderRepository>(
     OrderRepositoryImpl(
+      apiClient: getIt<data_api.ApiClient>(),
+      logger: getIt<LoggerService>(),
+    ),
+  );
+  
+  // Address Repository
+  getIt.registerSingleton<AddressRepository>(
+    AddressRepositoryImpl(
+      apiClient: getIt<data_api.ApiClient>(),
+      logger: getIt<LoggerService>(),
+    ),
+  );
+  
+  // Payment Method Repository
+  getIt.registerSingleton<PaymentMethodRepository>(
+    PaymentMethodRepositoryImpl(
       apiClient: getIt<data_api.ApiClient>(),
       logger: getIt<LoggerService>(),
     ),
@@ -171,6 +199,20 @@ Future<void> initializeDependencies() async {
   getIt.registerFactory<OrderBloc>(
     () => OrderBloc(
       orderRepository: getIt<OrderRepository>(),
+    ),
+  );
+
+  // Register AddressBloc
+  getIt.registerFactory<AddressBloc>(
+    () => AddressBloc(
+      addressRepository: getIt<AddressRepository>(),
+    ),
+  );
+
+  // Register PaymentMethodBloc
+  getIt.registerFactory<PaymentMethodBloc>(
+    () => PaymentMethodBloc(
+      paymentMethodRepository: getIt<PaymentMethodRepository>(),
     ),
   );
 }

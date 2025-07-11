@@ -139,6 +139,56 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
     );
   }
 
+  Widget _buildCategoryChip(BuildContext context, String label, bool isSelected, VoidCallback onTap) {
+    final theme = Theme.of(context);
+    
+    return Container(
+      margin: const EdgeInsets.only(right: 12),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.primary.withOpacity(0.8),
+                    ],
+                  )
+                : null,
+            color: isSelected ? null : theme.colorScheme.surfaceContainerHighest.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: isSelected ? [
+              BoxShadow(
+                color: theme.colorScheme.primary.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ] : null,
+            border: Border.all(
+              color: isSelected 
+                  ? Colors.transparent 
+                  : theme.colorScheme.outline.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: isSelected 
+                  ? Colors.white 
+                  : theme.colorScheme.onSurface.withOpacity(0.8),
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -292,33 +342,100 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
       children: [
         // Search and filter section
         Container(
-          padding: const EdgeInsets.all(16),
-          color: Theme.of(context).colorScheme.surface,
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+                spreadRadius: 0,
+              ),
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 1),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
           child: Column(
             children: [
-              // Search bar
-              AppInputField(
-                controller: _searchController,
-                hintText: 'Search products...',
-                prefixIcon: Icons.search,
-                suffixIcon: _searchController.text.isNotEmpty 
-                    ? Icons.clear 
-                    : null,
-                onSuffixIconPressed: _searchController.text.isNotEmpty 
-                    ? _clearSearch 
-                    : null,
-                onSubmitted: (_) => _performSearch(),
-                onChanged: (value) {
-                  setState(() {
-                    _isSearching = value.isNotEmpty;
-                  });
-                  if (value.isEmpty) {
-                    _clearSearch();
-                  }
-                },
+              // Enhanced search bar
+              Container(
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    Icon(
+                      Icons.search_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search products...',
+                          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        onSubmitted: (_) => _performSearch(),
+                        onChanged: (value) {
+                          setState(() {
+                            _isSearching = value.isNotEmpty;
+                          });
+                          if (value.isEmpty) {
+                            _clearSearch();
+                          }
+                        },
+                      ),
+                    ),
+                    if (_searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: _clearSearch,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(
+                            Icons.close_rounded,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            size: 18,
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.tune_rounded,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                          size: 18,
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
               ),
               
-              // Category filter chips
+              // Enhanced category filter chips
               BlocListener<ProductListBloc, ProductListState>(
                 listener: (context, state) {
                   if (state is ProductListLoaded && _categories != state.categories) {
@@ -330,32 +447,22 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                 child: _categories.isNotEmpty
                     ? Column(
                         children: [
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: FilterChip(
-                                    label: const Text('All'),
-                                    selected: _selectedCategory == null,
-                                    onSelected: (_) {
-                                      print('🏷️ "All" category selected');
-                                      _filterByCategory(null);
-                                    },
-                                  ),
+                                _buildCategoryChip(
+                                  context,
+                                  'All',
+                                  _selectedCategory == null,
+                                  () => _filterByCategory(null),
                                 ),
-                                ..._categories.map((category) => Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: FilterChip(
-                                    label: Text(category),
-                                    selected: _selectedCategory == category,
-                                    onSelected: (_) {
-                                      print('🏷️ Category "$category" selected');
-                                      _filterByCategory(category);
-                                    },
-                                  ),
+                                ..._categories.map((category) => _buildCategoryChip(
+                                  context,
+                                  category,
+                                  _selectedCategory == category,
+                                  () => _filterByCategory(category),
                                 )),
                               ],
                             ),
@@ -441,9 +548,9 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.75,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          childAspectRatio: 0.7,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
         ),
         itemCount: products.length + (hasMore ? 2 : 0), // Add 2 loading placeholders
         itemBuilder: (context, index) {

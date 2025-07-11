@@ -1,10 +1,7 @@
 part of 'earnings_bloc.dart';
 
-abstract class EarningsState extends Equatable {
+abstract class EarningsState {
   const EarningsState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class EarningsInitial extends EarningsState {
@@ -16,19 +13,11 @@ class EarningsLoading extends EarningsState {
 }
 
 class EarningsLoaded extends EarningsState {
-  final EarningsData earnings;
-
-  const EarningsLoaded(this.earnings);
-
-  @override
-  List<Object> get props => [earnings];
+  final EarningsData data;
+  const EarningsLoaded(this.data);
 }
 
 class EarningsError extends EarningsState {
   final String message;
-
   const EarningsError(this.message);
-
-  @override
-  List<Object> get props => [message];
 } 

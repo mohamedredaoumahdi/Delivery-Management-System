@@ -24,6 +24,15 @@ class DeliveryLoaded extends DeliveryState {
   List<Object> get props => [deliveries];
 }
 
+class DeliveryDetailsLoaded extends DeliveryState {
+  final DeliveryOrder delivery;
+
+  const DeliveryDetailsLoaded(this.delivery);
+
+  @override
+  List<Object> get props => [delivery];
+}
+
 class DeliveryAccepted extends DeliveryState {
   const DeliveryAccepted();
 }

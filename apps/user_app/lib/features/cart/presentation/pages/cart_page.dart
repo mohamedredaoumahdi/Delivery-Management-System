@@ -116,12 +116,12 @@ class _CartPageState extends State<CartPage> {
         // Items list
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             itemCount: state.items.length,
             itemBuilder: (context, index) {
               final item = state.items[index];
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.only(bottom: 20),
                 child: CartItemCard(
                   item: item,
                   onIncrement: () {

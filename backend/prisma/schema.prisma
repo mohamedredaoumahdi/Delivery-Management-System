@@ -45,6 +45,16 @@ enum PaymentMethod {
   BANK_TRANSFER
 }
 
+// Payment method type enum for saved payment methods
+enum PaymentMethodType {
+  CREDIT_CARD
+  DEBIT_CARD
+  PAYPAL
+  APPLE_PAY
+  GOOGLE_PAY
+  BANK_ACCOUNT
+}
+
 // Users table - handles all user types
 model User {
   id                String   @id @default(uuid())
@@ -72,6 +82,7 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   deliveryLocations DeliveryLocation[]
   favorites         UserFavorite[]
+  paymentMethods    UserPaymentMethod[]
 
   @@map("users")
 }
@@ -180,6 +191,36 @@ model Address {
   orders          Order[]
 
   @@map("addresses")
+}
+
+// User payment methods
+model UserPaymentMethod {
+  id              String            @id @default(uuid())
+  type            PaymentMethodType
+  label           String           // e.g., "Personal Card", "Business PayPal"
+  // Card details (for CREDIT_CARD, DEBIT_CARD)
+  cardLast4       String?          @map("card_last4")
+  cardBrand       String?          @map("card_brand") // visa, mastercard, amex, etc.
+  cardExpiryMonth Int?             @map("card_expiry_month")
+  cardExpiryYear  Int?             @map("card_expiry_year")
+  cardHolderName  String?          @map("card_holder_name")
+  // Digital wallet details
+  walletEmail     String?          @map("wallet_email") // for PayPal, etc.
+  walletProvider  String?          @map("wallet_provider") // "paypal", "apple_pay", etc.
+  // Bank account details
+  bankName        String?          @map("bank_name")
+  bankAccountLast4 String?         @map("bank_account_last4")
+  // Common fields
+  isDefault       Boolean          @default(false) @map("is_default")
+  isActive        Boolean          @default(true) @map("is_active")
+  userId          String           @map("user_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  // Relationships
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_payment_methods")
 }
 
 // Orders table

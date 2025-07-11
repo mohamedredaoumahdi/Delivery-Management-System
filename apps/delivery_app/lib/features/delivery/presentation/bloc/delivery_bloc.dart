@@ -9,6 +9,7 @@ part 'delivery_state.dart';
 class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
   DeliveryBloc() : super(const DeliveryInitial()) {
     on<DeliveryLoadAvailableEvent>(_onLoadAvailable);
+    on<DeliveryLoadDetailsEvent>(_onLoadDetails);
     on<DeliveryAcceptEvent>(_onAccept);
     on<DeliveryUpdateStatusEvent>(_onUpdateStatus);
   }
@@ -37,6 +38,33 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
       ];
       
       emit(DeliveryLoaded(deliveries));
+    } catch (error) {
+      emit(DeliveryError(error.toString()));
+    }
+  }
+
+  Future<void> _onLoadDetails(
+    DeliveryLoadDetailsEvent event,
+    Emitter<DeliveryState> emit,
+  ) async {
+    emit(const DeliveryLoading());
+
+    try {
+      // Simulate API call to load delivery details
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      // Mock delivery details
+      final delivery = DeliveryOrder(
+        id: event.deliveryId,
+        orderNumber: 'ORD-${event.deliveryId}',
+        customerName: 'John Doe',
+        deliveryAddress: '123 Main St, Downtown, City, 12345',
+        total: 24.99,
+        distance: 2.3,
+        status: DeliveryStatus.pending,
+      );
+      
+      emit(DeliveryDetailsLoaded(delivery));
     } catch (error) {
       emit(DeliveryError(error.toString()));
     }
