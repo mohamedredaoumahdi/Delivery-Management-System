@@ -602,9 +602,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                method.displayName,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+              method.displayName,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,

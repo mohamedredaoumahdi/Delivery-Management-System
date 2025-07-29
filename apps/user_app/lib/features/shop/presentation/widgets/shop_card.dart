@@ -47,32 +47,32 @@ class ShopCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+      onTap: onTap,
           borderRadius: BorderRadius.circular(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Shop Image
+          Stack(
             children: [
-              // Shop Image
-              Stack(
-                children: [
-                  // Cover Image
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
+              // Cover Image
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
-                    ),
+                ),
                     child: Stack(
                       children: [
                         shop.coverImageUrl != null
-                            ? Image.network(
-                                shop.coverImageUrl!,
-                                height: 140,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                      height: 140,
-                                      width: double.infinity,
+                    ? Image.network(
+                        shop.coverImageUrl!,
+                        height: 140,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Container(
+                              height: 140,
+                              width: double.infinity,
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           begin: Alignment.topLeft,
@@ -83,12 +83,12 @@ class ShopCard extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-                                      child: const Icon(Icons.image_not_supported_outlined, size: 32),
-                                    ),
-                              )
-                            : Container(
-                                height: 140,
-                                width: double.infinity,
+                              child: const Icon(Icons.image_not_supported_outlined, size: 32),
+                            ),
+                      )
+                    : Container(
+                        height: 140,
+                        width: double.infinity,
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     begin: Alignment.topLeft,
@@ -99,11 +99,11 @@ class ShopCard extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                child: Icon(
-                                  _getCategoryIcon(shop.category),
+                        child: Icon(
+                          _getCategoryIcon(shop.category),
                                   size: 40,
-                                  color: theme.colorScheme.primary,
-                                ),
+                          color: theme.colorScheme.primary,
+                        ),
                               ),
                         // Gradient overlay
                         Positioned.fill(
@@ -121,17 +121,17 @@ class ShopCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  
-                  // Featured badge
-                  if (isFeatured)
-                    Positioned(
+                      ),
+              ),
+              
+              // Featured badge
+              if (isFeatured)
+                Positioned(
                       top: 12,
                       left: 12,
-                      child: Container(
+                  child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
+                    decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -148,40 +148,40 @@ class ShopCard extends StatelessWidget {
                               offset: const Offset(0, 2),
                             ),
                           ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Featured',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
-                  
-                  // Logo
-                  if (shop.logoUrl != null)
-                    Positioned(
-                      bottom: -24,
-                      left: 16,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: theme.colorScheme.surface,
-                            width: 3,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.star,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Featured',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              
+              // Logo
+              if (shop.logoUrl != null)
+                Positioned(
+                  bottom: -24,
+                  left: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.colorScheme.surface,
+                        width: 3,
+                      ),
                           boxShadow: [
                             BoxShadow(
                               color: theme.colorScheme.shadow.withOpacity(0.2),
@@ -189,18 +189,18 @@ class ShopCard extends StatelessWidget {
                               offset: const Offset(0, 4),
                             ),
                           ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: Image.network(
-                            shop.logoUrl!,
-                            width: 48,
-                            height: 48,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  width: 48,
-                                  height: 48,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.network(
+                        shop.logoUrl!,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Container(
+                              width: 48,
+                              height: 48,
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       begin: Alignment.topLeft,
@@ -211,18 +211,18 @@ class ShopCard extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  child: Icon(
-                                    _getCategoryIcon(shop.category),
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
-                                ),
-                          ),
-                        ),
+                              child: Icon(
+                                _getCategoryIcon(shop.category),
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+                ),
+            ],
+          ),
           
           // Shop Info
           Padding(
@@ -298,7 +298,7 @@ class ShopCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Icon(
-                        Icons.location_on_outlined,
+                      Icons.location_on_outlined,
                         size: 12,
                         color: theme.colorScheme.primary,
                       ),
@@ -339,7 +339,7 @@ class ShopCard extends StatelessWidget {
                         ),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: shop.isOpen
+                        color: shop.isOpen
                               ? Colors.green.shade200
                               : Colors.red.shade200,
                           width: 1,

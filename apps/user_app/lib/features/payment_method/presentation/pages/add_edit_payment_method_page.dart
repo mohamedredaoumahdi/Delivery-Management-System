@@ -142,7 +142,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
             Container(
               margin: const EdgeInsets.only(right: 16),
               child: TextButton(
-                onPressed: _savePaymentMethod,
+              onPressed: _savePaymentMethod,
                 style: TextButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
@@ -151,10 +151,10 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                 ),
-                child: Text(
-                  isEditing ? 'Update' : 'Save',
+              child: Text(
+                isEditing ? 'Update' : 'Save',
                   style: const TextStyle(
-                    fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -233,18 +233,18 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
                 position: _slideAnimation,
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildPaymentTypeSelector(),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPaymentTypeSelector(),
                         const SizedBox(height: 32),
                         _buildFormCard(),
-                        const SizedBox(height: 24),
-                        _buildDefaultToggle(),
+                    const SizedBox(height: 24),
+                    _buildDefaultToggle(),
                         const SizedBox(height: 40),
-                      ],
+                  ],
                     ),
                   ),
                 ),
@@ -289,8 +289,8 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
             childAspectRatio: 2.5,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            children: PaymentMethodType.values.map((type) {
-              final isSelected = type == _selectedType;
+          children: PaymentMethodType.values.map((type) {
+            final isSelected = type == _selectedType;
               return GestureDetector(
                 onTap: isEditing ? null : () => _selectPaymentType(type),
                 child: AnimatedContainer(
@@ -317,9 +317,9 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        _getPaymentTypeIcon(type),
+                _getPaymentTypeIcon(type),
                         size: 24,
-                        color: isSelected ? Colors.white : Colors.grey[600],
+                color: isSelected ? Colors.white : Colors.grey[600],
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -333,9 +333,9 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
                       ),
                     ],
                   ),
-                ),
-              );
-            }).toList(),
+              ),
+            );
+          }).toList(),
           ),
         ),
       ],
@@ -487,23 +487,23 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey[300]!),
                 ),
-                child: DropdownButtonFormField<String>(
-                  value: _selectedCardBrand,
-                  decoration: const InputDecoration(
-                    labelText: 'Card Brand',
-                    prefixIcon: Icon(Icons.business),
+              child: DropdownButtonFormField<String>(
+                value: _selectedCardBrand,
+                decoration: const InputDecoration(
+                  labelText: 'Card Brand',
+                  prefixIcon: Icon(Icons.business),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                  ),
+                ),
                   isExpanded: true,
-                  items: const [
-                    DropdownMenuItem(value: 'visa', child: Text('Visa')),
-                    DropdownMenuItem(value: 'mastercard', child: Text('Mastercard')),
+                items: const [
+                  DropdownMenuItem(value: 'visa', child: Text('Visa')),
+                  DropdownMenuItem(value: 'mastercard', child: Text('Mastercard')),
                     DropdownMenuItem(value: 'amex', child: Text('Amex')),
-                    DropdownMenuItem(value: 'discover', child: Text('Discover')),
-                    DropdownMenuItem(value: 'other', child: Text('Other')),
-                  ],
-                  onChanged: (value) => setState(() => _selectedCardBrand = value!),
+                  DropdownMenuItem(value: 'discover', child: Text('Discover')),
+                  DropdownMenuItem(value: 'other', child: Text('Other')),
+                ],
+                onChanged: (value) => setState(() => _selectedCardBrand = value!),
                 ),
               ),
             ),
@@ -591,10 +591,10 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
               shape: BoxShape.circle,
             ),
             child: Icon(
-              _selectedType == PaymentMethodType.applePay 
-                ? Icons.phone_iphone 
-                : Icons.smartphone,
-              size: 48,
+            _selectedType == PaymentMethodType.applePay 
+              ? Icons.phone_iphone 
+              : Icons.smartphone,
+            size: 48,
               color: Theme.of(context).primaryColor,
             ),
           ),
@@ -710,8 +710,8 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
             color: Colors.grey,
           ),
         ),
-        value: _isDefault,
-        onChanged: (value) => setState(() => _isDefault = value),
+      value: _isDefault,
+      onChanged: (value) => setState(() => _isDefault = value),
         secondary: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(

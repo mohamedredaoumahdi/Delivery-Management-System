@@ -91,7 +91,7 @@ class CategorySlider extends StatelessWidget {
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                     spreadRadius: 0,
-                  ),
+              ),
                   BoxShadow(
                     color: theme.colorScheme.shadow.withOpacity(0.05),
                     blurRadius: 8,
@@ -124,12 +124,12 @@ class CategorySlider extends StatelessWidget {
                   ),
                   // Icon
                   Center(
-                    child: Icon(
-                      icon,
-                      color: color,
-                      size: 32,
-                    ),
-                  ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 32,
+              ),
+            ),
                 ],
               ),
             ),

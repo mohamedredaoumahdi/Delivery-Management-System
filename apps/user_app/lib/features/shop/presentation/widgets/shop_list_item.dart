@@ -46,13 +46,13 @@ class ShopListItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+      onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Shop Image
+      child: Row(
+        children: [
+          // Shop Image
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
@@ -66,16 +66,16 @@ class ShopListItem extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: shop.logoUrl != null
-                        ? Image.network(
-                            shop.logoUrl!,
-                            width: 70,
-                            height: 70,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  width: 70,
-                                  height: 70,
+            child: shop.logoUrl != null
+                ? Image.network(
+                    shop.logoUrl!,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Container(
+                          width: 70,
+                          height: 70,
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       begin: Alignment.topLeft,
@@ -86,16 +86,16 @@ class ShopListItem extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  child: Icon(
-                                    _getCategoryIcon(shop.category),
-                                    color: theme.colorScheme.primary,
+                          child: Icon(
+                            _getCategoryIcon(shop.category),
+                            color: theme.colorScheme.primary,
                                     size: 28,
-                                  ),
-                                ),
-                          )
-                        : Container(
-                            width: 70,
-                            height: 70,
+                          ),
+                        ),
+                  )
+                : Container(
+                    width: 70,
+                    height: 70,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
@@ -106,36 +106,36 @@ class ShopListItem extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            child: Icon(
-                              _getCategoryIcon(shop.category),
-                              color: theme.colorScheme.primary,
+                    child: Icon(
+                      _getCategoryIcon(shop.category),
+                      color: theme.colorScheme.primary,
                               size: 28,
                             ),
-                          ),
+                    ),
                   ),
-                ),
+          ),
                 const SizedBox(width: 16),
-                
-                // Shop Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Shop Name and Rating
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              shop.name,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
+          
+          // Shop Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Shop Name and Rating
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        shop.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.onSurface,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             decoration: BoxDecoration(
@@ -154,31 +154,31 @@ class ShopListItem extends StatelessWidget {
                               ),
                             ),
                             child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.star,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.star,
                                   size: 14,
-                                  color: Colors.amber,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  shop.rating.toStringAsFixed(1),
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
+                          color: Colors.amber,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          shop.rating.toStringAsFixed(1),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
                                     color: Colors.amber.shade800,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                            ),
+                    ),
+                  ],
+                ),
                       const SizedBox(height: 6),
-                      
-                      // Shop Category and Address
-                      Row(
-                        children: [
+                
+                // Shop Category and Address
+                Row(
+                  children: [
                           Container(
                             padding: const EdgeInsets.all(3),
                             decoration: BoxDecoration(
@@ -186,47 +186,47 @@ class ShopListItem extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Icon(
-                              _getCategoryIcon(shop.category),
+                      _getCategoryIcon(shop.category),
                               size: 12,
                               color: theme.colorScheme.primary,
                             ),
-                          ),
+                    ),
                           const SizedBox(width: 6),
-                          Text(
-                            _getCategoryName(shop.category),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withOpacity(0.8),
+                    Text(
+                      _getCategoryName(shop.category),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.8),
                               fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.location_on_outlined,
-                            size: 12,
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              shop.address,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.location_on_outlined,
+                            size: 12,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        shop.address,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
                       const SizedBox(height: 8),
-                      
-                      // Status and Info
-                      Row(
-                        children: [
-                          // Open/Closed Tag
-                          Container(
+                
+                // Status and Info
+                Row(
+                  children: [
+                    // Open/Closed Tag
+                    Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
+                      decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -242,41 +242,41 @@ class ShopListItem extends StatelessWidget {
                               ),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: shop.isOpen
+                        color: shop.isOpen
                                     ? Colors.green.shade200
                                     : Colors.red.shade200,
                                 width: 0.5,
                               ),
-                            ),
-                            child: Text(
-                              shop.isOpen ? 'Open' : 'Closed',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: shop.isOpen ? Colors.green.shade800 : Colors.red.shade800,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          
-                          const SizedBox(width: 8),
-                          
-                          // Delivery Time
-                          _buildInfoChip(
-                            context,
-                            Icons.access_time,
-                            '${shop.estimatedDeliveryTime} min',
-                          ),
-                          
-                          const SizedBox(width: 8),
-                          
-                          // Delivery Fee
-                          _buildInfoChip(
-                            context,
-                            Icons.pedal_bike_outlined,
-                            '\$${shop.deliveryFee.toStringAsFixed(2)}',
-                          ),
-                        ],
                       ),
-                    ],
+                      child: Text(
+                        shop.isOpen ? 'Open' : 'Closed',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: shop.isOpen ? Colors.green.shade800 : Colors.red.shade800,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(width: 8),
+                    
+                    // Delivery Time
+                          _buildInfoChip(
+                            context,
+                          Icons.access_time,
+                          '${shop.estimatedDeliveryTime} min',
+                    ),
+                    
+                    const SizedBox(width: 8),
+                    
+                    // Delivery Fee
+                          _buildInfoChip(
+                            context,
+                          Icons.pedal_bike_outlined,
+                          '\$${shop.deliveryFee.toStringAsFixed(2)}',
+                        ),
+                      ],
+                    ),
+                  ],
                   ),
                 ),
               ],

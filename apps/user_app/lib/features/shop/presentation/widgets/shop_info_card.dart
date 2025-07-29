@@ -79,7 +79,7 @@ class ShopInfoCard extends StatelessWidget {
                                 _buildLogoPlaceholder(theme),
                           )
                         : _buildLogoPlaceholder(theme),
-                  ),
+                ),
                 ),
                 
                 const SizedBox(width: 20),
@@ -120,19 +120,19 @@ class ShopInfoCard extends StatelessWidget {
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.star,
+                        children: [
+                          const Icon(
+                            Icons.star,
                                   size: 14,
                                   color: Colors.white,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  shop.rating.toStringAsFixed(1),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            shop.rating.toStringAsFixed(1),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
@@ -160,7 +160,7 @@ class ShopInfoCard extends StatelessWidget {
                       colors: shop.isOpen 
                           ? [Colors.green.shade400, Colors.green.shade600]
                           : [Colors.red.shade400, Colors.red.shade600],
-                    ),
+            ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(

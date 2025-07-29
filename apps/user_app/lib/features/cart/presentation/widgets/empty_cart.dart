@@ -64,9 +64,9 @@ class _EmptyCartState extends State<EmptyCart> with TickerProviderStateMixin {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
             // Animated cart icon
             ScaleTransition(
               scale: _bounceAnimation,
@@ -92,12 +92,12 @@ class _EmptyCartState extends State<EmptyCart> with TickerProviderStateMixin {
                   ],
                 ),
                 child: Icon(
-                  Icons.shopping_cart_outlined,
+            Icons.shopping_cart_outlined,
                   size: 60,
                   color: theme.colorScheme.primary,
                 ),
               ),
-            ),
+          ),
             
             const SizedBox(height: 32),
             
@@ -105,24 +105,24 @@ class _EmptyCartState extends State<EmptyCart> with TickerProviderStateMixin {
             FadeTransition(
               opacity: _fadeAnimation,
               child: Text(
-                'Your Cart is Empty',
+            'Your Cart is Empty',
                 style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.bold,
                   color: theme.colorScheme.onSurface,
                 ),
               ),
             ),
             
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
             
             // Animated subtitle
             FadeTransition(
               opacity: _fadeAnimation,
-              child: Text(
+            child: Text(
                 'Looks like you haven\'t added anything to your cart yet.\nTime to start shopping!',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
                   height: 1.5,
                 ),
               ),
@@ -181,12 +181,12 @@ class _EmptyCartState extends State<EmptyCart> with TickerProviderStateMixin {
                         ),
                       ),
                     ],
-                  ),
-                ),
               ),
             ),
+          ),
+            ),
           ],
-        ),
+          ),
       ),
     );
   }

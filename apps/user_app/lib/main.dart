@@ -114,19 +114,19 @@ class _UserAppState extends State<UserApp> {
           debugPrint('🌍 Building app with locale: ${localeState.locale.languageCode}');
           
           return MaterialApp.router(
-            title: 'Delivery System - User App',
-            
-            // Theme configuration
-            theme: UserAppTheme.createTheme(),
-            darkTheme: UserAppTheme.createDarkTheme(),
-            themeMode: ThemeMode.system,
-            
-            // Router configuration
-            routerConfig: appRouter,
-            
-            // Disable debug banner in release mode
-            debugShowCheckedModeBanner: false,
-            
+        title: 'Delivery System - User App',
+        
+        // Theme configuration
+        theme: UserAppTheme.createTheme(),
+        darkTheme: UserAppTheme.createDarkTheme(),
+        themeMode: ThemeMode.system,
+        
+        // Router configuration
+        routerConfig: appRouter,
+        
+        // Disable debug banner in release mode
+        debugShowCheckedModeBanner: false,
+        
             // Localization configuration
             locale: localeState.locale,
             supportedLocales: AppLocalizations.supportedLocales,
@@ -135,18 +135,18 @@ class _UserAppState extends State<UserApp> {
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
-            ],
-            
-            // Builder to handle global error scenarios
-            builder: (context, child) {
-              // Handle text scaling for accessibility
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  textScaler: TextScaler.linear(
-                    MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.2),
-                  ),
-                ),
-                child: child!,
+        ],
+        
+        // Builder to handle global error scenarios
+        builder: (context, child) {
+          // Handle text scaling for accessibility
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(
+                MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.2),
+              ),
+            ),
+            child: child!,
               );
             },
           );

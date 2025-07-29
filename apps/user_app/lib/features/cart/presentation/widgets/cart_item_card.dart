@@ -108,17 +108,17 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
               ],
             ),
           ),
-          child: Column(
-            children: [
+      child: Column(
+        children: [
               // Main item content
-              Padding(
+          Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     // Item header with image and details
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                         // Product image with hero animation
                         Hero(
                           tag: 'cart-item-${widget.item.productId}',
@@ -139,44 +139,44 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                               borderRadius: BorderRadius.circular(16),
                               child: widget.item.productImageUrl != null
                                   ? Image.network(
-                                      widget.item.productImageUrl!,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) =>
+                      widget.item.productImageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
                                           _buildPlaceholderImage(theme),
                                     )
                                   : _buildPlaceholderImage(theme),
-                            ),
+                    ),
                           ),
-                        ),
-                        
+                  ),
+                  
                         const SizedBox(width: 16),
-                        
+                
                         // Item details
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                               // Product name
-                              Text(
-                                widget.item.productName,
+                      Text(
+                        widget.item.productName,
                                 style: theme.textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   height: 1.2,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                              ),
+                        ),
                               
                               const SizedBox(height: 6),
-                              
+                      
                               // Shop name with location icon
-                              Row(
-                                children: [
+                      Row(
+                        children: [
                                   Icon(
                                     Icons.store_outlined,
                                     size: 14,
-                                    color: theme.colorScheme.primary,
-                                  ),
+                                color: theme.colorScheme.primary,
+                              ),
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
@@ -186,20 +186,20 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                                         fontWeight: FontWeight.w500,
                                       ),
                                       overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
                               ),
+                            ),
+                        ],
+                      ),
                               
                               const SizedBox(height: 12),
                               
                               // Price with discount handling
                               _buildPriceSection(theme),
-                            ],
-                          ),
-                        ),
-                        
-                        // Remove button
+                    ],
+                  ),
+                ),
+                
+                // Remove button
                         Container(
                           decoration: BoxDecoration(
                             color: theme.colorScheme.errorContainer.withOpacity(0.1),
@@ -210,36 +210,36 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                               Icons.delete_outline,
                               color: theme.colorScheme.error,
                             ),
-                            onPressed: widget.onRemove,
+                  onPressed: widget.onRemove,
                             tooltip: 'Remove from cart',
                             style: IconButton.styleFrom(
                               backgroundColor: Colors.transparent,
                               foregroundColor: theme.colorScheme.error,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    
+                ),
+              ],
+          ),
+          
                     const SizedBox(height: 20),
-                    
+          
                     // Quantity controls and total
                     Row(
-                      children: [
-                        // Quantity controls
-                        Container(
-                          decoration: BoxDecoration(
+              children: [
+                // Quantity controls
+                Container(
+                  decoration: BoxDecoration(
                             color: theme.colorScheme.primaryContainer.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
+                    border: Border.all(
                               color: theme.colorScheme.primary.withOpacity(0.2),
                               width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Decrement button
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Decrement button
                               ScaleTransition(
                                 scale: _scaleAnimation,
                                 child: Container(
@@ -256,31 +256,31 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                                     onPressed: widget.item.quantity > 1
                                         ? () => _onQuantityButtonPressed(widget.onDecrement)
                                         : null,
-                                    style: IconButton.styleFrom(
+                        style: IconButton.styleFrom(
                                       foregroundColor: widget.item.quantity > 1
                                           ? theme.colorScheme.onPrimary
                                           : theme.colorScheme.onSurface.withOpacity(0.4),
                                       padding: EdgeInsets.zero,
                                     ),
                                   ),
-                                ),
-                              ),
-                              
+                        ),
+                      ),
+                      
                               // Quantity display
                               Container(
                                 constraints: const BoxConstraints(minWidth: 50),
                                 padding: const EdgeInsets.symmetric(horizontal: 8),
                                 child: Text(
-                                  '${widget.item.quantity}',
+                        '${widget.item.quantity}',
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: theme.colorScheme.primary,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                              ),
-                              
-                              // Increment button
+                      ),
+                      
+                      // Increment button
                               ScaleTransition(
                                 scale: _scaleAnimation,
                                 child: Container(
@@ -293,30 +293,30 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                                   child: IconButton(
                                     icon: const Icon(Icons.add, size: 18),
                                     onPressed: () => _onQuantityButtonPressed(widget.onIncrement),
-                                    style: IconButton.styleFrom(
+                        style: IconButton.styleFrom(
                                       foregroundColor: theme.colorScheme.onPrimary,
                                       padding: EdgeInsets.zero,
                                     ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
-                        
-                        const Spacer(),
-                        
-                        // Total price
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const Spacer(),
+                
+                // Total price
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.primaryContainer.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
+                  child: Text(
                             '\$${widget.item.totalPrice.toStringAsFixed(2)}',
                             style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                               color: theme.colorScheme.primary,
                             ),
                           ),
@@ -393,10 +393,10 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                     color: theme.colorScheme.error,
                     fontWeight: FontWeight.bold,
                   ),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
         ],
       );
     } else {
@@ -493,7 +493,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                           'Cancel',
                           style: TextStyle(
                             color: theme.colorScheme.onSurface.withOpacity(0.7),
-                          ),
+                      ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -504,10 +504,10 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                         style: FilledButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: theme.colorScheme.onPrimary,
-                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
                 ] else ...[
                   if (widget.item.instructions?.isNotEmpty == true) ...[
                     Container(
@@ -520,13 +520,13 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                           color: theme.colorScheme.outline.withOpacity(0.2),
                         ),
                       ),
-                      child: Text(
-                        widget.item.instructions!,
-                        style: theme.textTheme.bodyMedium?.copyWith(
+                    child: Text(
+                      widget.item.instructions!,
+                      style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface,
                           height: 1.4,
-                        ),
                       ),
+                    ),
                     ),
                     const SizedBox(height: 12),
                   ],

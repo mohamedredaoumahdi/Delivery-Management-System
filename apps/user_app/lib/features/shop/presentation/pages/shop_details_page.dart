@@ -345,7 +345,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+          color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -386,9 +386,9 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
-                        controller: _searchController,
+                controller: _searchController,
                         decoration: InputDecoration(
-                          hintText: 'Search products...',
+                hintText: 'Search products...',
                           hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           ),
@@ -398,16 +398,16 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                           contentPadding: EdgeInsets.zero,
                         ),
                         style: Theme.of(context).textTheme.bodyMedium,
-                        onSubmitted: (_) => _performSearch(),
-                        onChanged: (value) {
-                          setState(() {
-                            _isSearching = value.isNotEmpty;
-                          });
-                          if (value.isEmpty) {
-                            _clearSearch();
-                          }
-                        },
-                      ),
+                onSubmitted: (_) => _performSearch(),
+                onChanged: (value) {
+                  setState(() {
+                    _isSearching = value.isNotEmpty;
+                  });
+                  if (value.isEmpty) {
+                    _clearSearch();
+                  }
+                },
+              ),
                     ),
                     if (_searchController.text.isNotEmpty)
                       GestureDetector(

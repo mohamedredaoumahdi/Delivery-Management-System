@@ -145,14 +145,14 @@ class ProfilePage extends StatelessWidget {
             ],
           ),
         ),
-        child: Row(
-          children: [
+      child: Row(
+        children: [
             // Enhanced profile picture with glowing effect
-            Container(
+          Container(
               width: 96,
               height: 96,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -170,48 +170,48 @@ class ProfilePage extends StatelessWidget {
                     spreadRadius: 0,
                   ),
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withOpacity(0.1),
                     blurRadius: 40,
                     offset: const Offset(0, 20),
                   ),
                 ],
-                border: Border.all(
+              border: Border.all(
                   color: theme.colorScheme.primary.withOpacity(0.4),
                   width: 3,
-                ),
               ),
-              child: user.profilePicture != null
-                  ? ClipOval(
-                      child: Image.network(
-                        user.profilePicture!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildDefaultAvatar(context, user),
-                      ),
-                    )
-                  : _buildDefaultAvatar(context, user),
             ),
+            child: user.profilePicture != null
+                ? ClipOval(
+                    child: Image.network(
+                      user.profilePicture!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          _buildDefaultAvatar(context, user),
+                    ),
+                  )
+                : _buildDefaultAvatar(context, user),
+          ),
             const SizedBox(width: 24),
-            
+          
             // User info with enhanced typography
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
                     _formatName(user.name),
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: theme.colorScheme.onSurface,
                       height: 1.1,
                       letterSpacing: -0.5,
-                    ),
                   ),
+                ),
                   const SizedBox(height: 10),
                   Container(
                     constraints: const BoxConstraints(maxWidth: double.infinity),
                     child: Text(
-                      user.email,
+                  user.email,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.75),
                         fontWeight: FontWeight.w500,
@@ -220,45 +220,45 @@ class ProfilePage extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       softWrap: false,
-                    ),
                   ),
-                  if (user.phone != null) ...[
+                ),
+                if (user.phone != null) ...[
                     const SizedBox(height: 6),
-                    Text(
-                      user.phone!,
-                      style: theme.textTheme.bodyMedium?.copyWith(
+                  Text(
+                    user.phone!,
+                    style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontWeight: FontWeight.w500,
-                      ),
                     ),
-                  ],
-                  const SizedBox(height: 16),
-                  
-                  // Enhanced verification badges
-                  Row(
-                    children: [
-                      if (user.isEmailVerified)
-                        _buildVerificationBadge(
-                          context,
-                          'Email Verified',
-                          Icons.verified,
-                          Colors.green,
-                        ),
-                      if (user.isEmailVerified && user.isPhoneVerified)
-                        const SizedBox(width: 10),
-                      if (user.isPhoneVerified)
-                        _buildVerificationBadge(
-                          context,
-                          'Phone Verified',
-                          Icons.verified,
-                          Colors.blue,
-                        ),
-                    ],
                   ),
                 ],
-              ),
+                  const SizedBox(height: 16),
+                
+                  // Enhanced verification badges
+                Row(
+                  children: [
+                    if (user.isEmailVerified)
+                      _buildVerificationBadge(
+                        context,
+                        'Email Verified',
+                        Icons.verified,
+                        Colors.green,
+                      ),
+                    if (user.isEmailVerified && user.isPhoneVerified)
+                        const SizedBox(width: 10),
+                    if (user.isPhoneVerified)
+                      _buildVerificationBadge(
+                        context,
+                        'Phone Verified',
+                        Icons.verified,
+                        Colors.blue,
+                      ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
+        ],
         ),
       ),
     );
@@ -305,7 +305,7 @@ class ProfilePage extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
+        color: color.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -357,12 +357,12 @@ class ProfilePage extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            title,
+        title,
             style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.bold,
               color: theme.colorScheme.onSurface,
             ),
-          ),
+        ),
         ],
       ),
     );
@@ -560,7 +560,7 @@ class ProfilePage extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+      onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(20),
@@ -594,37 +594,37 @@ class ProfilePage extends StatelessWidget {
                         offset: const Offset(0, 2),
                       ),
                     ],
-                  ),
-                  child: Icon(
-                    icon,
-                    color: theme.colorScheme.primary,
+            ),
+            child: Icon(
+              icon,
+              color: theme.colorScheme.primary,
                     size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
                         style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                           color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
-                if (trailing != null) ...[
+                      const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (trailing != null) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -632,21 +632,21 @@ class ProfilePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      trailing,
+              trailing,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.w500,
                       ),
-                    ),
-                  ),
+              ),
+            ),
                   const SizedBox(width: 12),
-                ],
-                Icon(
-                  Icons.arrow_forward_ios,
+          ],
+          Icon(
+            Icons.arrow_forward_ios,
                   size: 18,
-                  color: theme.colorScheme.onSurface.withOpacity(0.4),
-                ),
-              ],
+            color: theme.colorScheme.onSurface.withOpacity(0.4),
+          ),
+        ],
             ),
           ),
         ),

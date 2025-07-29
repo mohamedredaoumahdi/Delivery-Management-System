@@ -46,14 +46,14 @@ class ProductGridItem extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
+      child: InkWell(
+        onTap: onTap,
           borderRadius: BorderRadius.circular(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               // Product image with overlay effects
-              Expanded(
+            Expanded(
                 flex: 5,
                 child: Stack(
                   children: [
@@ -65,11 +65,11 @@ class ProductGridItem extends StatelessWidget {
                       ),
                       child: Container(
                         width: double.infinity,
-                        child: product.imageUrl != null
-                            ? Image.network(
-                                product.imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
+                child: product.imageUrl != null
+                    ? Image.network(
+                        product.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
                                     _buildImagePlaceholder(context, theme),
                               )
                             : _buildImagePlaceholder(context, theme),
@@ -146,11 +146,11 @@ class ProductGridItem extends StatelessWidget {
                               color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                            ),
-                          ),
                         ),
                       ),
-                    
+              ),
+            ),
+            
                     // Rating badge
                     if (product.rating > 0)
                       Positioned(
@@ -188,13 +188,13 @@ class ProductGridItem extends StatelessWidget {
               ),
               
               // Product info section
-              Expanded(
+            Expanded(
                 flex: 4,
-                child: Padding(
+              child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                       // Product name
                       Expanded(
                         child: Text(
@@ -214,34 +214,34 @@ class ProductGridItem extends StatelessWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (product.hasDiscount) ...[
-                                  Text(
-                                    '\$${product.price.toStringAsFixed(2)}',
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      decoration: TextDecoration.lineThrough,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (product.hasDiscount) ...[
+                                Text(
+                                  '\$${product.price.toStringAsFixed(2)}',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    decoration: TextDecoration.lineThrough,
                                       color: theme.colorScheme.onSurface.withOpacity(0.5),
                                     ),
                                   ),
-                                  Text(
-                                    '\$${product.activePrice.toStringAsFixed(2)}',
+                                Text(
+                                  '\$${product.activePrice.toStringAsFixed(2)}',
                                     style: theme.textTheme.titleLarge?.copyWith(
-                                      color: theme.colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                ] else
-                                  Text(
-                                    '\$${product.price.toStringAsFixed(2)}',
+                                ),
+                              ] else
+                                Text(
+                                  '\$${product.price.toStringAsFixed(2)}',
                                     style: theme.textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.bold,
                                       color: theme.colorScheme.onSurface,
-                                    ),
                                   ),
-                              ],
+                                ),
+                            ],
                             ),
                           ),
                           
@@ -294,13 +294,13 @@ class ProductGridItem extends StatelessWidget {
                         ],
                       ),
                     ],
-                  ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
   

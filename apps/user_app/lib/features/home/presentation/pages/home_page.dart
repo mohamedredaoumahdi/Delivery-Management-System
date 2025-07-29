@@ -138,13 +138,13 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   child: const Icon(Icons.notifications_outlined),
                                 ),
-                                onPressed: () {
-                                  // Navigate to notifications
-                                },
-                                tooltip: 'Notifications',
+                    onPressed: () {
+                      // Navigate to notifications
+                    },
+                    tooltip: 'Notifications',
                               ),
-                            ),
-                          ],
+                  ),
+                ],
                         ),
                       ),
                     ),
@@ -176,11 +176,11 @@ class _HomePageState extends State<HomePage> {
                       // Featured Shops
                       _buildSectionHeader(
                         context,
-                        'Featured Shops',
+                            'Featured Shops',
                         subtitle: 'Handpicked for you',
                         onSeeAll: () {
-                          context.push('/shops');
-                        },
+                              context.push('/shops');
+                            },
                       ),
                       const SizedBox(height: 20),
                       const FeaturedShopsCarousel(),
@@ -189,11 +189,11 @@ class _HomePageState extends State<HomePage> {
                       // Nearby Shops
                       _buildSectionHeader(
                         context,
-                        'Nearby Shops',
+                            'Nearby Shops',
                         subtitle: 'Quick delivery options',
                         onSeeAll: () {
-                          context.push('/shops', extra: {'nearby': true});
-                        },
+                              context.push('/shops', extra: {'nearby': true});
+                            },
                       ),
                       const SizedBox(height: 20),
                       const NearbyShopsSection(),
