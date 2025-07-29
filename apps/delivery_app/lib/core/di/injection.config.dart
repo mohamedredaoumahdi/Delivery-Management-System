@@ -12,8 +12,6 @@ import 'package:delivery_app/features/auth/presentation/bloc/auth_bloc.dart'
     as _i74;
 import 'package:delivery_app/features/dashboard/presentation/bloc/dashboard_bloc.dart'
     as _i195;
-import 'package:delivery_app/features/delivery/presentation/bloc/delivery_bloc.dart'
-    as _i1072;
 import 'package:delivery_app/features/earnings/presentation/bloc/earnings_bloc.dart'
     as _i255;
 import 'package:delivery_app/features/location/presentation/bloc/location_bloc.dart'
@@ -36,7 +34,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i828.LocationBloc>(() => _i828.LocationBloc());
     gh.factory<_i195.DashboardBloc>(() => _i195.DashboardBloc());
     gh.factory<_i255.EarningsBloc>(() => _i255.EarningsBloc());
-    gh.factory<_i1072.DeliveryBloc>(() => _i1072.DeliveryBloc());
     return this;
   }
 }

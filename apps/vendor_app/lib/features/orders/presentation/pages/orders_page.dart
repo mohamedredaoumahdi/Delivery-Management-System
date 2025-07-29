@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/orders_bloc.dart';
+import '../../../../di/injection_container.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -103,9 +104,9 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
               controller: _tabController,
               children: [
                 _buildOrdersList(state.orders),
-                _buildOrdersList(_filterOrdersByStatus(state.orders, 'pending')),
-                _buildOrdersList(_filterOrdersByStatus(state.orders, 'preparing')),
-                _buildOrdersList(_filterOrdersByStatus(state.orders, 'ready')),
+                _buildOrdersList(_filterOrdersByStatus(state.orders, ['PENDING'])),
+                _buildOrdersList(_filterOrdersByStatus(state.orders, ['ACCEPTED', 'PREPARING'])),
+                _buildOrdersList(_filterOrdersByStatus(state.orders, ['READY_FOR_PICKUP'])),
               ],
             );
           }
@@ -204,7 +205,7 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
                           ),
                         ),
                         Text(
-                          order['customerName'],
+                          order['user']?['name'] ?? 'Unknown Customer',
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,
@@ -217,7 +218,7 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '\$${order['amount']}',
+                        '\$${order['total']?.toStringAsFixed(2) ?? '0.00'}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -247,7 +248,7 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
               
               // Order Items
               Text(
-                'Items: ${(order['items'] as List).join(', ')}',
+                'Items: ${_formatOrderItems(order['items'] ?? [])}',
                 style: TextStyle(
                   color: Colors.grey[700],
                   fontSize: 14,
@@ -317,16 +318,22 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
   }
 
   Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
+    switch (status.toUpperCase()) {
+      case 'PENDING':
         return Colors.orange;
-      case 'preparing':
+      case 'ACCEPTED':
+        return Colors.blue[300]!;
+      case 'PREPARING':
         return Colors.blue;
-      case 'ready':
+      case 'READY_FOR_PICKUP':
         return Colors.green;
-      case 'delivered':
+      case 'IN_DELIVERY':
+        return Colors.indigo;
+      case 'ON_THE_WAY':
+        return Colors.deepPurple;
+      case 'DELIVERED':
         return Colors.purple;
-      case 'cancelled':
+      case 'CANCELLED':
         return Colors.red;
       default:
         return Colors.grey;
@@ -334,24 +341,33 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
   }
 
   IconData _getStatusIcon(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
+    switch (status.toUpperCase()) {
+      case 'PENDING':
         return Icons.pending_actions;
-      case 'preparing':
+      case 'ACCEPTED':
+        return Icons.thumb_up;
+      case 'PREPARING':
         return Icons.kitchen;
-      case 'ready':
+      case 'READY_FOR_PICKUP':
         return Icons.check_circle;
-      case 'delivered':
+      case 'IN_DELIVERY':
+        return Icons.local_shipping;
+      case 'ON_THE_WAY':
         return Icons.delivery_dining;
-      case 'cancelled':
+      case 'DELIVERED':
+        return Icons.done_all;
+      case 'CANCELLED':
         return Icons.cancel;
       default:
         return Icons.receipt;
     }
   }
 
-  List<Map<String, dynamic>> _filterOrdersByStatus(List<Map<String, dynamic>> orders, String status) {
-    return orders.where((order) => order['status'].toString().toLowerCase() == status.toLowerCase()).toList();
+  List<Map<String, dynamic>> _filterOrdersByStatus(List<Map<String, dynamic>> orders, List<String> statuses) {
+    return orders.where((order) {
+      final orderStatus = order['status'].toString().toUpperCase();
+      return statuses.any((status) => status.toUpperCase() == orderStatus);
+    }).toList();
   }
 
   String _formatTime(String isoString) {
@@ -413,9 +429,46 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          'Customer: ${order['customerName']}',
-                          style: Theme.of(context).textTheme.bodyLarge,
+                        // Customer Information
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[200]!),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Customer Information',
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Name: ${order['user']?['name'] ?? 'Unknown Customer'}',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              if (order['user']?['phone'] != null)
+                                Text(
+                                  'Phone: ${order['user']['phone']}',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              Text(
+                                'Address: ${order['deliveryAddress'] ?? 'No address provided'}',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              if (order['deliveryInstructions'] != null)
+                                Text(
+                                  'Instructions: ${order['deliveryInstructions']}',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 16),
                         
@@ -427,13 +480,21 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
                         ),
                         const SizedBox(height: 8),
                         
-                        ...(order['items'] as List).map((item) => Padding(
+                        ...(order['items'] as List? ?? []).map((item) => Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
                               const Icon(Icons.circle, size: 6, color: Colors.grey),
                               const SizedBox(width: 8),
-                              Text(item.toString()),
+                              Expanded(
+                                child: Text(
+                                  '${item['quantity'] ?? 1}x ${item['productName'] ?? 'Unknown Item'}',
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         )),
@@ -450,7 +511,7 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
                               ),
                             ),
                             Text(
-                              '\$${order['amount']}',
+                              '\$${order['total']?.toStringAsFixed(2) ?? '0.00'}',
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
@@ -471,6 +532,114 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
                     ),
                   ),
                 ),
+                
+                                // Action buttons based on order status
+                if (order['status']?.toString().toUpperCase() == 'PENDING')
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        top: BorderSide(color: Colors.grey[200]!),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _rejectOrder(order['id']);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red[50],
+                              foregroundColor: Colors.red[700],
+                              side: BorderSide(color: Colors.red[200]!),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Reject'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _acceptOrder(order['id']);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[600],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Accept'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                
+                // Buttons for accepted orders (start preparing)
+                if (order['status']?.toString().toUpperCase() == 'ACCEPTED')
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        top: BorderSide(color: Colors.grey[200]!),
+                      ),
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _startPreparing(order['id']);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange[600],
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Start Preparing'),
+                      ),
+                    ),
+                  ),
+                
+                // Buttons for preparing orders (mark ready)
+                if (order['status']?.toString().toUpperCase() == 'PREPARING')
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        top: BorderSide(color: Colors.grey[200]!),
+                      ),
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _markOrderReady(order['id']);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[600],
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Mark as Ready'),
+                      ),
+                    ),
+                  ),
               ],
             ),
           );
@@ -495,33 +664,197 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
     );
   }
 
-  void _acceptOrder(String orderId) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Order #$orderId accepted'),
-        backgroundColor: Colors.green,
-      ),
-    );
-    // TODO: Implement accept order logic
+  Future<void> _acceptOrder(String orderId) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Call API to update order status to ACCEPTED
+      await sl<OrderService>().updateOrderStatus(orderId, 'ACCEPTED');
+      
+      // Close loading dialog safely
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Order accepted successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      // Refresh orders list
+      context.read<OrdersBloc>().add(LoadOrders());
+      
+    } catch (e) {
+      // Close loading dialog safely
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to accept order: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _rejectOrder(String orderId) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Order #$orderId rejected'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    // TODO: Implement reject order logic
+  Future<void> _rejectOrder(String orderId) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Call API to update order status to CANCELLED
+      await sl<OrderService>().updateOrderStatus(orderId, 'CANCELLED');
+      
+      // Close loading dialog safely
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Order rejected successfully!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      
+      // Refresh orders list
+      context.read<OrdersBloc>().add(LoadOrders());
+      
+    } catch (e) {
+      // Close loading dialog safely
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to reject order: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _markOrderReady(String orderId) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Order #$orderId marked as ready'),
-        backgroundColor: Colors.orange,
-      ),
-    );
-    // TODO: Implement mark ready logic
+  Future<void> _markOrderReady(String orderId) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Call API to update order status to READY_FOR_PICKUP
+      await sl<OrderService>().updateOrderStatus(orderId, 'READY_FOR_PICKUP');
+      
+      // Close loading dialog safely
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Order marked as ready for pickup!'),
+          backgroundColor: Colors.blue,
+        ),
+      );
+      
+      // Refresh orders list
+      context.read<OrdersBloc>().add(LoadOrders());
+      
+    } catch (e) {
+      // Close loading dialog safely
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to mark order ready: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _startPreparing(String orderId) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Call API to update order status to PREPARING
+      await sl<OrderService>().updateOrderStatus(orderId, 'PREPARING');
+      
+      // Close loading dialog safely
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Order moved to preparing!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      
+      // Refresh orders list
+      context.read<OrdersBloc>().add(LoadOrders());
+      
+    } catch (e) {
+      // Close loading dialog safely
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to start preparing: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  String _formatOrderItems(List items) {
+    if (items.isEmpty) return 'No items';
+    
+    return items.map((item) {
+      final productName = item['productName'] ?? 'Unknown Item';
+      final quantity = item['quantity'] ?? 1;
+      return '$quantity x $productName';
+    }).join(', ');
   }
 } 

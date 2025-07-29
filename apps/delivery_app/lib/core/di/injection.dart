@@ -2,6 +2,9 @@ import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
+import '../../features/delivery/data/delivery_service.dart';
+import '../../features/auth/data/auth_service.dart';
+import '../../features/delivery/presentation/bloc/delivery_bloc.dart';
 
 import 'injection.config.dart';
 
@@ -24,7 +27,7 @@ Future<void> _registerExternalDependencies() async {
   // Dio HTTP Client
   final dio = Dio();
   dio.options = BaseOptions(
-    baseUrl: 'http://localhost:3000/api', // Replace with actual API URL
+    baseUrl: 'http://localhost:8000/api', // Fixed to correct backend port
     connectTimeout: const Duration(seconds: 30),
     receiveTimeout: const Duration(seconds: 30),
     headers: {
@@ -56,4 +59,11 @@ Future<void> _registerExternalDependencies() async {
   );
   
   getIt.registerLazySingleton<Dio>(() => dio);
+  
+  // Register services manually since they depend on manually registered dependencies
+  getIt.registerLazySingleton<AuthService>(() => AuthService(getIt<Dio>(), getIt<SharedPreferences>()));
+  getIt.registerLazySingleton<DeliveryService>(() => DeliveryService(getIt<Dio>()));
+  
+  // Register blocs manually since they depend on manually registered services
+  getIt.registerFactory<DeliveryBloc>(() => DeliveryBloc(getIt<DeliveryService>()));
 } 

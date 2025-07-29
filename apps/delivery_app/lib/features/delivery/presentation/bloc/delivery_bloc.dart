@@ -1,13 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:injectable/injectable.dart';
+import '../../data/delivery_service.dart';
 
 part 'delivery_event.dart';
 part 'delivery_state.dart';
 
-@injectable
 class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
-  DeliveryBloc() : super(const DeliveryInitial()) {
+  final DeliveryService _deliveryService;
+
+  DeliveryBloc(this._deliveryService) : super(const DeliveryInitial()) {
     on<DeliveryLoadAvailableEvent>(_onLoadAvailable);
     on<DeliveryLoadDetailsEvent>(_onLoadDetails);
     on<DeliveryAcceptEvent>(_onAccept);
@@ -21,21 +22,21 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     emit(const DeliveryLoading());
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      // Call real API to get available orders
+      final ordersData = await _deliveryService.getAvailableOrders();
       
-      // Mock available deliveries
-      final deliveries = [
-        const DeliveryOrder(
-          id: '1',
-          orderNumber: 'ORD-001',
-          customerName: 'John Doe',
-          deliveryAddress: '123 Main St, Downtown',
-          total: 24.99,
-          distance: 2.3,
+      // Convert API response to DeliveryOrder objects
+      final deliveries = ordersData.map((orderData) {
+        return DeliveryOrder(
+          id: orderData['id'] ?? '',
+          orderNumber: orderData['orderNumber'] ?? '',
+          customerName: orderData['user']?['name'] ?? 'Unknown Customer',
+          deliveryAddress: orderData['deliveryAddress'] ?? '',
+          total: (orderData['total'] ?? 0).toDouble(),
+          distance: 2.0, // TODO: Calculate actual distance
           status: DeliveryStatus.pending,
-        ),
-      ];
+        );
+      }).toList();
       
       emit(DeliveryLoaded(deliveries));
     } catch (error) {
@@ -75,8 +76,8 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     Emitter<DeliveryState> emit,
   ) async {
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Call real API to accept the order
+      await _deliveryService.acceptOrder(event.deliveryId);
       
       // Update delivery status
       emit(const DeliveryAccepted());
