@@ -5,6 +5,11 @@ import 'package:dio/dio.dart';
 import '../../features/delivery/data/delivery_service.dart';
 import '../../features/auth/data/auth_service.dart';
 import '../../features/delivery/presentation/bloc/delivery_bloc.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/location/presentation/bloc/location_bloc.dart';
+import '../../features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../features/earnings/presentation/bloc/earnings_bloc.dart';
+import '../network/auth_interceptor.dart';
 
 import 'injection.config.dart';
 
@@ -36,6 +41,9 @@ Future<void> _registerExternalDependencies() async {
     },
   );
   
+  // Add authentication interceptor
+  dio.interceptors.add(AuthInterceptor(sharedPreferences));
+  
   // Add interceptors
   dio.interceptors.add(
     InterceptorsWrapper(
@@ -66,4 +74,8 @@ Future<void> _registerExternalDependencies() async {
   
   // Register blocs manually since they depend on manually registered services
   getIt.registerFactory<DeliveryBloc>(() => DeliveryBloc(getIt<DeliveryService>()));
+  getIt.registerFactory<AuthBloc>(() => AuthBloc(getIt<AuthService>()));
+  getIt.registerFactory<LocationBloc>(() => LocationBloc());
+  getIt.registerFactory<DashboardBloc>(() => DashboardBloc(getIt<DeliveryService>()));
+  getIt.registerFactory<EarningsBloc>(() => EarningsBloc());
 } 

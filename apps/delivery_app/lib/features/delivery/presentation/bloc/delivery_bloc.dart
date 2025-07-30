@@ -19,28 +19,62 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     DeliveryLoadAvailableEvent event,
     Emitter<DeliveryState> emit,
   ) async {
+    print('🚀 DeliveryBloc: LoadAvailableEvent received');
+    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
+    
     emit(const DeliveryLoading());
+    print('📊 DeliveryBloc: State updated to DeliveryLoading');
 
     try {
+      print('🔄 DeliveryBloc: Calling deliveryService.getAvailableOrders()');
       // Call real API to get available orders
       final ordersData = await _deliveryService.getAvailableOrders();
       
+      print('✅ DeliveryBloc: Successfully received ${ordersData.length} orders from service');
+      print('📦 DeliveryBloc: Raw orders data: $ordersData');
+      
       // Convert API response to DeliveryOrder objects
       final deliveries = ordersData.map((orderData) {
-        return DeliveryOrder(
+        final customerName = orderData['user']?['name'] ?? 'Unknown Customer';
+        final shopName = orderData['shopName'] ?? orderData['shop_name'] ?? 'Unknown Shop';
+        final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
+        final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
+        
+        print('🔄 DeliveryBloc: Converting order data: ${orderData['id']}');
+        print('   Customer: $customerName');
+        print('   Shop: $shopName');
+        print('   Order: $orderNumber');
+        print('   Address: $deliveryAddress');
+        
+        final deliveryOrder = DeliveryOrder(
           id: orderData['id'] ?? '',
-          orderNumber: orderData['orderNumber'] ?? '',
-          customerName: orderData['user']?['name'] ?? 'Unknown Customer',
-          deliveryAddress: orderData['deliveryAddress'] ?? '',
+          orderNumber: orderNumber,
+          customerName: customerName,
+          deliveryAddress: deliveryAddress,
           total: (orderData['total'] ?? 0).toDouble(),
           distance: 2.0, // TODO: Calculate actual distance
           status: DeliveryStatus.pending,
         );
+        
+        print('✅ DeliveryBloc: Converted to DeliveryOrder: Customer=$customerName, Address=$deliveryAddress, Total=\$${deliveryOrder.total}');
+        return deliveryOrder;
       }).toList();
       
+      print('📦 DeliveryBloc: Final deliveries list: ${deliveries.length} items');
+      print('📊 DeliveryBloc: Emitting DeliveryLoaded state');
+      
       emit(DeliveryLoaded(deliveries));
+      
+      print('✅ DeliveryBloc: Successfully emitted DeliveryLoaded with ${deliveries.length} deliveries');
+      
     } catch (error) {
+      print('❌ DeliveryBloc: Error occurred while loading available orders');
+      print('❌ DeliveryBloc: Error details: $error');
+      print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
+      
       emit(DeliveryError(error.toString()));
+      
+      print('📊 DeliveryBloc: Error state emitted with message: $error');
     }
   }
 
@@ -48,26 +82,48 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     DeliveryLoadDetailsEvent event,
     Emitter<DeliveryState> emit,
   ) async {
+    print('🚀 DeliveryBloc: LoadDetailsEvent received for delivery: ${event.deliveryId}');
+    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
+    
     emit(const DeliveryLoading());
+    print('📊 DeliveryBloc: State updated to DeliveryLoading');
 
     try {
-      // Simulate API call to load delivery details
-      await Future.delayed(const Duration(milliseconds: 800));
+      print('🔄 DeliveryBloc: Calling deliveryService.getOrderDetails()');
+      final orderData = await _deliveryService.getOrderDetails(event.deliveryId);
+      print('✅ DeliveryBloc: Successfully received order details');
+      print('📦 DeliveryBloc: Order data: $orderData');
       
-      // Mock delivery details
+      // Convert API response to DeliveryOrder
+      final customerName = orderData['user']?['name'] ?? orderData['shop']?['name'] ?? 'Unknown Customer';
+      final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
+      final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
+      final total = (orderData['total'] ?? 0).toDouble();
+      
+      print('🔄 DeliveryBloc: Converting order details:');
+      print('   Customer: $customerName');
+      print('   Order: $orderNumber');
+      print('   Address: $deliveryAddress');
+      print('   Total: \$${total}');
+      
       final delivery = DeliveryOrder(
         id: event.deliveryId,
-        orderNumber: 'ORD-${event.deliveryId}',
-        customerName: 'John Doe',
-        deliveryAddress: '123 Main St, Downtown, City, 12345',
-        total: 24.99,
-        distance: 2.3,
+        orderNumber: orderNumber,
+        customerName: customerName,
+        deliveryAddress: deliveryAddress,
+        total: total,
+        distance: 2.0, // TODO: Calculate actual distance
         status: DeliveryStatus.pending,
       );
       
+      print('✅ DeliveryBloc: Converted to DeliveryOrder successfully');
       emit(DeliveryDetailsLoaded(delivery));
+      print('📊 DeliveryBloc: Emitted DeliveryDetailsLoaded state');
     } catch (error) {
+      print('❌ DeliveryBloc: Error loading order details: $error');
+      print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
       emit(DeliveryError(error.toString()));
+      print('📊 DeliveryBloc: Emitted DeliveryError state: $error');
     }
   }
 
@@ -75,14 +131,30 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     DeliveryAcceptEvent event,
     Emitter<DeliveryState> emit,
   ) async {
+    print('🚀 DeliveryBloc: AcceptEvent received for delivery: ${event.deliveryId}');
+    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
+    
+    emit(const DeliveryLoading());
+    print('📊 DeliveryBloc: State updated to DeliveryLoading');
+    
     try {
-      // Call real API to accept the order
+      print('🔄 DeliveryBloc: Calling deliveryService.acceptOrder()');
       await _deliveryService.acceptOrder(event.deliveryId);
+      print('✅ DeliveryBloc: Order accepted successfully');
       
       // Update delivery status
       emit(const DeliveryAccepted());
+      print('📊 DeliveryBloc: Emitted DeliveryAccepted state');
+      
+      // Refresh available orders list
+      print('🔄 DeliveryBloc: Refreshing available orders after acceptance');
+      add(const DeliveryLoadAvailableEvent());
+      
     } catch (error) {
+      print('❌ DeliveryBloc: Error accepting order: $error');
+      print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
       emit(DeliveryError(error.toString()));
+      print('📊 DeliveryBloc: Emitted DeliveryError state: $error');
     }
   }
 

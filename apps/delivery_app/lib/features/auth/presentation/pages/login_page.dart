@@ -174,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       children: [
                         Text(
-                          'Demo Credentials',
+                          'Test Account',
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: theme.colorScheme.primary,
@@ -182,11 +182,24 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Email: driver@example.com\nPassword: password',
+                          'Email: delivery@example.com\nPassword: password123',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                           textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            _emailController.text = 'delivery@example.com';
+                            _passwordController.text = 'password123';
+                          },
+                          icon: const Icon(Icons.input, size: 16),
+                          label: const Text('Fill Credentials'),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(150, 32),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          ),
                         ),
                       ],
                     ),

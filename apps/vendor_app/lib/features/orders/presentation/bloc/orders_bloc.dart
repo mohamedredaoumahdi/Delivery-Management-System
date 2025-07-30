@@ -57,13 +57,23 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
     LoadOrders event,
     Emitter<OrdersState> emit,
   ) async {
+    print('🚀 OrdersBloc: LoadOrders event received');
+    print('📊 OrdersBloc: Current state: ${state.runtimeType}');
+    
     emit(OrdersLoading());
+    print('📊 OrdersBloc: Emitted OrdersLoading state');
     
     try {
+      print('📡 OrdersBloc: Calling orderService.getOrders()');
       final orders = await orderService.getOrders();
+      print('✅ OrdersBloc: Received ${orders.length} orders');
+      
       emit(OrdersLoaded(orders: orders));
+      print('📊 OrdersBloc: Emitted OrdersLoaded state with ${orders.length} orders');
     } catch (e) {
+      print('❌ OrdersBloc: Error loading orders: $e');
       emit(OrdersError(message: e.toString()));
+      print('📊 OrdersBloc: Emitted OrdersError state: $e');
     }
   }
 } 

@@ -666,22 +666,12 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
 
   Future<void> _acceptOrder(String orderId) async {
     try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-
+      print('🚀 VendorOrders: Accepting order $orderId');
+      
       // Call API to update order status to ACCEPTED
       await sl<OrderService>().updateOrderStatus(orderId, 'ACCEPTED');
       
-      // Close loading dialog safely
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
+      print('✅ VendorOrders: Order accepted successfully');
       
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -691,14 +681,12 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
         ),
       );
       
-      // Refresh orders list
+      // Refresh orders list (this will show loading state via BLoC)
+      print('🔄 VendorOrders: Refreshing orders list');
       context.read<OrdersBloc>().add(LoadOrders());
       
     } catch (e) {
-      // Close loading dialog safely
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
+      print('❌ VendorOrders: Failed to accept order: $e');
       
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -758,22 +746,12 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
 
   Future<void> _markOrderReady(String orderId) async {
     try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-
+      print('🚀 VendorOrders: Marking order $orderId as ready');
+      
       // Call API to update order status to READY_FOR_PICKUP
       await sl<OrderService>().updateOrderStatus(orderId, 'READY_FOR_PICKUP');
       
-      // Close loading dialog safely
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
+      print('✅ VendorOrders: Order marked as ready successfully');
       
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -783,14 +761,12 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
         ),
       );
       
-      // Refresh orders list
+      // Refresh orders list (this will show loading state via BLoC)
+      print('🔄 VendorOrders: Refreshing orders list');
       context.read<OrdersBloc>().add(LoadOrders());
       
     } catch (e) {
-      // Close loading dialog safely
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
+      print('❌ VendorOrders: Failed to mark order as ready: $e');
       
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -804,22 +780,12 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
 
   Future<void> _startPreparing(String orderId) async {
     try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-
+      print('🚀 VendorOrders: Starting to prepare order $orderId');
+      
       // Call API to update order status to PREPARING
       await sl<OrderService>().updateOrderStatus(orderId, 'PREPARING');
       
-      // Close loading dialog safely
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
+      print('✅ VendorOrders: Order moved to preparing successfully');
       
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -829,14 +795,12 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
         ),
       );
       
-      // Refresh orders list
+      // Refresh orders list (this will show loading state via BLoC)
+      print('🔄 VendorOrders: Refreshing orders list');
       context.read<OrdersBloc>().add(LoadOrders());
       
     } catch (e) {
-      // Close loading dialog safely
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
+      print('❌ VendorOrders: Failed to start preparing: $e');
       
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(

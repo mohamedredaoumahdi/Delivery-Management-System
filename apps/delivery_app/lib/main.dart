@@ -12,10 +12,14 @@ import 'features/location/presentation/bloc/location_bloc.dart';
 import 'features/earnings/presentation/bloc/earnings_bloc.dart';
 
 void main() async {
+  print('🚀 DeliveryApp: Starting application initialization');
+  
   WidgetsFlutterBinding.ensureInitialized();
+  print('✅ DeliveryApp: Flutter binding initialized');
   
   // Initialize Hive for local storage
   await Hive.initFlutter();
+  print('✅ DeliveryApp: Hive storage initialized');
   
   // Configure system UI
   SystemChrome.setSystemUIOverlayStyle(
@@ -26,10 +30,14 @@ void main() async {
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
+  print('✅ DeliveryApp: System UI configured');
   
   // Initialize dependency injection
+  print('🔧 DeliveryApp: Configuring dependencies...');
   await configureDependencies();
+  print('✅ DeliveryApp: Dependencies configured successfully');
   
+  print('🎯 DeliveryApp: Starting app...');
   runApp(const DeliveryApp());
 }
 
@@ -38,16 +46,27 @@ class DeliveryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('🎨 DeliveryApp: Building app widget');
+    
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          create: (context) => getIt<AuthBloc>()..add(const AuthCheckStatusEvent()),
+          create: (context) {
+            print('🔧 DeliveryApp: Creating AuthBloc and adding AuthCheckStatusEvent');
+            return getIt<AuthBloc>()..add(const AuthCheckStatusEvent());
+          },
         ),
         BlocProvider<DeliveryBloc>(
-          create: (context) => getIt<DeliveryBloc>(),
+          create: (context) {
+            print('🔧 DeliveryApp: Creating DeliveryBloc');
+            return getIt<DeliveryBloc>();
+          },
         ),
         BlocProvider<LocationBloc>(
-          create: (context) => getIt<LocationBloc>(),
+          create: (context) {
+            print('🔧 DeliveryApp: Creating LocationBloc');
+            return getIt<LocationBloc>();
+          },
         ),
         BlocProvider<EarningsBloc>(
           create: (context) => getIt<EarningsBloc>(),

@@ -6,7 +6,7 @@ import '../../domain/models/earnings_data.dart';
 part 'earnings_event.dart';
 part 'earnings_state.dart';
 
-@injectable
+
 class EarningsBloc extends Bloc<EarningsEvent, EarningsState> {
   EarningsBloc() : super(const EarningsInitial()) {
     on<EarningsLoadEvent>(_onLoad);

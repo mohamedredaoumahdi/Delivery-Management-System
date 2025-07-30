@@ -1,13 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:injectable/injectable.dart';
+import '../../data/auth_service.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
 
-@injectable
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc() : super(const AuthInitial()) {
+  final AuthService _authService;
+
+  AuthBloc(this._authService) : super(const AuthInitial()) {
     on<AuthCheckStatusEvent>(_onCheckStatus);
     on<AuthLoginEvent>(_onLogin);
     on<AuthLogoutEvent>(_onLogout);
@@ -19,12 +20,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      // Simulate checking stored token
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      // For demo purposes, we'll assume user is not authenticated initially
-      // In real app, check SharedPreferences or secure storage for token
-      emit(const AuthUnauthenticated());
+      final isLoggedIn = await _authService.isLoggedIn();
+      if (isLoggedIn) {
+        final userRole = _authService.getCurrentUserRole();
+        if (userRole == 'DELIVERY') {
+          emit(const AuthAuthenticated(DriverUser(
+            id: 'current_user',
+            email: 'delivery@example.com',
+            name: 'Delivery Driver',
+            phone: '+1234567890',
+            vehicleType: 'Car',
+            licenseNumber: 'DL123456',
+            isActive: true,
+          )));
+        } else {
+          emit(const AuthUnauthenticated());
+        }
+      } else {
+        emit(const AuthUnauthenticated());
+      }
     } catch (error) {
       emit(AuthError(error.toString()));
     }
@@ -34,30 +48,48 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLoginEvent event,
     Emitter<AuthState> emit,
   ) async {
+    print('🚀 AuthBloc: LoginEvent received for email: ${event.email}');
+    print('📊 AuthBloc: Current state: ${state.runtimeType}');
+    
     emit(const AuthLoading());
+    print('📊 AuthBloc: State updated to AuthLoading');
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Mock validation - in real app, validate with backend
-      if (event.email == 'driver@example.com' && event.password == 'password') {
+      print('🔄 AuthBloc: Calling authService.login()');
+      final success = await _authService.login(event.email, event.password);
+      
+      print('📥 AuthBloc: Login service returned: $success');
+      
+      if (success) {
+        print('✅ AuthBloc: Login successful, creating DriverUser object');
         final driver = DriverUser(
-          id: '1',
+          id: 'current_user',
           email: event.email,
-          name: 'John Driver',
+          name: 'Delivery Driver',
           phone: '+1234567890',
           vehicleType: 'Car',
           licenseNumber: 'DL123456',
           isActive: true,
         );
-
+        
+        print('👤 AuthBloc: Created driver object: ${driver.email}');
+        print('📊 AuthBloc: Emitting AuthAuthenticated state');
+        
         emit(AuthAuthenticated(driver));
+        
+        print('✅ AuthBloc: Successfully emitted AuthAuthenticated state');
       } else {
-        emit(const AuthError('Invalid email or password'));
+        print('❌ AuthBloc: Login failed - service returned false');
+        emit(const AuthError('Login failed'));
       }
     } catch (error) {
+      print('❌ AuthBloc: Exception occurred during login');
+      print('❌ AuthBloc: Error details: $error');
+      print('❌ AuthBloc: Error type: ${error.runtimeType}');
+      
       emit(AuthError(error.toString()));
+      
+      print('📊 AuthBloc: Error state emitted with message: $error');
     }
   }
 
@@ -66,10 +98,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      // Simulate logout process
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      // Clear stored token/credentials
+      await _authService.logout();
       emit(const AuthUnauthenticated());
     } catch (error) {
       emit(AuthError(error.toString()));

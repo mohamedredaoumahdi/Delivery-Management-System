@@ -17,7 +17,10 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    print('🚀 DashboardPage: initState called');
+    print('📡 DashboardPage: Adding DashboardLoadEvent');
     context.read<DashboardBloc>().add(const DashboardLoadEvent());
+    print('📍 DashboardPage: Adding LocationCheckStatusEvent');
     context.read<LocationBloc>().add(const LocationCheckStatusEvent());
   }
 
@@ -56,18 +59,25 @@ class _DashboardPageState extends State<DashboardPage> {
         },
         child: BlocBuilder<DashboardBloc, DashboardState>(
           builder: (context, state) {
+            print('🎨 DashboardPage: BlocBuilder triggered with state: ${state.runtimeType}');
+            
             if (state is DashboardLoading) {
+              print('⏳ DashboardPage: Showing loading indicator');
               return const Center(child: CircularProgressIndicator());
             }
 
             if (state is DashboardError) {
+              print('❌ DashboardPage: Showing error view: ${state.message}');
               return _buildErrorView(context, state.message);
             }
 
             if (state is DashboardLoaded) {
+              print('✅ DashboardPage: Showing dashboard content');
+              print('📦 DashboardPage: Available deliveries count: ${state.availableDeliveries.length}');
               return _buildDashboardContent(context, state);
             }
 
+            print('⚠️ DashboardPage: Showing empty view (default case)');
             return const SizedBox.shrink();
           },
         ),

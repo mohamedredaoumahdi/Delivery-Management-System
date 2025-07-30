@@ -66,9 +66,8 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
               return _buildDeliveryDetails(context, state.delivery);
             }
 
-            // Mock delivery details for demonstration if no state matches
-            final delivery = _getMockDeliveryDetails();
-            return _buildDeliveryDetails(context, delivery);
+            // Show loading state if no other state matches
+            return const Center(child: CircularProgressIndicator());
           },
         ),
       ),
@@ -570,17 +569,7 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
     );
   }
 
-  DeliveryOrder _getMockDeliveryDetails() {
-    return DeliveryOrder(
-      id: widget.deliveryId,
-      orderNumber: 'ORD-${widget.deliveryId}',
-      customerName: 'John Doe',
-      deliveryAddress: '123 Main St, Downtown, City, 12345',
-      total: 24.99,
-      distance: 2.3,
-      status: DeliveryStatus.pending,
-    );
-  }
+
 
   Color _getStatusColor(DeliveryStatus status) {
     switch (status) {

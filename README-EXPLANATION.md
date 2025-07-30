@@ -1164,3 +1164,11 @@ For technical questions, feature requests, or contributions to this project, ple
 ---
 
 *This documentation provides a comprehensive overview of the Delivery Management System. For specific implementation details, API documentation, or setup instructions, please refer to the individual component documentation files.*
+
+
+docker-compose up -d
+npm install
+npx prisma generate
+npx prisma migrate dev
+npx ts-node seeders/seed.ts
+npm run dev

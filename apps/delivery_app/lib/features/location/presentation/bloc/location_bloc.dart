@@ -2,12 +2,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:injectable/injectable.dart';
 
 part 'location_event.dart';
 part 'location_state.dart';
 
-@injectable
 class LocationBloc extends Bloc<LocationEvent, LocationState> {
   LocationBloc() : super(const LocationInitial()) {
     on<LocationCheckStatusEvent>(_onCheckStatus);

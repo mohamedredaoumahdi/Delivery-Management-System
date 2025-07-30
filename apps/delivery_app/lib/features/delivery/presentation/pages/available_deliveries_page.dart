@@ -16,6 +16,8 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage> {
   @override
   void initState() {
     super.initState();
+    print('🚀 AvailableDeliveriesPage: initState called');
+    print('📡 AvailableDeliveriesPage: Adding DeliveryLoadAvailableEvent to bloc');
     context.read<DeliveryBloc>().add(const DeliveryLoadAvailableEvent());
   }
 
@@ -28,6 +30,8 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
+              print('🔄 AvailableDeliveriesPage: Refresh button pressed');
+              print('📡 AvailableDeliveriesPage: Adding DeliveryLoadAvailableEvent to bloc');
               context.read<DeliveryBloc>().add(const DeliveryLoadAvailableEvent());
             },
           ),
@@ -35,31 +39,51 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage> {
       ),
       body: BlocListener<DeliveryBloc, DeliveryState>(
         listener: (context, state) {
+          print('🎧 AvailableDeliveriesPage BlocListener: State changed to ${state.runtimeType}');
+          
           if (state is DeliveryAccepted) {
+            print('✅ AvailableDeliveriesPage: Delivery accepted successfully!');
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Delivery accepted successfully!'),
                 backgroundColor: Colors.green,
               ),
             );
-            // Refresh dashboard after accepting a delivery
+            print('🔄 AvailableDeliveriesPage: Refreshing dashboard after acceptance');
             context.read<DashboardBloc>().add(const DashboardRefreshEvent());
+          } else if (state is DeliveryError) {
+            print('❌ AvailableDeliveriesPage: Delivery error occurred: ${state.message}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to accept delivery: ${state.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else if (state is DeliveryLoading) {
+            print('⏳ AvailableDeliveriesPage: Delivery loading state');
           }
         },
         child: BlocBuilder<DeliveryBloc, DeliveryState>(
           builder: (context, state) {
+            print('🎨 AvailableDeliveriesPage: BlocBuilder triggered with state: ${state.runtimeType}');
+            
             if (state is DeliveryLoading) {
+              print('⏳ AvailableDeliveriesPage: Showing loading spinner');
               return const Center(child: CircularProgressIndicator());
             }
 
             if (state is DeliveryError) {
+              print('❌ AvailableDeliveriesPage: Showing error view with message: ${state.message}');
               return _buildErrorView(context, state.message);
             }
 
             if (state is DeliveryLoaded) {
+              print('✅ AvailableDeliveriesPage: Showing delivery list with ${state.deliveries.length} deliveries');
+              print('📦 AvailableDeliveriesPage: Deliveries: ${state.deliveries}');
               return _buildDeliveryList(context, state.deliveries);
             }
 
+            print('⚠️ AvailableDeliveriesPage: Showing empty view (default case)');
             return _buildEmptyView(context);
           },
         ),
@@ -185,13 +209,17 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage> {
             // Header with order number and earnings
             Row(
               children: [
-                Text(
-                  'Order #${delivery.orderNumber}',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    'Order #${delivery.orderNumber}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -370,8 +398,12 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage> {
           ),
           ElevatedButton(
             onPressed: () {
+              print('🚀 AvailableDeliveriesPage: Accept button pressed for delivery: ${delivery.id}');
+              print('📦 AvailableDeliveriesPage: Delivery details: ${delivery.customerName}, ${delivery.deliveryAddress}');
               Navigator.of(context).pop();
+              print('📡 AvailableDeliveriesPage: Adding DeliveryAcceptEvent to bloc');
               context.read<DeliveryBloc>().add(DeliveryAcceptEvent(delivery.id));
+              print('✅ AvailableDeliveriesPage: DeliveryAcceptEvent added successfully');
             },
             child: const Text('Accept'),
           ),

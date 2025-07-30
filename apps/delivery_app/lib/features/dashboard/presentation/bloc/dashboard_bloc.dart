@@ -1,13 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
+import '../../../delivery/data/delivery_service.dart';
 
 part 'dashboard_event.dart';
 part 'dashboard_state.dart';
 
-@injectable
+
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
-  DashboardBloc() : super(const DashboardInitial()) {
+  final DeliveryService _deliveryService;
+
+  DashboardBloc(this._deliveryService) : super(const DashboardInitial()) {
     on<DashboardLoadEvent>(_onLoad);
     on<DashboardRefreshEvent>(_onRefresh);
     on<DashboardGoOnlineEvent>(_onGoOnline);
@@ -18,14 +21,44 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     DashboardLoadEvent event,
     Emitter<DashboardState> emit,
   ) async {
+    print('🚀 DashboardBloc: Loading dashboard data');
     emit(const DashboardLoading());
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      print('📡 DashboardBloc: Fetching available orders from API');
+      
+      // Get real available orders from backend
+      final ordersData = await _deliveryService.getAvailableOrders();
+      
+      print('✅ DashboardBloc: Received ${ordersData.length} orders from API');
+      
+      // Convert API response to DeliveryOrder objects
+      final availableDeliveries = ordersData.map((orderData) {
+        final customerName = orderData['user']?['name'] ?? 'Unknown Customer';
+        final shopName = orderData['shopName'] ?? orderData['shop_name'] ?? 'Unknown Shop';
+        final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
+        final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
+        
+        print('🔄 DashboardBloc: Converting order: ${orderData['id']}');
+        print('   Customer: $customerName');
+        print('   Shop: $shopName');
+        print('   Address: $deliveryAddress');
+        print('   Total: \$${orderData['total']}');
+        
+        return DeliveryOrder(
+          id: orderData['id'] ?? '',
+          orderNumber: orderNumber,
+          customerName: customerName,
+          deliveryAddress: deliveryAddress,
+          total: (orderData['total'] ?? 0).toDouble(),
+          distance: 2.0, // TODO: Calculate actual distance
+          status: DeliveryStatus.pending,
+        );
+      }).toList();
 
-      // Mock data - in real app, this would come from repositories
-      final mockData = DashboardLoaded(
+      print('📦 DashboardBloc: Converted to ${availableDeliveries.length} DeliveryOrder objects');
+
+      final dashboardData = DashboardLoaded(
         driverStatus: DriverStatus.offline,
         todayStats: const DashboardStats(
           deliveryCount: 0,
@@ -33,13 +66,15 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           onlineMinutes: 0,
           averageRating: 5.0,
         ),
-        availableDeliveries: _getMockAvailableDeliveries(),
-        recentDeliveries: _getMockRecentDeliveries(),
+        availableDeliveries: availableDeliveries,
+        recentDeliveries: [], // Empty for now - can be implemented later
         currentDelivery: null,
       );
 
-      emit(mockData);
+      print('✅ DashboardBloc: Emitting DashboardLoaded with ${availableDeliveries.length} orders');
+      emit(dashboardData);
     } catch (error) {
+      print('❌ DashboardBloc: Error loading dashboard: $error');
       emit(DashboardError(error.toString()));
     }
   }
@@ -48,27 +83,53 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     DashboardRefreshEvent event,
     Emitter<DashboardState> emit,
   ) async {
+    print('🔄 DashboardBloc: Refreshing dashboard data');
+    
     // Don't show loading for refresh
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(milliseconds: 500));
+      print('📡 DashboardBloc: Fetching fresh orders from API');
+      
+      // Get fresh available orders from backend
+      final ordersData = await _deliveryService.getAvailableOrders();
+      
+      print('✅ DashboardBloc: Received ${ordersData.length} fresh orders');
+
+      // Convert API response to DeliveryOrder objects
+      final availableDeliveries = ordersData.map((orderData) {
+        final customerName = orderData['user']?['name'] ?? 'Unknown Customer';
+        final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
+        final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
+        
+        return DeliveryOrder(
+          id: orderData['id'] ?? '',
+          orderNumber: orderNumber,
+          customerName: customerName,
+          deliveryAddress: deliveryAddress,
+          total: (orderData['total'] ?? 0).toDouble(),
+          distance: 2.0, // TODO: Calculate actual distance
+          status: DeliveryStatus.pending,
+        );
+      }).toList();
 
       // Get current state
       if (state is DashboardLoaded) {
         final currentState = state as DashboardLoaded;
         
-        // Mock updated data
+        // Updated data with fresh orders
         final updatedData = currentState.copyWith(
-          availableDeliveries: _getMockAvailableDeliveries(),
-          recentDeliveries: _getMockRecentDeliveries(),
+          availableDeliveries: availableDeliveries,
+          recentDeliveries: [], // Keep empty for now
         );
 
+        print('✅ DashboardBloc: Emitting refreshed data with ${availableDeliveries.length} orders');
         emit(updatedData);
       } else {
         // If not loaded, perform full load
+        print('⚠️ DashboardBloc: State not loaded, performing full load instead');
         add(const DashboardLoadEvent());
       }
     } catch (error) {
+      print('❌ DashboardBloc: Error refreshing dashboard: $error');
       emit(DashboardError(error.toString()));
     }
   }
@@ -112,63 +173,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     }
   }
 
-  // Mock data generators
-  List<DeliveryOrder> _getMockAvailableDeliveries() {
-    return [
-      const DeliveryOrder(
-        id: '1',
-        orderNumber: 'ORD-001',
-        customerName: 'John Doe',
-        deliveryAddress: '123 Main St, Downtown',
-        total: 24.99,
-        distance: 2.3,
-        status: DeliveryStatus.pending,
-      ),
-      const DeliveryOrder(
-        id: '2',
-        orderNumber: 'ORD-002',
-        customerName: 'Jane Smith',
-        deliveryAddress: '456 Oak Ave, Midtown',
-        total: 18.50,
-        distance: 1.8,
-        status: DeliveryStatus.pending,
-      ),
-      const DeliveryOrder(
-        id: '3',
-        orderNumber: 'ORD-003',
-        customerName: 'Mike Wilson',
-        deliveryAddress: '789 Pine Rd, Uptown',
-        total: 32.75,
-        distance: 3.1,
-        status: DeliveryStatus.pending,
-      ),
-    ];
-  }
-
-  List<DeliveryOrder> _getMockRecentDeliveries() {
-    return [
-      DeliveryOrder(
-        id: '101',
-        orderNumber: 'ORD-098',
-        customerName: 'Sarah Johnson',
-        deliveryAddress: '321 Elm St, Downtown',
-        total: 28.99,
-        distance: 2.1,
-        status: DeliveryStatus.delivered,
-        deliveredAt: DateTime.now().subtract(const Duration(hours: 1)),
-      ),
-      DeliveryOrder(
-        id: '102',
-        orderNumber: 'ORD-097',
-        customerName: 'Robert Brown',
-        deliveryAddress: '654 Maple Dr, Suburb',
-        total: 22.50,
-        distance: 4.2,
-        status: DeliveryStatus.delivered,
-        deliveredAt: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-    ];
-  }
+  // Mock data generators removed - now using real API data
 }
 
 // Data models (these would normally be in the domain layer)
