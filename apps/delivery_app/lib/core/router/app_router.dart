@@ -8,6 +8,7 @@ import '../../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../features/location/presentation/bloc/location_bloc.dart';
 import '../../features/delivery/presentation/bloc/delivery_bloc.dart';
 import '../../features/earnings/presentation/bloc/earnings_bloc.dart';
+import '../../features/profile/presentation/bloc/profile_bloc.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/registration_page.dart';
 import '../../features/main/presentation/pages/main_page.dart';
@@ -76,6 +77,9 @@ class AppRouter {
               ),
               BlocProvider<EarningsBloc>(
                 create: (context) => getIt<EarningsBloc>(),
+              ),
+              BlocProvider<ProfileBloc>(
+                create: (context) => getIt<ProfileBloc>(),
               ),
             ],
             child: MainPage(child: child),

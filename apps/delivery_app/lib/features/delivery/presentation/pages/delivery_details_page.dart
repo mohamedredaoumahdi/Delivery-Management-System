@@ -36,18 +36,36 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
           if (state is DeliveryAccepted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Delivery accepted! Redirecting to navigation...'),
+                content: Text('Delivery accepted! You can now start the delivery.'),
                 backgroundColor: Colors.green,
               ),
             );
-            Future.delayed(const Duration(seconds: 1), () {
-              context.go('/navigation/${widget.deliveryId}');
+            // Navigate back to dashboard instead of navigation page
+            Future.delayed(const Duration(seconds: 2), () {
+              try {
+                if (context.mounted) {
+                  context.go('/dashboard');
+                }
+              } catch (e) {
+                print('❌ Navigation error: $e');
+                // Fallback navigation
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              }
             });
           } else if (state is DeliveryStatusUpdated) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Status updated to ${state.status.name}'),
                 backgroundColor: Colors.blue,
+              ),
+            );
+          } else if (state is DeliveryError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${state.message}'),
+                backgroundColor: Colors.red,
               ),
             );
           }
@@ -59,7 +77,56 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
             }
 
             if (state is DeliveryError) {
-              return _buildErrorView(context, state.message);
+              print('❌ DeliveryDetailsPage: Showing error view: ${state.message}');
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Unable to load delivery details',
+                        style: Theme.of(context).textTheme.titleLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        state.message.contains('timeout') 
+                          ? 'The request took longer than expected. Please check your connection and try again.'
+                          : state.message,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          print('🔄 DeliveryDetailsPage: Retry button pressed');
+                          context.read<DeliveryBloc>().add(DeliveryLoadDetailsEvent(widget.deliveryId));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                        child: const Text('Try Again'),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () {
+                          print('🔙 DeliveryDetailsPage: Go back button pressed');
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Go Back'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             }
 
             if (state is DeliveryDetailsLoaded) {
@@ -312,14 +379,14 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
               context,
               Icons.store_outlined,
               'Restaurant',
-              'Golden Dragon Restaurant',
+              delivery.shopName,
             ),
             const SizedBox(height: 12),
             _buildInfoRow(
               context,
               Icons.location_on_outlined,
               'Pickup Address',
-              '789 Food Court Ave, Downtown',
+              delivery.pickupAddress,
             ),
           ],
         ),
@@ -329,11 +396,6 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
 
   Widget _buildOrderItemsCard(BuildContext context, DeliveryOrder delivery) {
     final theme = Theme.of(context);
-    final mockItems = [
-      {'name': 'Kung Pao Chicken', 'quantity': 2, 'price': 12.99},
-      {'name': 'Fried Rice', 'quantity': 1, 'price': 8.99},
-      {'name': 'Spring Rolls', 'quantity': 3, 'price': 6.99},
-    ];
 
     return Card(
       child: Padding(
@@ -348,33 +410,41 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
               ),
             ),
             const SizedBox(height: 12),
-            ...mockItems.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Text(
-                    '${item['quantity']}x',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: theme.colorScheme.primary,
+            if (delivery.items.isEmpty)
+              Text(
+                'No items found',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              )
+            else
+              ...delivery.items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Text(
+                      '${item.quantity}x',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      item['name'] as String,
-                      style: theme.textTheme.bodyMedium,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: theme.textTheme.bodyMedium,
+                      ),
                     ),
-                  ),
-                  Text(
-                    '\$${(item['price'] as double).toStringAsFixed(2)}',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
+                    Text(
+                      '\$${item.totalPrice.toStringAsFixed(2)}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )),
+                  ],
+                ),
+              )),
           ],
         ),
       ),
@@ -503,7 +573,7 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
   Widget _buildActionButtons(BuildContext context, DeliveryOrder delivery) {
     final theme = Theme.of(context);
 
-    if (delivery.status == DeliveryStatus.pending) {
+    if (delivery.status == DeliveryStatus.pending || delivery.status == DeliveryStatus.readyForPickup) {
       return Column(
         children: [
           SizedBox(
@@ -575,8 +645,10 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
     switch (status) {
       case DeliveryStatus.pending:
         return Colors.orange;
-      case DeliveryStatus.accepted:
+      case DeliveryStatus.readyForPickup:
         return Colors.blue;
+      case DeliveryStatus.accepted:
+        return Colors.green;
       case DeliveryStatus.pickedUp:
         return Colors.purple;
       case DeliveryStatus.inTransit:
@@ -590,6 +662,8 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
     switch (status) {
       case DeliveryStatus.pending:
         return 'PENDING';
+      case DeliveryStatus.readyForPickup:
+        return 'READY FOR PICKUP';
       case DeliveryStatus.accepted:
         return 'ACCEPTED';
       case DeliveryStatus.pickedUp:

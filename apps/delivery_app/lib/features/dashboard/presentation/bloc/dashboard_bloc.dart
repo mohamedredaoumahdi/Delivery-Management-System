@@ -1,16 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:injectable/injectable.dart';
+import '../../data/dashboard_service.dart';
 import '../../../delivery/data/delivery_service.dart';
 
 part 'dashboard_event.dart';
 part 'dashboard_state.dart';
 
-
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
+  final DashboardService _dashboardService;
   final DeliveryService _deliveryService;
 
-  DashboardBloc(this._deliveryService) : super(const DashboardInitial()) {
+  DashboardBloc(this._dashboardService, this._deliveryService) : super(const DashboardInitial()) {
     on<DashboardLoadEvent>(_onLoad);
     on<DashboardRefreshEvent>(_onRefresh);
     on<DashboardGoOnlineEvent>(_onGoOnline);
@@ -25,12 +25,24 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     emit(const DashboardLoading());
 
     try {
-      print('📡 DashboardBloc: Fetching available orders from API');
+      // Get stored driver status first
+      final storedStatus = _dashboardService.getStoredStatus();
+      final driverStatus = storedStatus == 'online' ? DriverStatus.online : DriverStatus.offline;
+      print('🔄 DashboardBloc: Retrieved stored driver status: $storedStatus');
+
+      // Only fetch orders if driver is online
+      List<Map<String, dynamic>> ordersData = [];
+      if (driverStatus == DriverStatus.online) {
+        print('📡 DashboardBloc: Driver is online, fetching available orders');
+        ordersData = await _deliveryService.getAvailableOrders();
+        print('✅ DashboardBloc: Received ${ordersData.length} orders from API');
+      } else {
+        print('ℹ️ DashboardBloc: Driver is offline, skipping order fetch');
+      }
       
-      // Get real available orders from backend
-      final ordersData = await _deliveryService.getAvailableOrders();
-      
-      print('✅ DashboardBloc: Received ${ordersData.length} orders from API');
+      // Get stats
+      final statsData = await _dashboardService.getStats();
+      print('✅ DashboardBloc: Received stats from API');
       
       // Convert API response to DeliveryOrder objects
       final availableDeliveries = ordersData.map((orderData) {
@@ -58,16 +70,50 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
       print('📦 DashboardBloc: Converted to ${availableDeliveries.length} DeliveryOrder objects');
 
+      // Get recent deliveries (assigned to this driver)
+      print('📡 DashboardBloc: Fetching recent deliveries');
+      final recentOrdersData = await _deliveryService.getAssignedOrders();
+      print('✅ DashboardBloc: Received ${recentOrdersData.length} recent orders');
+      
+      // Convert to DeliveryOrder objects
+      final recentDeliveries = recentOrdersData.map((orderData) {
+        final customerName = orderData['user']?['name'] ?? 'Unknown Customer';
+        final shopName = orderData['shopName'] ?? orderData['shop_name'] ?? 'Unknown Shop';
+        final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
+        final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
+        final backendStatus = orderData['status'] ?? 'PENDING';
+        
+        print('🔄 DashboardBloc: Converting recent order: ${orderData['id']}');
+        print('   Customer: $customerName');
+        print('   Shop: $shopName');
+        print('   Status: $backendStatus');
+        
+        // Map backend status to delivery status
+        final deliveryStatus = _mapBackendStatusToDeliveryStatus(backendStatus);
+        
+        return DeliveryOrder(
+          id: orderData['id'] ?? '',
+          orderNumber: orderNumber,
+          customerName: customerName,
+          deliveryAddress: deliveryAddress,
+          total: (orderData['total'] ?? 0).toDouble(),
+          distance: 2.0, // TODO: Calculate actual distance
+          status: deliveryStatus,
+        );
+      }).toList();
+
+      print('📦 DashboardBloc: Converted to ${recentDeliveries.length} recent delivery objects');
+
       final dashboardData = DashboardLoaded(
-        driverStatus: DriverStatus.offline,
-        todayStats: const DashboardStats(
-          deliveryCount: 0,
-          earnings: 0.0,
-          onlineMinutes: 0,
-          averageRating: 5.0,
+        driverStatus: driverStatus,
+        todayStats: DashboardStats(
+          deliveryCount: statsData['deliveryCount'] ?? 0,
+          earnings: (statsData['earnings'] ?? 0).toDouble(),
+          onlineMinutes: statsData['onlineMinutes'] ?? 0,
+          averageRating: (statsData['rating'] ?? 5.0).toDouble(),
         ),
         availableDeliveries: availableDeliveries,
-        recentDeliveries: [], // Empty for now - can be implemented later
+        recentDeliveries: recentDeliveries, // Now using real data
         currentDelivery: null,
       );
 
@@ -85,46 +131,74 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   ) async {
     print('🔄 DashboardBloc: Refreshing dashboard data');
     
-    // Don't show loading for refresh
     try {
-      print('📡 DashboardBloc: Fetching fresh orders from API');
-      
-      // Get fresh available orders from backend
-      final ordersData = await _deliveryService.getAvailableOrders();
-      
-      print('✅ DashboardBloc: Received ${ordersData.length} fresh orders');
-
-      // Convert API response to DeliveryOrder objects
-      final availableDeliveries = ordersData.map((orderData) {
-        final customerName = orderData['user']?['name'] ?? 'Unknown Customer';
-        final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
-        final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
-        
-        return DeliveryOrder(
-          id: orderData['id'] ?? '',
-          orderNumber: orderNumber,
-          customerName: customerName,
-          deliveryAddress: deliveryAddress,
-          total: (orderData['total'] ?? 0).toDouble(),
-          distance: 2.0, // TODO: Calculate actual distance
-          status: DeliveryStatus.pending,
-        );
-      }).toList();
-
-      // Get current state
       if (state is DashboardLoaded) {
         final currentState = state as DashboardLoaded;
         
-        // Updated data with fresh orders
+        // Get fresh orders from API
+        final ordersData = await _deliveryService.getAvailableOrders();
+        print('✅ DashboardBloc: Received ${ordersData.length} orders from API');
+        
+        // Get fresh recent deliveries (assigned to this driver)
+        final recentOrdersData = await _deliveryService.getAssignedOrders();
+        print('✅ DashboardBloc: Received ${recentOrdersData.length} recent orders from API');
+        
+        // Get fresh stats
+        final statsData = await _dashboardService.getStats();
+        print('✅ DashboardBloc: Received fresh stats from API');
+        
+        // Convert to DeliveryOrder objects
+        final availableDeliveries = ordersData.map((orderData) {
+          final customerName = orderData['user']?['name'] ?? 'Unknown Customer';
+          final shopName = orderData['shopName'] ?? orderData['shop_name'] ?? 'Unknown Shop';
+          final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
+          final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
+          
+          return DeliveryOrder(
+            id: orderData['id'] ?? '',
+            orderNumber: orderNumber,
+            customerName: customerName,
+            deliveryAddress: deliveryAddress,
+            total: (orderData['total'] ?? 0).toDouble(),
+            distance: 2.0,
+            status: DeliveryStatus.pending,
+          );
+        }).toList();
+        
+        // Convert recent deliveries to DeliveryOrder objects
+        final recentDeliveries = recentOrdersData.map((orderData) {
+          final customerName = orderData['user']?['name'] ?? 'Unknown Customer';
+          final shopName = orderData['shopName'] ?? orderData['shop_name'] ?? 'Unknown Shop';
+          final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
+          final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
+          final backendStatus = orderData['status'] ?? 'PENDING';
+          
+          return DeliveryOrder(
+            id: orderData['id'] ?? '',
+            orderNumber: orderNumber,
+            customerName: customerName,
+            deliveryAddress: deliveryAddress,
+            total: (orderData['total'] ?? 0).toDouble(),
+            distance: 2.0,
+            status: _mapBackendStatusToDeliveryStatus(backendStatus),
+          );
+        }).toList();
+        
+        // Updated data with fresh orders and stats
         final updatedData = currentState.copyWith(
           availableDeliveries: availableDeliveries,
-          recentDeliveries: [], // Keep empty for now
+          recentDeliveries: recentDeliveries,
+          todayStats: DashboardStats(
+            deliveryCount: statsData['deliveryCount'] ?? 0,
+            earnings: (statsData['earnings'] ?? 0).toDouble(),
+            onlineMinutes: statsData['onlineMinutes'] ?? 0,
+            averageRating: (statsData['rating'] ?? 5.0).toDouble(),
+          ),
         );
 
-        print('✅ DashboardBloc: Emitting refreshed data with ${availableDeliveries.length} orders');
+        print('✅ DashboardBloc: Emitting refreshed data with ${availableDeliveries.length} available and ${recentDeliveries.length} recent orders');
         emit(updatedData);
       } else {
-        // If not loaded, perform full load
         print('⚠️ DashboardBloc: State not loaded, performing full load instead');
         add(const DashboardLoadEvent());
       }
@@ -138,15 +212,21 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     DashboardGoOnlineEvent event,
     Emitter<DashboardState> emit,
   ) async {
+    print('🚀 DashboardBloc: Going online');
     if (state is DashboardLoaded) {
       final currentState = state as DashboardLoaded;
       
       try {
-        // Simulate API call to go online
-        await Future.delayed(const Duration(milliseconds: 500));
+        await _dashboardService.goOnline();
+        print('✅ DashboardBloc: Successfully went online');
         
         emit(currentState.copyWith(driverStatus: DriverStatus.online));
+        print('📊 DashboardBloc: Updated state to online');
+        
+        // Refresh available orders
+        add(const DashboardRefreshEvent());
       } catch (error) {
+        print('❌ DashboardBloc: Error going online: $error');
         emit(DashboardError('Failed to go online: ${error.toString()}'));
       }
     }
@@ -156,24 +236,46 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     DashboardGoOfflineEvent event,
     Emitter<DashboardState> emit,
   ) async {
+    print('🚀 DashboardBloc: Going offline');
     if (state is DashboardLoaded) {
       final currentState = state as DashboardLoaded;
       
       try {
-        // Simulate API call to go offline
-        await Future.delayed(const Duration(milliseconds: 500));
+        await _dashboardService.goOffline();
+        print('✅ DashboardBloc: Successfully went offline');
         
         emit(currentState.copyWith(
           driverStatus: DriverStatus.offline,
-          currentDelivery: null, // Clear current delivery when going offline
+          availableDeliveries: [], // Clear available orders when going offline
+          currentDelivery: null,
         ));
+        print('📊 DashboardBloc: Updated state to offline and cleared orders');
       } catch (error) {
+        print('❌ DashboardBloc: Error going offline: $error');
         emit(DashboardError('Failed to go offline: ${error.toString()}'));
       }
     }
   }
 
-  // Mock data generators removed - now using real API data
+  /// Maps backend order status to delivery app status
+  DeliveryStatus _mapBackendStatusToDeliveryStatus(String backendStatus) {
+    switch (backendStatus.toUpperCase()) {
+      case 'READY_FOR_PICKUP':
+        return DeliveryStatus.readyForPickup; // Order is ready for driver to pick up
+      case 'PICKED_UP':
+      case 'IN_DELIVERY':
+        return DeliveryStatus.pickedUp; // Driver has picked up the order
+      case 'ON_THE_WAY':
+        return DeliveryStatus.inTransit; // Driver is on the way to customer
+      case 'DELIVERED':
+        return DeliveryStatus.delivered; // Order has been delivered
+      case 'ACCEPTED':
+        return DeliveryStatus.accepted; // Driver accepted the order
+      default:
+        print('⚠️ DashboardBloc: Unknown backend status: $backendStatus, defaulting to pending');
+        return DeliveryStatus.pending;
+    }
+  }
 }
 
 // Data models (these would normally be in the domain layer)
@@ -251,4 +353,4 @@ class DeliveryOrder {
   }
 }
 
-enum DeliveryStatus { pending, accepted, pickedUp, inTransit, delivered } 
+enum DeliveryStatus { pending, readyForPickup, accepted, pickedUp, inTransit, delivered } 

@@ -487,7 +487,7 @@ class _DashboardPageState extends State<DashboardPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Recent Activity',
+          'My Active Deliveries',
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -499,7 +499,7 @@ class _DashboardPageState extends State<DashboardPage> {
               padding: const EdgeInsets.all(24),
               child: Center(
                 child: Text(
-                  'No recent deliveries',
+                  'No active deliveries',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
@@ -512,16 +512,20 @@ class _DashboardPageState extends State<DashboardPage> {
             (delivery) => Card(
               margin: const EdgeInsets.only(bottom: 8),
               child: ListTile(
+                onTap: () {
+                  // Navigate to delivery details
+                  context.go('/delivery/${delivery.id}');
+                },
                 leading: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
+                    color: _getStatusColor(delivery.status).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
+                  child: Icon(
+                    _getStatusIcon(delivery.status),
+                    color: _getStatusColor(delivery.status),
                     size: 20,
                   ),
                 ),
@@ -531,9 +535,21 @@ class _DashboardPageState extends State<DashboardPage> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                subtitle: Text(
-                  'Delivered at ${DateFormat('h:mm a').format(delivery.deliveredAt!)}',
-                  style: theme.textTheme.bodySmall,
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      delivery.customerName,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    Text(
+                      _getStatusText(delivery.status),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: _getStatusColor(delivery.status),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
                 trailing: Text(
                   '\$${delivery.total.toStringAsFixed(2)}',
@@ -547,5 +563,56 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
       ],
     );
+  }
+
+  Color _getStatusColor(DeliveryStatus status) {
+    switch (status) {
+      case DeliveryStatus.readyForPickup:
+        return Colors.orange;
+      case DeliveryStatus.accepted:
+        return Colors.blue;
+      case DeliveryStatus.pickedUp:
+        return Colors.purple;
+      case DeliveryStatus.inTransit:
+        return Colors.green;
+      case DeliveryStatus.delivered:
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getStatusIcon(DeliveryStatus status) {
+    switch (status) {
+      case DeliveryStatus.readyForPickup:
+        return Icons.restaurant;
+      case DeliveryStatus.accepted:
+        return Icons.check_circle;
+      case DeliveryStatus.pickedUp:
+        return Icons.local_shipping;
+      case DeliveryStatus.inTransit:
+        return Icons.directions_car;
+      case DeliveryStatus.delivered:
+        return Icons.check_circle;
+      default:
+        return Icons.pending;
+    }
+  }
+
+  String _getStatusText(DeliveryStatus status) {
+    switch (status) {
+      case DeliveryStatus.readyForPickup:
+        return 'Ready for pickup';
+      case DeliveryStatus.accepted:
+        return 'Accepted';
+      case DeliveryStatus.pickedUp:
+        return 'Picked up';
+      case DeliveryStatus.inTransit:
+        return 'In transit';
+      case DeliveryStatus.delivered:
+        return 'Delivered';
+      default:
+        return 'Pending';
+    }
   }
 } 

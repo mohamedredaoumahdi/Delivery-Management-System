@@ -302,12 +302,23 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
               ],
             ),
             const SizedBox(height: 16),
-            Text(
-              '\$${data.totalEarnings.toStringAsFixed(2)}',
-              style: theme.textTheme.headlineLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Total Earnings',
+                    style: theme.textTheme.bodyLarge,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '\$${data.totalEarnings.toStringAsFixed(2)}',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Row(
@@ -916,11 +927,15 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
                   color: Colors.amber,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Achievement: Top Performer This Week! 🏆',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.amber.shade700,
+                Expanded(
+                  child: Text(
+                    'Achievement: Top Performer This Week! 🏆',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.amber.shade700,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

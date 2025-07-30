@@ -22,8 +22,11 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     print('🚀 DeliveryBloc: LoadAvailableEvent received');
     print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
     
-    emit(const DeliveryLoading());
-    print('📊 DeliveryBloc: State updated to DeliveryLoading');
+    // Only emit loading if not already in a loading state
+    if (state is! DeliveryLoading) {
+      emit(const DeliveryLoading());
+      print('📊 DeliveryBloc: State updated to DeliveryLoading');
+    }
 
     try {
       print('🔄 DeliveryBloc: Calling deliveryService.getAvailableOrders()');
@@ -39,12 +42,34 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
         final shopName = orderData['shopName'] ?? orderData['shop_name'] ?? 'Unknown Shop';
         final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
         final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
+        final backendStatus = orderData['status'] ?? 'PENDING';
         
         print('🔄 DeliveryBloc: Converting order data: ${orderData['id']}');
         print('   Customer: $customerName');
         print('   Shop: $shopName');
         print('   Order: $orderNumber');
         print('   Address: $deliveryAddress');
+        print('   Backend Status: $backendStatus');
+        
+        // Map backend status to delivery status
+        final deliveryStatus = _mapBackendStatusToDeliveryStatus(backendStatus);
+        print('   Mapped to Delivery Status: $deliveryStatus');
+        
+        // Parse order items
+        final itemsData = orderData['items'] as List<dynamic>? ?? [];
+        final orderItems = itemsData.map((itemData) {
+          return OrderItem(
+            name: itemData['productName'] ?? 'Unknown Item',
+            quantity: itemData['quantity'] ?? 1,
+            price: (itemData['productPrice'] ?? 0).toDouble(),
+            totalPrice: (itemData['totalPrice'] ?? 0).toDouble(),
+          );
+        }).toList();
+        
+        print('   Order Items: ${orderItems.length} items');
+        for (final item in orderItems) {
+          print('     - ${item.quantity}x ${item.name} @ \$${item.price} = \$${item.totalPrice}');
+        }
         
         final deliveryOrder = DeliveryOrder(
           id: orderData['id'] ?? '',
@@ -53,10 +78,13 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
           deliveryAddress: deliveryAddress,
           total: (orderData['total'] ?? 0).toDouble(),
           distance: 2.0, // TODO: Calculate actual distance
-          status: DeliveryStatus.pending,
+          status: deliveryStatus,
+          items: orderItems,
+          shopName: shopName,
+          pickupAddress: orderData['shop']?['address'] ?? 'Unknown Address',
         );
         
-        print('✅ DeliveryBloc: Converted to DeliveryOrder: Customer=$customerName, Address=$deliveryAddress, Total=\$${deliveryOrder.total}');
+        print('✅ DeliveryBloc: Converted to DeliveryOrder: Customer=$customerName, Address=$deliveryAddress, Total=\$${deliveryOrder.total}, Status=$deliveryStatus, Items=${orderItems.length}');
         return deliveryOrder;
       }).toList();
       
@@ -66,15 +94,12 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
       emit(DeliveryLoaded(deliveries));
       
       print('✅ DeliveryBloc: Successfully emitted DeliveryLoaded with ${deliveries.length} deliveries');
-      
+
     } catch (error) {
-      print('❌ DeliveryBloc: Error occurred while loading available orders');
-      print('❌ DeliveryBloc: Error details: $error');
+      print('❌ DeliveryBloc: Error loading available orders: $error');
       print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
-      
       emit(DeliveryError(error.toString()));
-      
-      print('📊 DeliveryBloc: Error state emitted with message: $error');
+      print('📊 DeliveryBloc: Emitted DeliveryError state: $error');
     }
   }
 
@@ -99,12 +124,34 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
       final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
       final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
       final total = (orderData['total'] ?? 0).toDouble();
+      final backendStatus = orderData['status'] ?? 'PENDING';
       
       print('🔄 DeliveryBloc: Converting order details:');
       print('   Customer: $customerName');
       print('   Order: $orderNumber');
       print('   Address: $deliveryAddress');
       print('   Total: \$${total}');
+      print('   Backend Status: $backendStatus');
+      
+      // Map backend status to delivery status
+      final deliveryStatus = _mapBackendStatusToDeliveryStatus(backendStatus);
+      print('   Mapped to Delivery Status: $deliveryStatus');
+      
+      // Parse order items from the detailed response
+      final itemsData = orderData['items'] as List<dynamic>? ?? [];
+      final orderItems = itemsData.map((itemData) {
+        return OrderItem(
+          name: itemData['productName'] ?? itemData['product']?['name'] ?? 'Unknown Item',
+          quantity: itemData['quantity'] ?? 1,
+          price: (itemData['productPrice'] ?? itemData['product']?['price'] ?? 0).toDouble(),
+          totalPrice: (itemData['totalPrice'] ?? 0).toDouble(),
+        );
+      }).toList();
+      
+      print('   Order Items: ${orderItems.length} items');
+      for (final item in orderItems) {
+        print('     - ${item.quantity}x ${item.name} @ \$${item.price} = \$${item.totalPrice}');
+      }
       
       final delivery = DeliveryOrder(
         id: event.deliveryId,
@@ -113,7 +160,10 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
         deliveryAddress: deliveryAddress,
         total: total,
         distance: 2.0, // TODO: Calculate actual distance
-        status: DeliveryStatus.pending,
+        status: deliveryStatus,
+        items: orderItems,
+        shopName: orderData['shopName'] ?? orderData['shop']?['name'] ?? 'Unknown Restaurant',
+        pickupAddress: orderData['shop']?['address'] ?? 'Unknown Address',
       );
       
       print('✅ DeliveryBloc: Converted to DeliveryOrder successfully');
@@ -146,6 +196,9 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
       emit(const DeliveryAccepted());
       print('📊 DeliveryBloc: Emitted DeliveryAccepted state');
       
+      // Wait a moment before refreshing to allow backend to update
+      await Future.delayed(const Duration(milliseconds: 500));
+      
       // Refresh available orders list
       print('🔄 DeliveryBloc: Refreshing available orders after acceptance');
       add(const DeliveryLoadAvailableEvent());
@@ -171,6 +224,26 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
       emit(DeliveryError(error.toString()));
     }
   }
+
+  /// Maps backend order status to delivery app status
+  DeliveryStatus _mapBackendStatusToDeliveryStatus(String backendStatus) {
+    switch (backendStatus.toUpperCase()) {
+      case 'READY_FOR_PICKUP':
+        return DeliveryStatus.readyForPickup; // Order is ready for driver to pick up
+      case 'PICKED_UP':
+      case 'IN_DELIVERY':
+        return DeliveryStatus.pickedUp; // Driver has picked up the order
+      case 'ON_THE_WAY':
+        return DeliveryStatus.inTransit; // Driver is on the way to customer
+      case 'DELIVERED':
+        return DeliveryStatus.delivered; // Order has been delivered
+      case 'ACCEPTED':
+        return DeliveryStatus.accepted; // Driver accepted the order
+      default:
+        print('⚠️ DeliveryBloc: Unknown backend status: $backendStatus, defaulting to pending');
+        return DeliveryStatus.pending;
+    }
+  }
 }
 
 // Mock data models (these would normally be in domain layer)
@@ -183,6 +256,9 @@ class DeliveryOrder {
   final double distance;
   final DeliveryStatus status;
   final DateTime? deliveredAt;
+  final List<OrderItem> items;
+  final String shopName;
+  final String pickupAddress;
 
   const DeliveryOrder({
     required this.id,
@@ -193,7 +269,24 @@ class DeliveryOrder {
     required this.distance,
     required this.status,
     this.deliveredAt,
+    this.items = const [],
+    this.shopName = 'Unknown Restaurant',
+    this.pickupAddress = 'Unknown Address',
   });
 }
 
-enum DeliveryStatus { pending, accepted, pickedUp, inTransit, delivered } 
+class OrderItem {
+  final String name;
+  final int quantity;
+  final double price;
+  final double totalPrice;
+
+  const OrderItem({
+    required this.name,
+    required this.quantity,
+    required this.price,
+    required this.totalPrice,
+  });
+}
+
+enum DeliveryStatus { pending, readyForPickup, accepted, pickedUp, inTransit, delivered } 

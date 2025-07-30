@@ -10,6 +10,7 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/delivery/presentation/bloc/delivery_bloc.dart';
 import 'features/location/presentation/bloc/location_bloc.dart';
 import 'features/earnings/presentation/bloc/earnings_bloc.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
 
 void main() async {
   print('🚀 DeliveryApp: Starting application initialization');
@@ -71,22 +72,37 @@ class DeliveryApp extends StatelessWidget {
         BlocProvider<EarningsBloc>(
           create: (context) => getIt<EarningsBloc>(),
         ),
+        BlocProvider<ProfileBloc>(
+          create: (context) {
+            print('🔧 DeliveryApp: Creating ProfileBloc');
+            return getIt<ProfileBloc>();
+          },
+        ),
       ],
-      child: MaterialApp.router(
-        title: 'Delivery Driver',
-        theme: DeliveryAppTheme.lightTheme,
-        darkTheme: DeliveryAppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        routerConfig: AppRouter.router,
-        debugShowCheckedModeBanner: false,
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: const TextScaler.linear(1.0),
-            ),
-            child: child!,
-          );
+      child: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          print('🎧 DeliveryApp: Auth state changed to ${state.runtimeType}');
+          if (state is AuthUnauthenticated) {
+            print('🔓 DeliveryApp: User is unauthenticated, navigating to login');
+            AppRouter.router.go('/login');
+          }
         },
+        child: MaterialApp.router(
+          title: 'Delivery Driver',
+          theme: DeliveryAppTheme.lightTheme,
+          darkTheme: DeliveryAppTheme.darkTheme,
+          themeMode: ThemeMode.system,
+          routerConfig: AppRouter.router,
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: const TextScaler.linear(1.0),
+              ),
+              child: child!,
+            );
+          },
+        ),
       ),
     );
   }

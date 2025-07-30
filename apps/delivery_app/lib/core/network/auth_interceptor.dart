@@ -46,15 +46,23 @@ class AuthInterceptor extends Interceptor {
           final dio = Dio();
           dio.options.baseUrl = err.requestOptions.baseUrl;
           
+          final userId = _prefs.getString('userId');
           final response = await dio.post('/auth/refresh', data: {
             'refreshToken': refreshToken,
+            'userId': userId,
           });
           
           if (response.data['status'] == 'success') {
-            final newAccessToken = response.data['data']['accessToken'];
+            final data = response.data['data'];
+            final newAccessToken = data['accessToken'];
+            final newRefreshToken = data['refreshToken'];
+            
+            // Update both tokens
             await _prefs.setString('accessToken', newAccessToken);
+            await _prefs.setString('refreshToken', newRefreshToken);
             
             print('✅ AuthInterceptor: Token refreshed successfully');
+            print('🔐 AuthInterceptor: New token preview: ${newAccessToken.substring(0, 20)}...');
             
             // Retry the original request with new token
             final retryOptions = err.requestOptions;
@@ -69,10 +77,13 @@ class AuthInterceptor extends Interceptor {
         }
       }
       
-      // Clear tokens and redirect to login
+      // Clear all user data
       await _prefs.remove('accessToken');
       await _prefs.remove('refreshToken');
-      print('🔓 AuthInterceptor: Cleared tokens, user needs to login again');
+      await _prefs.remove('userId');
+      await _prefs.remove('userRole');
+      await _prefs.remove('userName');
+      print('🔓 AuthInterceptor: Cleared all user data, user needs to login again');
     }
     
     handler.next(err);
