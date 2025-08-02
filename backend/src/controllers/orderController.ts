@@ -217,16 +217,52 @@ export class OrderController {
   }
 
   async getOrderById(req: AuthenticatedRequest, res: Response) {
+    const user = req.user!;
+    
+    // Build the where clause based on user role
+    let whereClause: any = { id: req.params.id };
+    
+    if (user.role === 'CUSTOMER') {
+      // Customers can only see their own orders
+      whereClause.userId = user.id;
+    } else if (user.role === 'DELIVERY') {
+      // Delivery drivers can see orders assigned to them OR available orders
+      whereClause.OR = [
+        { deliveryPersonId: user.id },
+        { deliveryPersonId: null, status: 'READY_FOR_PICKUP' }
+      ];
+    } else if (user.role === 'VENDOR') {
+      // Vendors can see orders for their shops
+      const vendorShops = await prisma.shop.findMany({
+        where: { ownerId: user.id },
+        select: { id: true }
+      });
+      const shopIds = vendorShops.map(shop => shop.id);
+      whereClause.shopId = { in: shopIds };
+    } else if (user.role === 'ADMIN') {
+      // Admins can see all orders
+      // No additional filtering needed
+    }
+
     const order = await prisma.order.findFirst({
-      where: {
-        id: req.params.id,
-        userId: req.user!.id
-      },
+      where: whereClause,
       include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        },
         shop: {
           select: {
+            id: true,
             name: true,
-            address: true
+            address: true,
+            phone: true,
+            latitude: true,
+            longitude: true
           }
         },
         items: {
@@ -238,6 +274,13 @@ export class OrderController {
               }
             }
           }
+        },
+        deliveryPerson: {
+          select: {
+            id: true,
+            name: true,
+            phone: true
+          }
         }
       }
     });
@@ -246,7 +289,7 @@ export class OrderController {
       throw new AppError('Order not found', 404);
     }
 
-    res.json(order);
+    res.json({ status: 'success', data: order });
   }
 
   async cancelOrder(req: AuthenticatedRequest, res: Response) {
