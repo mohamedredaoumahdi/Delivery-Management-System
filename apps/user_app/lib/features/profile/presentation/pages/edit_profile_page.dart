@@ -277,9 +277,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  color: theme.colorScheme.primary.withValues(alpha:0.1),
                   border: Border.all(
-                    color: theme.colorScheme.primary.withOpacity(0.2),
+                    color: theme.colorScheme.primary.withValues(alpha:0.2),
                     width: 3,
                   ),
                 ),
@@ -464,7 +464,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               Text(
                 label,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                 ),
               ),
               const SizedBox(height: 2),

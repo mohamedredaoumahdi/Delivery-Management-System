@@ -25,18 +25,18 @@ class ShopListItem extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.surface,
-            theme.colorScheme.surface.withOpacity(0.9),
+            theme.colorScheme.surface.withValues(alpha:0.9),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.05),
+            color: theme.colorScheme.primary.withValues(alpha:0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
             spreadRadius: 0,
           ),
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.03),
+            color: theme.colorScheme.shadow.withValues(alpha:0.03),
             blurRadius: 6,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -58,7 +58,7 @@ class ShopListItem extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        color: theme.colorScheme.primary.withValues(alpha:0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -81,8 +81,8 @@ class ShopListItem extends StatelessWidget {
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                       colors: [
-                                        theme.colorScheme.primary.withOpacity(0.1),
-                                        theme.colorScheme.primary.withOpacity(0.05),
+                                        theme.colorScheme.primary.withValues(alpha:0.1),
+                                        theme.colorScheme.primary.withValues(alpha:0.05),
                                       ],
                                     ),
                                   ),
@@ -101,8 +101,8 @@ class ShopListItem extends StatelessWidget {
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  theme.colorScheme.primary.withOpacity(0.1),
-                                  theme.colorScheme.primary.withOpacity(0.05),
+                                  theme.colorScheme.primary.withValues(alpha:0.1),
+                                  theme.colorScheme.primary.withValues(alpha:0.05),
                                 ],
                               ),
                             ),
@@ -182,7 +182,7 @@ class ShopListItem extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(3),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withOpacity(0.1),
+                              color: theme.colorScheme.primary.withValues(alpha:0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Icon(
@@ -195,7 +195,7 @@ class ShopListItem extends StatelessWidget {
                     Text(
                       _getCategoryName(shop.category),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.8),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.8),
                               fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -203,14 +203,14 @@ class ShopListItem extends StatelessWidget {
                     Icon(
                       Icons.location_on_outlined,
                             size: 12,
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                     ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         shop.address,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -293,10 +293,10 @@ class ShopListItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.06),
+        color: theme.colorScheme.primary.withValues(alpha:0.06),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.2),
+          color: theme.colorScheme.primary.withValues(alpha:0.2),
           width: 0.5,
         ),
       ),
@@ -312,7 +312,7 @@ class ShopListItem extends StatelessWidget {
           Text(
             text,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.8),
+              color: theme.colorScheme.onSurface.withValues(alpha:0.8),
               fontWeight: FontWeight.w500,
             ),
           ),

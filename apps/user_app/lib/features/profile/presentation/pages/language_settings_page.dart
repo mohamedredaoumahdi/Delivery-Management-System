@@ -54,8 +54,8 @@ class LanguageSettingsPage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.colorScheme.primary.withOpacity(0.1),
-            theme.colorScheme.primary.withOpacity(0.05),
+            theme.colorScheme.primary.withValues(alpha:0.1),
+            theme.colorScheme.primary.withValues(alpha:0.05),
           ],
         ),
       ),
@@ -70,8 +70,8 @@ class LanguageSettingsPage extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.2),
-                  theme.colorScheme.primary.withOpacity(0.1),
+                  theme.colorScheme.primary.withValues(alpha:0.2),
+                  theme.colorScheme.primary.withValues(alpha:0.1),
                 ],
               ),
             ),
@@ -96,7 +96,7 @@ class LanguageSettingsPage extends StatelessWidget {
                 Text(
                   l10n.selectPreferredLanguage,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                   ),
                 ),
               ],
@@ -119,7 +119,7 @@ class LanguageSettingsPage extends StatelessWidget {
             color: theme.colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.shadow.withOpacity(0.05),
+                color: theme.colorScheme.shadow.withValues(alpha:0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -165,7 +165,7 @@ class LanguageSettingsPage extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.1),
+            color: theme.colorScheme.outline.withValues(alpha:0.1),
             width: 1,
           ),
         ),
@@ -193,7 +193,7 @@ class LanguageSettingsPage extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    color: theme.colorScheme.primary.withValues(alpha:0.1),
                   ),
                   child: Center(
                     child: Text(
@@ -222,7 +222,7 @@ class LanguageSettingsPage extends StatelessWidget {
                       Text(
                         nativeName,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                         ),
                       ),
                     ],
@@ -251,7 +251,7 @@ class LanguageSettingsPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(0.3),
+                        color: theme.colorScheme.outline.withValues(alpha:0.3),
                         width: 2,
                       ),
                     ),
@@ -271,9 +271,9 @@ class LanguageSettingsPage extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: theme.colorScheme.primary.withOpacity(0.05),
+        color: theme.colorScheme.primary.withValues(alpha:0.05),
         border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.2),
+          color: theme.colorScheme.primary.withValues(alpha:0.2),
           width: 1,
         ),
       ),
@@ -301,7 +301,7 @@ class LanguageSettingsPage extends StatelessWidget {
                 Text(
                   'The language change will take effect immediately. Some features may not be fully translated yet.',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                   ),
                 ),
               ],

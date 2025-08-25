@@ -155,15 +155,15 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                     end: Alignment.bottomRight,
                     colors: [
                       theme.colorScheme.primary,
-                      theme.colorScheme.primary.withOpacity(0.8),
+                      theme.colorScheme.primary.withValues(alpha:0.8),
                     ],
                   )
                 : null,
-            color: isSelected ? null : theme.colorScheme.surfaceContainerHighest.withOpacity(0.7),
+            color: isSelected ? null : theme.colorScheme.surfaceContainerHighest.withValues(alpha:0.7),
             borderRadius: BorderRadius.circular(20),
             boxShadow: isSelected ? [
               BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.3),
+                color: theme.colorScheme.primary.withValues(alpha:0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -171,7 +171,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
             border: Border.all(
               color: isSelected 
                   ? Colors.transparent 
-                  : theme.colorScheme.outline.withOpacity(0.2),
+                  : theme.colorScheme.outline.withValues(alpha:0.2),
               width: 1,
             ),
           ),
@@ -180,7 +180,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
             style: theme.textTheme.bodyMedium?.copyWith(
               color: isSelected 
                   ? Colors.white 
-                  : theme.colorScheme.onSurface.withOpacity(0.8),
+                  : theme.colorScheme.onSurface.withValues(alpha:0.8),
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
@@ -263,7 +263,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.transparent,
-                                  Colors.black.withOpacity(0.7),
+                                  Colors.black.withValues(alpha:0.7),
                                 ],
                               ),
                             ),
@@ -349,13 +349,13 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.06),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha:0.06),
                 blurRadius: 12,
                 offset: const Offset(0, 2),
                 spreadRadius: 0,
               ),
               BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha:0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 1),
                 spreadRadius: 0,
@@ -368,10 +368,10 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
               Container(
                 height: 52,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha:0.5),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.outline.withValues(alpha:0.1),
                     width: 1,
                   ),
                 ),
@@ -390,7 +390,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                         decoration: InputDecoration(
                 hintText: 'Search products...',
                           hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.6),
                           ),
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
@@ -416,7 +416,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                           padding: const EdgeInsets.all(8),
                           child: Icon(
                             Icons.close_rounded,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.5),
                             size: 18,
                           ),
                         ),
@@ -426,7 +426,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                         padding: const EdgeInsets.all(8),
                         child: Icon(
                           Icons.tune_rounded,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.4),
                           size: 18,
                         ),
                       ),
@@ -762,7 +762,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                 Text(
                   label,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -779,7 +779,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
             Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
+              color: theme.colorScheme.onSurface.withValues(alpha:0.4),
             ),
         ],
       ),
@@ -799,7 +799,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
               Icon(
                 Icons.inventory_2_outlined,
                 size: 80,
-                color: theme.colorScheme.primary.withOpacity(0.7),
+                color: theme.colorScheme.primary.withValues(alpha:0.7),
               ),
               const SizedBox(height: 24),
               Text(
@@ -816,7 +816,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                     : 'This shop doesn\'t have any products available at the moment.',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                 ),
               ),
               if (_isSearching) ...[

@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          theme.colorScheme.primary.withOpacity(0.05),
+                          theme.colorScheme.primary.withValues(alpha:0.05),
                           theme.colorScheme.surface,
                         ],
                       ),
@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                                   Text(
                                     'What would you like to order today?',
                                     style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                      color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                                     ),
                                   ),
                                 ],
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: theme.colorScheme.primary.withOpacity(0.15),
+                                    color: theme.colorScheme.primary.withValues(alpha:0.15),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -157,8 +157,8 @@ class _HomePageState extends State<HomePage> {
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                       colors: [
-                                        theme.colorScheme.primary.withOpacity(0.1),
-                                        theme.colorScheme.primary.withOpacity(0.05),
+                                        theme.colorScheme.primary.withValues(alpha:0.1),
+                                        theme.colorScheme.primary.withValues(alpha:0.05),
                                       ],
                                     ),
                                   ),
@@ -257,7 +257,7 @@ class _HomePageState extends State<HomePage> {
                   end: Alignment.bottomCenter,
                   colors: [
                     theme.colorScheme.primary,
-                    theme.colorScheme.primary.withOpacity(0.5),
+                    theme.colorScheme.primary.withValues(alpha:0.5),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(2),
@@ -280,7 +280,7 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                       ),
                     ),
                   ],
@@ -295,8 +295,8 @@ class _HomePageState extends State<HomePage> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      theme.colorScheme.primary.withOpacity(0.1),
-                      theme.colorScheme.primary.withOpacity(0.05),
+                      theme.colorScheme.primary.withValues(alpha:0.1),
+                      theme.colorScheme.primary.withValues(alpha:0.05),
                     ],
                   ),
                 ),

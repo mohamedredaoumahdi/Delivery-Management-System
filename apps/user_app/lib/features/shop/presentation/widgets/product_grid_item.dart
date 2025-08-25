@@ -26,18 +26,18 @@ class ProductGridItem extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.surface,
-            theme.colorScheme.surface.withOpacity(0.95),
+            theme.colorScheme.surface.withValues(alpha:0.95),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.08),
+            color: theme.colorScheme.primary.withValues(alpha:0.08),
             blurRadius: 20,
             offset: const Offset(0, 6),
             spreadRadius: 0,
           ),
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.05),
+            color: theme.colorScheme.shadow.withValues(alpha:0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -89,7 +89,7 @@ class ProductGridItem extends StatelessWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.1),
+                              Colors.black.withValues(alpha:0.1),
                             ],
                           ),
                         ),
@@ -105,7 +105,7 @@ class ProductGridItem extends StatelessWidget {
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20),
                             ),
-                            color: Colors.black.withOpacity(0.7),
+                            color: Colors.black.withValues(alpha:0.7),
                           ),
                           child: const Center(
                             child: Text(
@@ -134,7 +134,7 @@ class ProductGridItem extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.red.withOpacity(0.3),
+                                color: Colors.red.withValues(alpha:0.3),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
@@ -159,7 +159,7 @@ class ProductGridItem extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
+                            color: Colors.black.withValues(alpha:0.7),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Row(
@@ -223,7 +223,7 @@ class ProductGridItem extends StatelessWidget {
                                   '\$${product.price.toStringAsFixed(2)}',
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     decoration: TextDecoration.lineThrough,
-                                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                      color: theme.colorScheme.onSurface.withValues(alpha:0.5),
                                     ),
                                   ),
                                 Text(
@@ -256,17 +256,17 @@ class ProductGridItem extends StatelessWidget {
                                       end: Alignment.bottomRight,
                                       colors: [
                                         theme.colorScheme.primary,
-                                        theme.colorScheme.primary.withOpacity(0.8),
+                                        theme.colorScheme.primary.withValues(alpha:0.8),
                                       ],
                                     )
                                   : null,
                               color: product.inStock 
                                   ? null 
-                                  : theme.colorScheme.outline.withOpacity(0.3),
+                                  : theme.colorScheme.outline.withValues(alpha:0.3),
                               borderRadius: BorderRadius.circular(22),
                               boxShadow: product.inStock ? [
                                 BoxShadow(
-                                  color: theme.colorScheme.primary.withOpacity(0.3),
+                                  color: theme.colorScheme.primary.withValues(alpha:0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -284,7 +284,7 @@ class ProductGridItem extends StatelessWidget {
                                         : Icons.block,
                                     color: product.inStock 
                                         ? Colors.white 
-                                        : theme.colorScheme.onSurface.withOpacity(0.5),
+                                        : theme.colorScheme.onSurface.withValues(alpha:0.5),
                                     size: 20,
                                   ),
                                 ),
@@ -312,8 +312,8 @@ class ProductGridItem extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.colorScheme.primary.withOpacity(0.1),
-            theme.colorScheme.primary.withOpacity(0.05),
+            theme.colorScheme.primary.withValues(alpha:0.1),
+            theme.colorScheme.primary.withValues(alpha:0.05),
           ],
         ),
       ),
@@ -322,7 +322,7 @@ class ProductGridItem extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withValues(alpha:0.1),
           ),
           child: Icon(
             Icons.fastfood_outlined,

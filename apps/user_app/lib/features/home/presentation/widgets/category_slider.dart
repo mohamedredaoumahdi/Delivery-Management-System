@@ -80,27 +80,27 @@ class CategorySlider extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    color.withOpacity(0.15),
-                    color.withOpacity(0.08),
+                    color.withValues(alpha:0.15),
+                    color.withValues(alpha:0.08),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.15),
+                    color: color.withValues(alpha:0.15),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                     spreadRadius: 0,
               ),
                   BoxShadow(
-                    color: theme.colorScheme.shadow.withOpacity(0.05),
+                    color: theme.colorScheme.shadow.withValues(alpha:0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                     spreadRadius: 0,
                   ),
                 ],
                 border: Border.all(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha:0.2),
                   width: 1,
                 ),
               ),
@@ -115,7 +115,7 @@ class CategorySlider extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.white.withOpacity(0.1),
+                            Colors.white.withValues(alpha:0.1),
                             Colors.transparent,
                           ],
                         ),

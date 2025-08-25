@@ -26,18 +26,18 @@ class ShopCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.surface,
-            theme.colorScheme.surface.withOpacity(0.8),
+            theme.colorScheme.surface.withValues(alpha:0.8),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.08),
+            color: theme.colorScheme.primary.withValues(alpha:0.08),
             blurRadius: 24,
             offset: const Offset(0, 8),
             spreadRadius: 0,
           ),
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.05),
+            color: theme.colorScheme.shadow.withValues(alpha:0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -78,8 +78,8 @@ class ShopCard extends StatelessWidget {
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                           colors: [
-                                            theme.colorScheme.primary.withOpacity(0.1),
-                                            theme.colorScheme.primary.withOpacity(0.05),
+                                            theme.colorScheme.primary.withValues(alpha:0.1),
+                                            theme.colorScheme.primary.withValues(alpha:0.05),
                                           ],
                                         ),
                                       ),
@@ -94,8 +94,8 @@ class ShopCard extends StatelessWidget {
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      theme.colorScheme.primary.withOpacity(0.1),
-                                      theme.colorScheme.primary.withOpacity(0.05),
+                                      theme.colorScheme.primary.withValues(alpha:0.1),
+                                      theme.colorScheme.primary.withValues(alpha:0.05),
                                     ],
                                   ),
                                 ),
@@ -114,7 +114,7 @@ class ShopCard extends StatelessWidget {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.transparent,
-                                  Colors.black.withOpacity(0.1),
+                                  Colors.black.withValues(alpha:0.1),
                                 ],
                               ),
                             ),
@@ -137,13 +137,13 @@ class ShopCard extends StatelessWidget {
                             end: Alignment.bottomRight,
                             colors: [
                               theme.colorScheme.primary,
-                              theme.colorScheme.primary.withOpacity(0.8),
+                              theme.colorScheme.primary.withValues(alpha:0.8),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: theme.colorScheme.primary.withOpacity(0.3),
+                              color: theme.colorScheme.primary.withValues(alpha:0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -184,7 +184,7 @@ class ShopCard extends StatelessWidget {
                       ),
                           boxShadow: [
                             BoxShadow(
-                              color: theme.colorScheme.shadow.withOpacity(0.2),
+                              color: theme.colorScheme.shadow.withValues(alpha:0.2),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -207,7 +207,7 @@ class ShopCard extends StatelessWidget {
                                       end: Alignment.bottomRight,
                                       colors: [
                                         theme.colorScheme.primary,
-                                        theme.colorScheme.primary.withOpacity(0.8),
+                                        theme.colorScheme.primary.withValues(alpha:0.8),
                                       ],
                                     ),
                                   ),
@@ -253,13 +253,13 @@ class ShopCard extends StatelessWidget {
                           end: Alignment.bottomRight,
                           colors: [
                             theme.colorScheme.primary,
-                            theme.colorScheme.primary.withOpacity(0.8),
+                            theme.colorScheme.primary.withValues(alpha:0.8),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.colorScheme.primary.withOpacity(0.2),
+                            color: theme.colorScheme.primary.withValues(alpha:0.2),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -294,7 +294,7 @@ class ShopCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        color: theme.colorScheme.primary.withValues(alpha:0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Icon(
@@ -308,7 +308,7 @@ class ShopCard extends StatelessWidget {
                       child: Text(
                         shop.address,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -400,10 +400,10 @@ class ShopCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.08),
+        color: theme.colorScheme.primary.withValues(alpha:0.08),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.2),
+          color: theme.colorScheme.primary.withValues(alpha:0.2),
           width: 0.5,
         ),
       ),
@@ -419,7 +419,7 @@ class ShopCard extends StatelessWidget {
           Text(
             text,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.8),
+              color: theme.colorScheme.onSurface.withValues(alpha:0.8),
               fontWeight: FontWeight.w500,
             ),
           ),

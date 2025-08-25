@@ -127,8 +127,8 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.colorScheme.primary.withOpacity(0.1),
-            theme.colorScheme.primary.withOpacity(0.05),
+            theme.colorScheme.primary.withValues(alpha:0.1),
+            theme.colorScheme.primary.withValues(alpha:0.05),
           ],
         ),
       ),
@@ -143,8 +143,8 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.2),
-                  theme.colorScheme.primary.withOpacity(0.1),
+                  theme.colorScheme.primary.withValues(alpha:0.2),
+                  theme.colorScheme.primary.withValues(alpha:0.1),
                 ],
               ),
             ),
@@ -169,7 +169,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                 Text(
                   'Select your preferred app appearance',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                   ),
                 ),
               ],
@@ -227,12 +227,12 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
         border: Border.all(
           color: isSelected 
               ? theme.colorScheme.primary 
-              : theme.colorScheme.outline.withOpacity(0.2),
+              : theme.colorScheme.outline.withValues(alpha:0.2),
           width: isSelected ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.05),
+            color: theme.colorScheme.shadow.withValues(alpha:0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -254,14 +254,14 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isSelected 
-                        ? theme.colorScheme.primary.withOpacity(0.15)
-                        : theme.colorScheme.primary.withOpacity(0.1),
+                        ? theme.colorScheme.primary.withValues(alpha:0.15)
+                        : theme.colorScheme.primary.withValues(alpha:0.1),
                   ),
                   child: Icon(
                     icon,
                     color: isSelected 
                         ? theme.colorScheme.primary 
-                        : theme.colorScheme.primary.withOpacity(0.7),
+                        : theme.colorScheme.primary.withValues(alpha:0.7),
                     size: 24,
                   ),
                 ),
@@ -285,7 +285,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                       Text(
                         description,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                         ),
                       ),
                     ],
@@ -321,7 +321,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(0.3),
+                        color: theme.colorScheme.outline.withValues(alpha:0.3),
                         width: 2,
                       ),
                     ),
@@ -342,7 +342,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
         borderRadius: BorderRadius.circular(8),
         color: colors['background'],
         border: Border.all(
-          color: Colors.grey.withOpacity(0.3),
+          color: Colors.grey.withValues(alpha:0.3),
           width: 1,
         ),
       ),
@@ -405,7 +405,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
               height: 2,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(1),
-                color: (colors['text'] as Color).withOpacity(0.5),
+                color: (colors['text'] as Color).withValues(alpha:0.5),
               ),
             ),
           ),
@@ -421,9 +421,9 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: theme.colorScheme.primary.withOpacity(0.05),
+        color: theme.colorScheme.primary.withValues(alpha:0.05),
         border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.2),
+          color: theme.colorScheme.primary.withValues(alpha:0.2),
           width: 1,
         ),
       ),
@@ -451,7 +451,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                 Text(
                   'System theme automatically switches between light and dark modes based on your device settings.',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                   ),
                 ),
               ],

@@ -79,13 +79,13 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
             borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.06),
+                color: theme.colorScheme.primary.withValues(alpha:0.06),
                 blurRadius: 12,
                 offset: const Offset(0, 2),
                 spreadRadius: 0,
               ),
               BoxShadow(
-                color: theme.colorScheme.shadow.withOpacity(0.03),
+                color: theme.colorScheme.shadow.withValues(alpha:0.03),
               blurRadius: 8,
                 offset: const Offset(0, 1),
                 spreadRadius: 0,
@@ -93,8 +93,8 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
           ],
           border: Border.all(
               color: _focusNode.hasFocus 
-                ? theme.colorScheme.primary.withOpacity(0.3)
-                : theme.colorScheme.outline.withOpacity(0.1),
+                ? theme.colorScheme.primary.withValues(alpha:0.3)
+                : theme.colorScheme.outline.withValues(alpha:0.1),
               width: 1.2,
             ),
           ),
@@ -108,8 +108,8 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      theme.colorScheme.primary.withOpacity(0.15),
-                      theme.colorScheme.primary.withOpacity(0.08),
+                      theme.colorScheme.primary.withValues(alpha:0.15),
+                      theme.colorScheme.primary.withValues(alpha:0.08),
                     ],
                   ),
                 ),
@@ -127,7 +127,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
                   decoration: InputDecoration(
                     hintText: 'Search for shops and products',
                     hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                       fontWeight: FontWeight.w500,
                     ),
                     border: InputBorder.none,
@@ -160,14 +160,14 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
                   onTap: _clearSearch,
                   child: Icon(
                     Icons.close,
-                    color: theme.colorScheme.onSurface.withOpacity(0.4),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.4),
                     size: 20,
                   ),
                 )
               else
                 Icon(
                   Icons.tune,
-                  color: theme.colorScheme.onSurface.withOpacity(0.4),
+                  color: theme.colorScheme.onSurface.withValues(alpha:0.4),
                   size: 20,
                 ),
             ],
@@ -184,7 +184,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: theme.colorScheme.shadow.withOpacity(0.1),
+                  color: theme.colorScheme.shadow.withValues(alpha:0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                   spreadRadius: 0,
@@ -226,7 +226,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
                           Text(
                             'Please try again',
                             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha:0.6),
             ),
                           ),
                         ],
@@ -244,7 +244,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
                           children: [
                             Icon(
                               Icons.search_off,
-                              color: theme.colorScheme.onSurface.withOpacity(0.5),
+                              color: theme.colorScheme.onSurface.withValues(alpha:0.5),
                               size: 32,
                             ),
                             const SizedBox(height: 8),
@@ -256,7 +256,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
             Text(
                               'Try a different search term',
                               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha:0.6),
               ),
             ),
           ],

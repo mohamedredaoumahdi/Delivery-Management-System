@@ -348,7 +348,7 @@ class _ShopListPageState extends State<ShopListPage> with TickerProviderStateMix
             Icon(
               widget.showNearby ? Icons.location_off : Icons.search_off,
               size: 80,
-              color: theme.colorScheme.primary.withOpacity(0.7),
+              color: theme.colorScheme.primary.withValues(alpha:0.7),
             ),
             const SizedBox(height: 24),
             Text(
@@ -371,7 +371,7 @@ class _ShopListPageState extends State<ShopListPage> with TickerProviderStateMix
                       : 'New shops will appear here when they become available.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha:0.7),
               ),
             ),
             const SizedBox(height: 32),

@@ -59,7 +59,7 @@ class DeliveryProgress extends StatelessWidget {
         Container(
           height: 4,
           decoration: BoxDecoration(
-            color: theme.colorScheme.outline.withOpacity(0.2),
+            color: theme.colorScheme.outline.withValues(alpha:0.2),
             borderRadius: BorderRadius.circular(2),
           ),
           child: FractionallySizedBox(
@@ -98,14 +98,14 @@ class DeliveryProgress extends StatelessWidget {
             decoration: BoxDecoration(
               color: isActive 
                   ? theme.colorScheme.primary 
-                  : theme.colorScheme.outline.withOpacity(0.2),
+                  : theme.colorScheme.outline.withValues(alpha:0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               step.icon,
               color: isActive 
                   ? Colors.white 
-                  : theme.colorScheme.onSurface.withOpacity(0.4),
+                  : theme.colorScheme.onSurface.withValues(alpha:0.4),
               size: 20,
             ),
           ),
@@ -122,7 +122,7 @@ class DeliveryProgress extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: isActive 
                         ? theme.colorScheme.onSurface 
-                        : theme.colorScheme.onSurface.withOpacity(0.6),
+                        : theme.colorScheme.onSurface.withValues(alpha:0.6),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -130,8 +130,8 @@ class DeliveryProgress extends StatelessWidget {
                   step.subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: isActive 
-                        ? theme.colorScheme.onSurface.withOpacity(0.7) 
-                        : theme.colorScheme.onSurface.withOpacity(0.4),
+                        ? theme.colorScheme.onSurface.withValues(alpha:0.7) 
+                        : theme.colorScheme.onSurface.withValues(alpha:0.4),
                   ),
                 ),
               ],

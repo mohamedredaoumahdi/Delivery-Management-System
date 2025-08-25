@@ -24,7 +24,7 @@ class EmptyOrders extends StatelessWidget {
             Icon(
               Icons.receipt_long_outlined,
               size: 80,
-              color: theme.colorScheme.primary.withOpacity(0.7),
+              color: theme.colorScheme.primary.withValues(alpha:0.7),
             ),
             const SizedBox(height: 24),
             Text(
@@ -39,7 +39,7 @@ class EmptyOrders extends StatelessWidget {
               subMessage,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha:0.7),
               ),
             ),
 

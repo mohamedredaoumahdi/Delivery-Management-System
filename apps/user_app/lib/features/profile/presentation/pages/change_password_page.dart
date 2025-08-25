@@ -352,8 +352,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     final theme = Theme.of(context);
 
     return AppCard(
-      backgroundColor: theme.colorScheme.primaryContainer.withOpacity(0.3),
-      borderColor: theme.colorScheme.primary.withOpacity(0.3),
+      backgroundColor: theme.colorScheme.primaryContainer.withValues(alpha:0.3),
+      borderColor: theme.colorScheme.primary.withValues(alpha:0.3),
       borderWidth: 1,
       child: Row(
         children: [
@@ -378,7 +378,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 Text(
                   'Choose a strong password to protect your account and personal information.',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.8),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.8),
                   ),
                 ),
               ],
@@ -416,7 +416,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         // Strength progress bar
         LinearProgressIndicator(
           value: _passwordStrength,
-          backgroundColor: theme.colorScheme.outline.withOpacity(0.2),
+          backgroundColor: theme.colorScheme.outline.withValues(alpha:0.2),
           valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
         ),
         
@@ -437,13 +437,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     Icon(
                       Icons.circle,
                       size: 6,
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       requirement,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                       ),
                     ),
                   ],
@@ -519,7 +519,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           child: Text(
             text,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.8),
+              color: theme.colorScheme.onSurface.withValues(alpha:0.8),
             ),
           ),
         ),

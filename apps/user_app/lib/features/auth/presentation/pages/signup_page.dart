@@ -102,7 +102,7 @@ class _SignupPageState extends State<SignupPage> {
                     Text(
                       'Fill in your details to create an account',
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                       ),
                     ),
                     const SizedBox(height: 32),

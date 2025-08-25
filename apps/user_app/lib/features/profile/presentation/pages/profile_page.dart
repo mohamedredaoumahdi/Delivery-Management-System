@@ -212,7 +212,7 @@ class ProfilePage extends StatelessWidget {
                     child: Text(
                   user.email,
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.75),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.75),
                         fontWeight: FontWeight.w500,
                         letterSpacing: 0.1,
                       ),
@@ -226,7 +226,7 @@ class ProfilePage extends StatelessWidget {
                   Text(
                     user.phone!,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                         fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -293,18 +293,18 @@ class ProfilePage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            color.withOpacity(0.15),
-            color.withOpacity(0.08),
+            color.withValues(alpha:0.15),
+            color.withValues(alpha:0.08),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha:0.3),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha:0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -348,7 +348,7 @@ class ProfilePage extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   theme.colorScheme.primary,
-                  theme.colorScheme.primary.withOpacity(0.6),
+                  theme.colorScheme.primary.withValues(alpha:0.6),
                 ],
               ),
               borderRadius: BorderRadius.circular(2),
@@ -545,12 +545,12 @@ class ProfilePage extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.surface,
-            theme.colorScheme.surface.withOpacity(0.8),
+            theme.colorScheme.surface.withValues(alpha:0.8),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.08),
+            color: theme.colorScheme.shadow.withValues(alpha:0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -566,7 +566,7 @@ class ProfilePage extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.1),
+                color: theme.colorScheme.outline.withValues(alpha:0.1),
                 width: 1,
               ),
             ),
@@ -581,14 +581,14 @@ class ProfilePage extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        theme.colorScheme.primary.withOpacity(0.15),
-                        theme.colorScheme.primary.withOpacity(0.05),
+                        theme.colorScheme.primary.withValues(alpha:0.15),
+                        theme.colorScheme.primary.withValues(alpha:0.05),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        color: theme.colorScheme.primary.withValues(alpha:0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -616,7 +616,7 @@ class ProfilePage extends StatelessWidget {
                 Text(
                   subtitle,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                           height: 1.3,
                   ),
                 ),
@@ -627,7 +627,7 @@ class ProfilePage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                      color: theme.colorScheme.primaryContainer.withValues(alpha:0.3),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -643,7 +643,7 @@ class ProfilePage extends StatelessWidget {
           Icon(
             Icons.arrow_forward_ios,
                   size: 18,
-            color: theme.colorScheme.onSurface.withOpacity(0.4),
+            color: theme.colorScheme.onSurface.withValues(alpha:0.4),
           ),
         ],
             ),
@@ -665,13 +665,13 @@ class ProfilePage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.colorScheme.error.withOpacity(0.1),
-            theme.colorScheme.error.withOpacity(0.05),
+            theme.colorScheme.error.withValues(alpha:0.1),
+            theme.colorScheme.error.withValues(alpha:0.05),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.error.withOpacity(0.1),
+            color: theme.colorScheme.error.withValues(alpha:0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -686,7 +686,7 @@ class ProfilePage extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: theme.colorScheme.error.withOpacity(0.2),
+                color: theme.colorScheme.error.withValues(alpha:0.2),
                 width: 1.5,
               ),
             ),

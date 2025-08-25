@@ -274,7 +274,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha:0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -299,7 +299,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
                         ? LinearGradient(
                             colors: [
                               Theme.of(context).primaryColor,
-                              Theme.of(context).primaryColor.withOpacity(0.8),
+                              Theme.of(context).primaryColor.withValues(alpha:0.8),
                             ],
                           )
                         : null,
@@ -348,7 +348,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -570,15 +570,15 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).primaryColor.withOpacity(0.1),
-            Theme.of(context).primaryColor.withOpacity(0.05),
+            Theme.of(context).primaryColor.withValues(alpha:0.1),
+            Theme.of(context).primaryColor.withValues(alpha:0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.3),
+          color: Theme.of(context).primaryColor.withValues(alpha:0.3),
         ),
       ),
       child: Column(
@@ -586,7 +586,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              color: Theme.of(context).primaryColor.withValues(alpha:0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -690,7 +690,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -715,7 +715,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: _isDefault 
-              ? Theme.of(context).primaryColor.withOpacity(0.1)
+              ? Theme.of(context).primaryColor.withValues(alpha:0.1)
               : Colors.grey[100],
             shape: BoxShape.circle,
           ),

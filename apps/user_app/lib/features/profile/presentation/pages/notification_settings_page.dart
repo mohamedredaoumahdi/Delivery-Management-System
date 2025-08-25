@@ -318,8 +318,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.colorScheme.primary.withOpacity(0.1),
-            theme.colorScheme.primary.withOpacity(0.05),
+            theme.colorScheme.primary.withValues(alpha:0.1),
+            theme.colorScheme.primary.withValues(alpha:0.05),
           ],
         ),
       ),
@@ -334,8 +334,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.2),
-                  theme.colorScheme.primary.withOpacity(0.1),
+                  theme.colorScheme.primary.withValues(alpha:0.2),
+                  theme.colorScheme.primary.withValues(alpha:0.1),
                 ],
               ),
             ),
@@ -360,7 +360,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 Text(
                   'Customize how and when you receive notifications',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                   ),
                 ),
               ],
@@ -397,7 +397,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               Text(
                 subtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                 ),
               ),
             ],
@@ -409,7 +409,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             color: theme.colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.shadow.withOpacity(0.05),
+                color: theme.colorScheme.shadow.withValues(alpha:0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -437,7 +437,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.1),
+            color: theme.colorScheme.outline.withValues(alpha:0.1),
             width: 1,
           ),
         ),
@@ -448,7 +448,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withValues(alpha:0.1),
           ),
           child: Icon(
             icon,
@@ -465,7 +465,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         subtitle: Text(
           subtitle,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha:0.6),
           ),
         ),
         trailing: Switch(
@@ -486,7 +486,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.1),
+            color: theme.colorScheme.outline.withValues(alpha:0.1),
             width: 1,
           ),
         ),
@@ -497,7 +497,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withValues(alpha:0.1),
           ),
           child: Icon(
             Icons.music_note_outlined,
@@ -514,7 +514,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         subtitle: Text(
           'Choose notification sound',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha:0.6),
           ),
         ),
         trailing: DropdownButton<String>(

@@ -295,7 +295,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           '\$${product.price.toStringAsFixed(2)}',
                           style: theme.textTheme.bodyLarge?.copyWith(
                             decoration: TextDecoration.lineThrough,
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -370,7 +370,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     Text(
                       'Only ${product.stockQuantity} left in stock',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                       ),
                     ),
                   ],
@@ -482,7 +482,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       Container(
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: theme.colorScheme.outline.withOpacity(0.5),
+                            color: theme.colorScheme.outline.withValues(alpha:0.5),
                           ),
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -495,7 +495,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               style: IconButton.styleFrom(
                                 foregroundColor: _quantity > 1 
                                     ? theme.colorScheme.primary 
-                                    : theme.colorScheme.onSurface.withOpacity(0.4),
+                                    : theme.colorScheme.onSurface.withValues(alpha:0.4),
                               ),
                             ),
                             Container(
@@ -542,7 +542,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           color: theme.colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.shadow.withOpacity(0.1),
+              color: theme.colorScheme.shadow.withValues(alpha:0.1),
               blurRadius: 8,
               offset: const Offset(0, -2),
             ),
@@ -560,7 +560,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     Text(
                       'Total',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                       ),
                     ),
                     Text(

@@ -115,7 +115,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               message,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha:0.6),
               ),
             ),
             const SizedBox(height: 24),
@@ -144,7 +144,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
             Icon(
               Icons.favorite_border,
               size: 64,
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
+              color: theme.colorScheme.onSurface.withValues(alpha:0.4),
             ),
             const SizedBox(height: 16),
             Text(
@@ -158,7 +158,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               'Start adding your favorite restaurants by tapping the heart icon on shop pages.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha:0.6),
               ),
             ),
             const SizedBox(height: 24),
@@ -223,7 +223,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   errorBuilder: (context, error, stackTrace) => Container(
                     width: 60,
                     height: 60,
-                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    color: theme.colorScheme.primary.withValues(alpha:0.1),
                     child: Icon(
                       Icons.store,
                       color: theme.colorScheme.primary,
@@ -249,7 +249,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                     Text(
                       shop.description,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -271,7 +271,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         Text(
                           '(${shop.ratingCount})',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                           ),
                         ),
                         const Spacer(),

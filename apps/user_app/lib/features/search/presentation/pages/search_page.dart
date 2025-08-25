@@ -116,7 +116,7 @@ class _SearchPageState extends State<SearchPage> {
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                      fillColor: theme.colorScheme.surfaceVariant.withValues(alpha:0.3),
                     ),
                     textInputAction: TextInputAction.search,
                     onSubmitted: _performSearch,
@@ -192,7 +192,7 @@ class _SearchPageState extends State<SearchPage> {
                           state.message,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -226,7 +226,7 @@ class _SearchPageState extends State<SearchPage> {
           Icon(
             Icons.search_off,
             size: 64,
-            color: theme.colorScheme.onSurface.withOpacity(0.5),
+            color: theme.colorScheme.onSurface.withValues(alpha:0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -238,7 +238,7 @@ class _SearchPageState extends State<SearchPage> {
             'We couldn\'t find any shops or products matching "$_currentQuery"',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha:0.7),
             ),
           ),
           const SizedBox(height: 24),

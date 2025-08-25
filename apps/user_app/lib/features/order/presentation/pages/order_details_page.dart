@@ -124,7 +124,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     Text(
                       dateFormat.format(order.createdAt),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                       ),
                     ),
                   ],
@@ -407,7 +407,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
+                color: theme.colorScheme.primary.withValues(alpha:0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               alignment: Alignment.center,
@@ -439,7 +439,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       'Instructions: ${item.instructions}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontStyle: FontStyle.italic,
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                       ),
                     ),
                   ],
@@ -461,7 +461,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 Text(
                   '\$${item.productPrice.toStringAsFixed(2)} each',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                   ),
                 ),
               ],
