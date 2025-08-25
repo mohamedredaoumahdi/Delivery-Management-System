@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:domain/domain.dart';
-import 'package:ui_kit/ui_kit.dart';
+
 import 'package:user_app/features/auth/presentation/bloc/auth_bloc.dart';
 
 
@@ -59,7 +59,6 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildProfileContent(BuildContext context, User user) {
-    final theme = Theme.of(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -108,21 +107,21 @@ class ProfilePage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.colorScheme.primary.withOpacity(0.12),
-            theme.colorScheme.primary.withOpacity(0.03),
+            theme.colorScheme.primary.withValues(alpha: 0.12),
+            theme.colorScheme.primary.withValues(alpha: 0.03),
             theme.colorScheme.surface,
           ],
           stops: const [0.0, 0.7, 1.0],
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.15),
+            color: theme.colorScheme.primary.withValues(alpha: 0.15),
             blurRadius: 24,
             offset: const Offset(0, 8),
             spreadRadius: 2,
           ),
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.05),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.05),
             blurRadius: 32,
             offset: const Offset(0, 16),
           ),
@@ -133,14 +132,14 @@ class ProfilePage extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
             width: 1,
           ),
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.white.withOpacity(0.1),
+              Colors.white.withValues(alpha: 0.1),
               Colors.transparent,
             ],
           ),
@@ -157,26 +156,26 @@ class ProfilePage extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    theme.colorScheme.primary.withOpacity(0.3),
-                    theme.colorScheme.primary.withOpacity(0.1),
-                    theme.colorScheme.primary.withOpacity(0.05),
+                    theme.colorScheme.primary.withValues(alpha: 0.3),
+                    theme.colorScheme.primary.withValues(alpha: 0.1),
+                    theme.colorScheme.primary.withValues(alpha: 0.05),
                   ],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.25),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.25),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                     spreadRadius: 0,
                   ),
                   BoxShadow(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     blurRadius: 40,
                     offset: const Offset(0, 20),
                   ),
                 ],
               border: Border.all(
-                  color: theme.colorScheme.primary.withOpacity(0.4),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.4),
                   width: 3,
               ),
             ),

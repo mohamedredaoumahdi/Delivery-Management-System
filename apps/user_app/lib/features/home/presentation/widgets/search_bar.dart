@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:domain/domain.dart';
+
 import 'package:user_app/features/shop/presentation/bloc/shop_list_bloc.dart';
 import 'package:user_app/features/shop/presentation/widgets/shop_list_item.dart';
 

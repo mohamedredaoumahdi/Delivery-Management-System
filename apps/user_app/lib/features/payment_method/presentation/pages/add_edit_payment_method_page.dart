@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:domain/domain.dart';
-import 'package:ui_kit/ui_kit.dart';
+
 
 import '../bloc/payment_method_bloc.dart';
 import '../bloc/payment_method_event.dart';
@@ -44,7 +44,6 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
   bool _hasUnsavedChanges = false;
   
   // Editing state
-  UserPaymentMethod? _existingPaymentMethod;
   bool get isEditing => widget.paymentMethodId != null;
 
   @override

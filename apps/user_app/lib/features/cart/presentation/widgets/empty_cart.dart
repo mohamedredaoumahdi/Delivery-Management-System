@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ui_kit/ui_kit.dart';
+
 
 class EmptyCart extends StatefulWidget {
   const EmptyCart({super.key});
@@ -77,15 +77,15 @@ class _EmptyCartState extends State<EmptyCart> with TickerProviderStateMixin {
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
                     colors: [
-                      theme.colorScheme.primary.withOpacity(0.1),
-                      theme.colorScheme.primary.withOpacity(0.2),
+                      theme.colorScheme.primary.withValues(alpha: 0.1),
+                      theme.colorScheme.primary.withValues(alpha: 0.2),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: theme.colorScheme.primary.withOpacity(0.2),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -122,7 +122,7 @@ class _EmptyCartState extends State<EmptyCart> with TickerProviderStateMixin {
                 'Looks like you haven\'t added anything to your cart yet.\nTime to start shopping!',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   height: 1.5,
                 ),
               ),
@@ -139,7 +139,7 @@ class _EmptyCartState extends State<EmptyCart> with TickerProviderStateMixin {
                   gradient: LinearGradient(
                     colors: [
                       theme.colorScheme.primary,
-                      theme.colorScheme.primary.withOpacity(0.8),
+                      theme.colorScheme.primary.withValues(alpha: 0.8),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -147,7 +147,7 @@ class _EmptyCartState extends State<EmptyCart> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: theme.colorScheme.primary.withOpacity(0.3),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),

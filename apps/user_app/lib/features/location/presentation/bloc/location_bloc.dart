@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:geolocator/geolocator.dart';
+
 import 'package:core/core.dart';
 
 import '../../../../core/location/location_service.dart';

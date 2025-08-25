@@ -79,7 +79,7 @@ class OrderStatusTimeline extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: isCompleted 
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.outline.withOpacity(0.3),
+                    : theme.colorScheme.outline.withValues(alpha: 0.3),
                 border: isCurrent
                     ? Border.all(color: theme.colorScheme.primary, width: 2)
                     : null,
@@ -98,7 +98,7 @@ class OrderStatusTimeline extends StatelessWidget {
                 height: 40,
                 color: isCompleted
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.outline.withOpacity(0.3),
+                    : theme.colorScheme.outline.withValues(alpha: 0.3),
               ),
           ],
         ),
@@ -115,7 +115,7 @@ class OrderStatusTimeline extends StatelessWidget {
                   fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
                   color: isCompleted || isCurrent
                       ? theme.colorScheme.onSurface
-                      : theme.colorScheme.onSurface.withOpacity(0.6),
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               if (step.subtitle != null) ...[
@@ -123,7 +123,7 @@ class OrderStatusTimeline extends StatelessWidget {
                 Text(
                   step.subtitle!,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -132,7 +132,7 @@ class OrderStatusTimeline extends StatelessWidget {
                 Text(
                   _formatTimestamp(step.timestamp!),
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
               ],

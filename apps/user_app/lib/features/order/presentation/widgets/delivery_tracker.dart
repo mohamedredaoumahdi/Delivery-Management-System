@@ -64,7 +64,7 @@ class DeliveryTracker extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 20,
-          backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
           child: Icon(
             Icons.person,
             color: theme.colorScheme.primary,
@@ -85,7 +85,7 @@ class DeliveryTracker extends StatelessWidget {
               Text(
                 'ID: ${order.deliveryPersonId}',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -136,9 +136,9 @@ class DeliveryTracker extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: etaColor.withOpacity(0.1),
+        color: etaColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: etaColor.withOpacity(0.3)),
+        border: Border.all(color: etaColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -155,7 +155,7 @@ class DeliveryTracker extends StatelessWidget {
                 Text(
                   'Estimated Delivery',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
                 Text(
@@ -204,7 +204,7 @@ class DeliveryTracker extends StatelessWidget {
               Text(
                 'Delivery Address',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               Text(

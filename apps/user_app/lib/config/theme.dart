@@ -15,7 +15,7 @@ class UserAppTheme {
       // Example: Custom bottom navigation bar theme
       navigationBarTheme: NavigationBarThemeData(
         elevation: 8,
-        indicatorColor: baseTheme.primaryColor.withOpacity(0.2),
+        indicatorColor: baseTheme.primaryColor.withValues(alpha: 0.2),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(
             fontSize: 12,
@@ -77,7 +77,7 @@ class UserAppTheme {
       // Example: Custom bottom navigation bar theme for dark mode
       navigationBarTheme: NavigationBarThemeData(
         elevation: 8,
-        indicatorColor: Colors.deepPurple.shade300.withOpacity(0.3),
+        indicatorColor: Colors.deepPurple.shade300.withValues(alpha: 0.3),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(
             fontSize: 12,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ui_kit/ui_kit.dart';
 import 'package:user_app/features/cart/domain/cart_repository.dart';
 
 
@@ -91,7 +90,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: theme.colorScheme.outline.withOpacity(0.1),
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -104,7 +103,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
               end: Alignment.bottomRight,
               colors: [
                 theme.colorScheme.surface,
-                theme.colorScheme.surface.withOpacity(0.8),
+                theme.colorScheme.surface.withValues(alpha: 0.8),
               ],
             ),
           ),
@@ -129,7 +128,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: theme.colorScheme.shadow.withOpacity(0.1),
+                                  color: theme.colorScheme.shadow.withValues(alpha: 0.1),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -202,7 +201,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                 // Remove button
                         Container(
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.errorContainer.withOpacity(0.1),
+                            color: theme.colorScheme.errorContainer.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: IconButton(
@@ -229,10 +228,10 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                 // Quantity controls
                 Container(
                   decoration: BoxDecoration(
-                            color: theme.colorScheme.primaryContainer.withOpacity(0.1),
+                            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                              color: theme.colorScheme.primary.withOpacity(0.2),
+                              color: theme.colorScheme.primary.withValues(alpha: 0.2),
                               width: 1,
                     ),
                   ),
@@ -248,7 +247,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                                   decoration: BoxDecoration(
                                     color: widget.item.quantity > 1
                                         ? theme.colorScheme.primary
-                                        : theme.colorScheme.outline.withOpacity(0.3),
+                                        : theme.colorScheme.outline.withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: IconButton(
@@ -259,7 +258,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                         style: IconButton.styleFrom(
                                       foregroundColor: widget.item.quantity > 1
                                           ? theme.colorScheme.onPrimary
-                                          : theme.colorScheme.onSurface.withOpacity(0.4),
+                                          : theme.colorScheme.onSurface.withValues(alpha: 0.4),
                                       padding: EdgeInsets.zero,
                                     ),
                                   ),
@@ -310,7 +309,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primaryContainer.withOpacity(0.2),
+                            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                   child: Text(
@@ -344,7 +343,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
           end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.primaryContainer,
-            theme.colorScheme.primaryContainer.withOpacity(0.7),
+            theme.colorScheme.primaryContainer.withValues(alpha: 0.7),
           ],
         ),
       ),
@@ -366,7 +365,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
             '\$${widget.item.productPrice.toStringAsFixed(2)}',
             style: theme.textTheme.bodyMedium?.copyWith(
               decoration: TextDecoration.lineThrough,
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 2),
@@ -384,7 +383,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.error.withOpacity(0.1),
+                  color: theme.colorScheme.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -413,7 +412,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
   Widget _buildInstructionsSection(ThemeData theme) {
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),
@@ -435,15 +434,15 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
             ? Text(
                 widget.item.instructions!,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               )
-            : Text(
+                          : Text(
                 'Tap to add instructions',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -459,7 +458,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: theme.colorScheme.primary.withOpacity(0.3),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.3),
                       ),
                     ),
                     child: TextField(
@@ -469,7 +468,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.all(16),
                         hintStyle: TextStyle(
-                          color: theme.colorScheme.onSurface.withOpacity(0.5),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                       maxLines: 3,
@@ -492,7 +491,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                         child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                         ),
                       ),
@@ -517,7 +516,7 @@ class _CartItemCardState extends State<CartItemCard> with TickerProviderStateMix
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: theme.colorScheme.outline.withOpacity(0.2),
+                          color: theme.colorScheme.outline.withValues(alpha: 0.2),
                         ),
                       ),
                     child: Text(

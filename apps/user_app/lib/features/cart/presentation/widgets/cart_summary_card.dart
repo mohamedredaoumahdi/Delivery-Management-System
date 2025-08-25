@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ui_kit/ui_kit.dart';
+
 import 'package:user_app/features/cart/domain/cart_repository.dart';
 
 class CartSummaryCard extends StatefulWidget {
@@ -74,7 +74,7 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.1),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -140,7 +140,7 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
                         Text(
                           _isExpanded ? 'Tap to collapse' : 'Tap to view details',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -154,7 +154,7 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withOpacity(0.2),
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -189,10 +189,10 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.1),
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
           ),
         ),
         child: Column(
@@ -255,9 +255,9 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      theme.colorScheme.outline.withOpacity(0.1),
-                      theme.colorScheme.outline.withOpacity(0.3),
-                      theme.colorScheme.outline.withOpacity(0.1),
+                      theme.colorScheme.outline.withValues(alpha: 0.1),
+                      theme.colorScheme.outline.withValues(alpha: 0.3),
+                      theme.colorScheme.outline.withValues(alpha: 0.1),
                     ],
                   ),
                 ),
@@ -268,10 +268,10 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withOpacity(0.2),
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: theme.colorScheme.primary.withOpacity(0.2),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(
@@ -320,7 +320,7 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
             gradient: LinearGradient(
               colors: [
                 theme.colorScheme.primary,
-                theme.colorScheme.primary.withOpacity(0.8),
+                theme.colorScheme.primary.withValues(alpha: 0.8),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -328,7 +328,7 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.3),
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -371,7 +371,7 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
         Text(
           'You will review your order before final confirmation',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
           textAlign: TextAlign.center,
         ),
@@ -392,14 +392,14 @@ class _CartSummaryCardState extends State<CartSummaryCard> with TickerProviderSt
         Icon(
           icon,
           size: 16,
-          color: theme.colorScheme.onSurface.withOpacity(0.7),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
           label,
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.8),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
             ),
           ),
         ),

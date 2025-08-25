@@ -86,7 +86,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final summary = widget.summary;
 
     if (summary == null) {
@@ -881,11 +880,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
     // Convert payment method to enum
     PaymentMethod paymentMethod;
-    String? paymentMethodId;
     
     if (_selectedPaymentMethod == 'saved' && _selectedSavedPaymentMethod != null) {
       // Use saved payment method
-      paymentMethodId = _selectedSavedPaymentMethod!.id;
       switch (_selectedSavedPaymentMethod!.type) {
         case PaymentMethodType.creditCard:
         case PaymentMethodType.debitCard:

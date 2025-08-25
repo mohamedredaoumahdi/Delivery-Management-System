@@ -409,7 +409,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Widget _buildAdditionalInfo(BuildContext context, user) {
-    final theme = Theme.of(context);
 
     return AppCard(
       title: 'Account Information',

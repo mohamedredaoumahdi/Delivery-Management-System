@@ -340,7 +340,7 @@ class _AddEditAddressPageState extends State<AddEditAddressPage> {
                 selected: isSelected,
                 onSelected: (_) => _onLabelTypeChanged(type),
                 backgroundColor: Theme.of(context).colorScheme.surface,
-                selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
               );
             }).toList(),
           ),
@@ -489,7 +489,7 @@ class _AddEditAddressPageState extends State<AddEditAddressPage> {
                     Text(
                       'This address will be pre-selected for deliveries',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ],

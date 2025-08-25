@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:domain/domain.dart';
-import 'package:ui_kit/ui_kit.dart';
+
 
 class ShopListItem extends StatelessWidget {
   final Shop shop;
