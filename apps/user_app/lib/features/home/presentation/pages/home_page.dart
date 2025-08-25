@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:domain/domain.dart';
 import 'package:user_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:user_app/features/shop/presentation/bloc/shop_list_bloc.dart';
+import 'package:user_app/features/location/presentation/bloc/location_bloc.dart';
 
 import '../widgets/category_slider.dart';
 import '../widgets/featured_shops_carousel.dart';
@@ -24,12 +25,8 @@ class _HomePageState extends State<HomePage> {
     // Load featured shops
     context.read<ShopListBloc>().add(const ShopListLoadFeaturedEvent());
     
-    // Load nearby shops with default location
-    // In a real app, you'd get the user's actual location
-    context.read<ShopListBloc>().add(const ShopListLoadNearbyEvent(
-      latitude: 37.7749, // Default to San Francisco
-      longitude: -122.4194,
-    ));
+    // Request location permission and get user location
+    context.read<LocationBloc>().add(LocationRequestPermission());
   }
   
   // Helper to get the current user from auth bloc
@@ -51,15 +48,44 @@ class _HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
     final user = _getCurrentUser(context);
 
+    return BlocListener<LocationBloc, LocationState>(
+      listener: (context, locationState) {
+        if (locationState is LocationLoaded) {
+          // Load nearby shops with user's actual location
+          context.read<ShopListBloc>().add(ShopListLoadNearbyEvent(
+            latitude: locationState.latitude,
+            longitude: locationState.longitude,
+          ));
+        } else if (locationState is LocationPermissionDenied) {
+          // Show permission denied message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(locationState.message),
+              backgroundColor: theme.colorScheme.error,
+            ),
+          );
+        } else if (locationState is LocationError) {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(locationState.message),
+              backgroundColor: theme.colorScheme.error,
+            ),
+          );
+        }
+      },
+      child: _buildHomeContent(context, theme, user),
+    );
+  }
+
+  Widget _buildHomeContent(BuildContext context, ThemeData theme, User? user) {
+
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
             context.read<ShopListBloc>().add(const ShopListLoadFeaturedEvent());
-            context.read<ShopListBloc>().add(const ShopListLoadNearbyEvent(
-              latitude: 37.7749,
-              longitude: -122.4194,
-            ));
+            context.read<LocationBloc>().add(LocationGetCurrentLocation());
             await Future.delayed(const Duration(milliseconds: 500));
           },
           child: CustomScrollView(

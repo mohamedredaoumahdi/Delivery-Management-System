@@ -23,6 +23,11 @@ import '../features/shop/presentation/bloc/shop_details_bloc.dart';
 import '../features/shop/presentation/bloc/product_details_bloc.dart';
 import '../features/shop/presentation/bloc/product_list_bloc.dart';
 import '../features/order/presentation/bloc/order_bloc.dart';
+import '../features/location/presentation/bloc/location_bloc.dart';
+import '../core/location/location_service.dart';
+import '../core/realtime/socket_service.dart';
+import '../core/notifications/push_notification_service.dart';
+import '../features/order/presentation/bloc/realtime_order_bloc.dart';
 import '../core/auth/auth_manager.dart';
 
 final getIt = GetIt.instance;
@@ -42,6 +47,25 @@ Future<void> initializeDependencies() async {
   // Create authentication manager
   final authManager = AuthManager();
   getIt.registerSingleton<AuthManager>(authManager);
+  
+  // Location service
+  getIt.registerSingleton<LocationService>(
+    LocationService(getIt<LoggerService>()),
+  );
+  
+  // Socket service
+  getIt.registerSingleton<SocketService>(
+    SocketService(
+      logger: getIt<LoggerService>(),
+      baseUrl: 'http://localhost:8000', // TODO: Make this configurable
+      authToken: null, // Will be updated when user logs in
+    ),
+  );
+  
+  // Push notification service
+  getIt.registerSingleton<PushNotificationService>(
+    PushNotificationService(getIt<LoggerService>()),
+  );
   
   // API Client with proper configuration
   final dio = Dio();
@@ -213,6 +237,23 @@ Future<void> initializeDependencies() async {
   getIt.registerFactory<PaymentMethodBloc>(
     () => PaymentMethodBloc(
       paymentMethodRepository: getIt<PaymentMethodRepository>(),
+    ),
+  );
+  
+  // Register LocationBloc
+  getIt.registerFactory<LocationBloc>(
+    () => LocationBloc(
+      locationService: getIt<LocationService>(),
+      logger: getIt<LoggerService>(),
+    ),
+  );
+  
+  // Register RealtimeOrderBloc
+  getIt.registerFactory<RealtimeOrderBloc>(
+    () => RealtimeOrderBloc(
+      socketService: getIt<SocketService>(),
+      pushNotificationService: getIt<PushNotificationService>(),
+      logger: getIt<LoggerService>(),
     ),
   );
 }

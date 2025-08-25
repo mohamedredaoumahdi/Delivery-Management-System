@@ -18,6 +18,7 @@ import '../features/order/presentation/pages/checkout_page.dart';
 import '../features/order/presentation/pages/order_list_page.dart';
 import '../features/order/presentation/pages/order_details_page.dart';
 import '../features/order/presentation/pages/order_tracking_page.dart';
+import '../features/order/presentation/pages/enhanced_order_tracking_page.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
 import '../features/profile/presentation/pages/edit_profile_page.dart';
 import '../features/profile/presentation/pages/change_password_page.dart';
@@ -208,6 +209,13 @@ final appRouter = GoRouter(
               builder: (context, state) {
                 final orderId = state.pathParameters['id']!;
                 return OrderTrackingPage(orderId: orderId);
+              },
+            ),
+            GoRoute(
+              path: ':id/enhanced-tracking',
+              builder: (context, state) {
+                final orderId = state.pathParameters['id']!;
+                return EnhancedOrderTrackingPage(orderId: orderId);
               },
             ),
           ],

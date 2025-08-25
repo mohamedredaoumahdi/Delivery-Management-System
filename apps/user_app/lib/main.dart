@@ -16,6 +16,8 @@ import 'features/order/presentation/bloc/order_bloc.dart';
 import 'features/address/presentation/bloc/address_bloc.dart';
 import 'features/payment_method/presentation/bloc/payment_method_bloc.dart';
 import 'features/settings/presentation/bloc/locale_bloc.dart';
+import 'features/location/presentation/bloc/location_bloc.dart';
+import 'features/order/presentation/bloc/realtime_order_bloc.dart';
 import 'core/auth/auth_manager.dart';
 import 'package:user_app/l10n/app_localizations.dart';
 
@@ -107,6 +109,16 @@ class _UserAppState extends State<UserApp> {
         // Payment Method BLoC - handles user payment methods
         BlocProvider<PaymentMethodBloc>(
           create: (context) => getIt<PaymentMethodBloc>(),
+        ),
+        
+        // Location BLoC - handles user location
+        BlocProvider<LocationBloc>(
+          create: (context) => getIt<LocationBloc>(),
+        ),
+        
+        // Realtime Order BLoC - handles real-time order updates
+        BlocProvider<RealtimeOrderBloc>(
+          create: (context) => getIt<RealtimeOrderBloc>(),
         ),
       ],
       child: BlocBuilder<LocaleBloc, LocaleState>(
