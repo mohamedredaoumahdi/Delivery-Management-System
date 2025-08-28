@@ -983,6 +983,14 @@ cd apps/user_app && flutter run
 
 #### **Payment System Completion**
 - **Stripe Integration**: Complete credit card processing implementation
+  - Note: Stripe unavailable in Morocco. Defer to a Morocco-supported provider.
+  - Candidate providers: CMI, Checkout.com, PayTabs, 2Checkout. Implement gateway-agnostic abstraction (HPP redirect), webhook verification, and order state transitions.
+  
+### Deferred Push Strategy (TODO)
+- Adopt platform-native push later:
+  - Android: FCM (`firebase_messaging`)
+  - iOS: APNs (p8 key) or via FCM
+- Backend device token endpoints already present; enable by setting `FIREBASE_SERVER_KEY` when ready.
 - **Multiple Payment Gateways**: PayPal, Apple Pay, Google Pay integration
 - **Wallet System**: In-app wallet with balance management
 - **Split Payments**: Multiple payment methods for single order

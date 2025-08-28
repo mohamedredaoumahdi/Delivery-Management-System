@@ -24,4 +24,16 @@ export class EmailService {
       message,
     });
   }
+
+  static async sendVerificationEmail(email: string, token: string): Promise<void> {
+    const verifyUrl = `${config.frontendUrl}/verify-email?token=${token}`;
+    const subject = 'Verify your email address';
+    const message = `Please verify your email by visiting: ${verifyUrl}\n\nIf you did not create an account, please ignore this email.`;
+
+    await sendEmail({
+      email,
+      subject,
+      message,
+    });
+  }
 } 

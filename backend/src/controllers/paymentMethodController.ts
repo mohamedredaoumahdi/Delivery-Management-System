@@ -1,10 +1,10 @@
 import { Response } from 'express';
-import { PrismaClient, PaymentMethodType } from '@prisma/client';
+import { PaymentMethodType } from '@prisma/client';
 import { AppError } from '@/utils/appError';
 import { AuthenticatedRequest } from '../types/express';
 import { logger } from '@/utils/logger';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export class PaymentMethodController {
   /**

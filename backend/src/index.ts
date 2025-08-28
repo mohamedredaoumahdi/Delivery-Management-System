@@ -5,6 +5,9 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import { Server } from 'socket.io';
+// Optional: enable Redis adapter for horizontal scaling in the future
+// import { createAdapter } from '@socket.io/redis-adapter';
+// import { createClient } from 'redis';
 import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 
@@ -32,9 +35,8 @@ const io = new Server(server, {
   },
 });
 
-// Initialize socket service
+// Initialize socket service (expects an io instance)
 initializeSocket(io);
-console.log('Socket.io initialized');
 
 // Security middleware
 app.use(helmet({

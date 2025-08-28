@@ -14,7 +14,7 @@ import paymentMethodRoutes from './paymentMethods';
 
 const router = Router();
 
-// Mount individual routers
+// Mount individual routers under /api (swagger set to /api base)
 router.use('/auth', authRoutes);
 router.use('/shops', shopRoutes);
 router.use('/orders', orderRoutes);
@@ -26,5 +26,10 @@ router.use('/products', productRoutes);
 router.use('/addresses', addressRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/users/payment-methods', paymentMethodRoutes);
+
+// 404 for unknown subpaths under /api
+router.all('*', (req, res) => {
+  res.status(404).json({ status: 'error', message: 'Not Found' });
+});
 
 export default router;

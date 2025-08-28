@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
+import 'package:core/core.dart';
 import '../../features/delivery/data/delivery_service.dart';
 import '../../features/auth/data/auth_service.dart';
 import '../../features/profile/data/profile_service.dart';
@@ -65,7 +66,7 @@ Future<void> _registerExternalDependencies() async {
   getIt.registerLazySingleton<ProfileService>(() => ProfileService(getIt<Dio>(), getIt<SharedPreferences>()));
   
   // Register DashboardService
-  getIt.registerLazySingleton(() => DashboardService(getIt<Dio>(), getIt<SharedPreferences>()));
+  getIt.registerLazySingleton(() => DashboardService(getIt<Dio>(), getIt<SharedPreferences>(), getIt<LoggerService>()));
 
   // Register EarningsService
   getIt.registerLazySingleton(() => EarningsService(getIt<Dio>()));
@@ -75,6 +76,6 @@ Future<void> _registerExternalDependencies() async {
   getIt.registerFactory<AuthBloc>(() => AuthBloc(getIt<AuthService>()));
   getIt.registerFactory<ProfileBloc>(() => ProfileBloc(getIt<ProfileService>()));
   getIt.registerFactory<LocationBloc>(() => LocationBloc());
-  getIt.registerFactory(() => DashboardBloc(getIt<DashboardService>(), getIt<DeliveryService>()));
-  getIt.registerFactory(() => EarningsBloc(getIt<EarningsService>()));
+  getIt.registerFactory(() => DashboardBloc(getIt<DashboardService>(), getIt<DeliveryService>(), getIt<LoggerService>()));
+  getIt.registerFactory(() => EarningsBloc(getIt<EarningsService>(), getIt<LoggerService>()));
 } 

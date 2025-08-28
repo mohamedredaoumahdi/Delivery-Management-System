@@ -93,7 +93,7 @@ class AppInputField extends StatelessWidget {
       prefix = Icon(
         prefixIcon,
         size: 20,
-        color: theme.colorScheme.onSurface.withOpacity(0.6),
+        color: theme.colorScheme.onSurface.withValues(alpha:0.6),
       );
     }
     
@@ -104,7 +104,7 @@ class AppInputField extends StatelessWidget {
         icon: Icon(
           suffixIcon,
           size: 20,
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha:0.6),
         ),
         onPressed: onSuffixIconPressed,
         splashRadius: 20,
@@ -146,7 +146,7 @@ class AppInputField extends StatelessWidget {
         filled: true,
         fillColor: enabled 
             ? theme.inputDecorationTheme.fillColor
-            : theme.disabledColor.withOpacity(0.1),
+            : theme.disabledColor.withValues(alpha:0.1),
       ),
       keyboardType: keyboardType,
       obscureText: obscureText,
@@ -161,7 +161,7 @@ class AppInputField extends StatelessWidget {
       style: theme.textTheme.bodyMedium?.copyWith(
         color: enabled 
             ? theme.colorScheme.onSurface
-            : theme.colorScheme.onSurface.withOpacity(0.5),
+            : theme.colorScheme.onSurface.withValues(alpha:0.5),
       ),
     );
   }

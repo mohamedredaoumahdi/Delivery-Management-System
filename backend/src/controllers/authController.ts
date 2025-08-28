@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '@/config/database';
@@ -71,11 +71,24 @@ export class AuthController {
       },
     });
 
-    // Send welcome email (optional)
+    // Issue email verification token (1h expiry) and send email
+    const emailVerifyToken = jwt.sign(
+      { userId: user.id },
+      config.jwtSecret,
+      { expiresIn: '1h' }
+    );
+    await prisma.emailVerificationToken.create({
+      data: {
+        token: emailVerifyToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
     try {
       await EmailService.sendWelcomeEmail(user.email, user.name);
+      await EmailService.sendVerificationEmail(user.email, emailVerifyToken);
     } catch (error) {
-      console.error('Failed to send welcome email:', error);
+      console.error('Failed to send welcome/verification email:', error);
     }
 
     res.status(201).json({
@@ -244,23 +257,18 @@ export class AuthController {
       return next(new AppError('No user found with this email address', 404));
     }
 
-    // Generate reset token
-    const resetToken = jwt.sign(
-      { userId: user.id },
-      config.jwtSecret,
-      { expiresIn: '1h' }
-    );
-
-    // Store reset token in database
+    // Generate reset token (JWT) and store a bcrypt hash of it
+    const resetToken = jwt.sign({ userId: user.id }, config.jwtSecret, { expiresIn: '1h' });
+    const tokenHash = await bcrypt.hash(resetToken, 12);
     await prisma.passwordResetToken.create({
       data: {
-        tokenHash: await bcrypt.hash(resetToken, 12),
+        tokenHash,
         userId: user.id,
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
       },
     });
 
-    // Send reset email
+    // Send reset email (contains token reference)
     try {
       await EmailService.sendPasswordResetEmail(user.email, resetToken);
     } catch (error) {
@@ -281,15 +289,21 @@ export class AuthController {
       const decoded = jwt.verify(token, config.jwtSecret) as { userId: string };
 
       // Check if reset token exists and is valid
-      const resetToken = await prisma.passwordResetToken.findFirst({
+      const storedToken = await prisma.passwordResetToken.findFirst({
         where: {
-          tokenHash: await bcrypt.hash(token, 12),
           userId: decoded.userId,
           expiresAt: { gt: new Date() },
         },
+        orderBy: { createdAt: 'desc' },
       });
 
-      if (!resetToken) {
+      if (!storedToken) {
+        return next(new AppError('Invalid or expired reset token', 400));
+      }
+
+      // Compare bcrypt hash
+      const isValid = await bcrypt.compare(token, storedToken.tokenHash);
+      if (!isValid) {
         return next(new AppError('Invalid or expired reset token', 400));
       }
 
@@ -301,9 +315,7 @@ export class AuthController {
       });
 
       // Delete reset token
-      await prisma.passwordResetToken.delete({
-        where: { id: resetToken.id },
-      });
+      await prisma.passwordResetToken.delete({ where: { id: storedToken.id } });
 
       res.json({
         status: 'success',

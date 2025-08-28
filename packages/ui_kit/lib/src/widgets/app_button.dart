@@ -117,36 +117,36 @@ class AppButton extends StatelessWidget {
     final buttonStyle = ButtonStyle(
       backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
         if (states.contains(WidgetState.disabled)) {
-          return backgroundColor.withOpacity(0.5);
+          return backgroundColor.withValues(alpha:0.5);
         }
         if (variant == AppButtonVariant.text || variant == AppButtonVariant.outline) {
           if (states.contains(WidgetState.hovered) || 
               states.contains(WidgetState.pressed)) {
-            return backgroundColor.withOpacity(0.1);
+            return backgroundColor.withValues(alpha:0.1);
           }
           return backgroundColor;
         }
         if (states.contains(WidgetState.pressed)) {
-          return backgroundColor.withOpacity(0.8);
+          return backgroundColor.withValues(alpha:0.8);
         }
         return backgroundColor;
       }),
       foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
         if (states.contains(WidgetState.disabled)) {
-          return textColor.withOpacity(0.5);
+          return textColor.withValues(alpha:0.5);
         }
         return textColor;
       }),
       overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
         if (variant == AppButtonVariant.text || variant == AppButtonVariant.outline) {
           if (states.contains(WidgetState.hovered)) {
-            return primaryColor.withOpacity(0.04);
+            return primaryColor.withValues(alpha:0.04);
           }
           if (states.contains(WidgetState.focused)) {
-            return primaryColor.withOpacity(0.12);
+            return primaryColor.withValues(alpha:0.12);
           }
           if (states.contains(WidgetState.pressed)) {
-            return primaryColor.withOpacity(0.12);
+            return primaryColor.withValues(alpha:0.12);
           }
         }
         return null;

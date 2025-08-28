@@ -31,6 +31,7 @@ export const auth = async (req: AuthenticatedRequest, res: Response, next: NextF
         name: true,
         role: true,
         isActive: true,
+        isEmailVerified: true,
       },
     });
 
@@ -41,6 +42,11 @@ export const auth = async (req: AuthenticatedRequest, res: Response, next: NextF
     if (!user.isActive) {
       throw new AppError('Account has been deactivated.', 401);
     }
+
+    // Optional: enforce email verification for protected routes
+    // if (!user.isEmailVerified) {
+    //   throw new AppError('Email not verified.', 403);
+    // }
 
     req.user = user;
     next();

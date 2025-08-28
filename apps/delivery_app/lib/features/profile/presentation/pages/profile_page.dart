@@ -102,7 +102,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Text(
                         profile.email,
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          color: theme.colorScheme.onSurface.withValues(alpha:0.6),
                         ),
                       ),
                     ],
@@ -118,7 +118,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: theme.shadowColor.withOpacity(0.1),
+                        color: theme.shadowColor.withValues(alpha:0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -160,7 +160,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: theme.shadowColor.withOpacity(0.1),
+                        color: theme.shadowColor.withValues(alpha:0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),

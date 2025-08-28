@@ -16,25 +16,14 @@ This is the backend service for the Delivery System application.
 npm install
 ```
 
-2. Create a `.env` file in the root directory with the following variables:
+2. Create a `.env` file in the root directory (see `.env.example`) with at least:
 ```env
 NODE_ENV=development
-PORT=3000
-
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=delivery_system
-DB_USER=postgres
-DB_PASSWORD=postgres
-
-# JWT
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=24h
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
+PORT=8000
+DATABASE_URL=postgresql://admin:admin123@localhost:5432/delivery_system
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=replace-me
+JWT_REFRESH_SECRET=replace-me-refresh
 ```
 
 3. Start the development environment:

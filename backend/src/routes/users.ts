@@ -3,9 +3,11 @@ import { UserController } from '@/controllers/userController';
 import { auth } from '@/middleware/auth';
 import { validateRequest } from '@/middleware/validation';
 import { updateProfileSchema, changePasswordSchema } from '@/validators/userValidators';
+import { DeviceTokenController } from '@/controllers/deviceTokenController';
 
 const router = Router();
 const userController = new UserController();
+const deviceTokenController = new DeviceTokenController();
 
 // All user routes require authentication
 router.use(auth);
@@ -29,5 +31,9 @@ router.get('/orders/:id', userController.getOrderDetails);
 router.get('/favorites', userController.getFavorites);
 router.post('/favorites/:shopId', userController.addToFavorites);
 router.delete('/favorites/:shopId', userController.removeFromFavorites);
+
+// Push device tokens
+router.post('/device-tokens', deviceTokenController.registerToken);
+router.delete('/device-tokens/:token', deviceTokenController.unregisterToken);
 
 export default router; 

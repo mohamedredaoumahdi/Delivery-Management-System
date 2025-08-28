@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:core/core.dart';
+import 'package:get_it/get_it.dart';
 
 import '../bloc/delivery_bloc.dart';
 
@@ -18,9 +20,12 @@ class DeliveryDetailsPage extends StatefulWidget {
 }
 
 class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
+  late final LoggerService _logger;
+
   @override
   void initState() {
     super.initState();
+    _logger = GetIt.instance<LoggerService>();
     context.read<DeliveryBloc>().add(DeliveryLoadDetailsEvent(widget.deliveryId));
   }
 
@@ -47,7 +52,7 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
                   context.go('/dashboard');
                 }
               } catch (e) {
-                print('❌ Navigation error: $e');
+                _logger.e('❌ Navigation error: $e');
                 // Fallback navigation
                 if (context.mounted) {
                   Navigator.of(context).pop();
@@ -77,7 +82,7 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
             }
 
             if (state is DeliveryError) {
-              print('❌ DeliveryDetailsPage: Showing error view: ${state.message}');
+              _logger.e('❌ DeliveryDetailsPage: Showing error view: ${state.message}');
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -106,7 +111,7 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
                       const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: () {
-                          print('🔄 DeliveryDetailsPage: Retry button pressed');
+                          _logger.i('🔄 DeliveryDetailsPage: Retry button pressed');
                           context.read<DeliveryBloc>().add(DeliveryLoadDetailsEvent(widget.deliveryId));
                         },
                         style: ElevatedButton.styleFrom(
@@ -118,7 +123,7 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
                       const SizedBox(height: 16),
                       TextButton(
                         onPressed: () {
-                          print('🔙 DeliveryDetailsPage: Go back button pressed');
+                          _logger.i('🔙 DeliveryDetailsPage: Go back button pressed');
                           Navigator.of(context).pop();
                         },
                         child: const Text('Go Back'),
@@ -678,7 +683,7 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
   String _calculateEstimatedTime(double distance) {
     final minutes = (distance / 30 * 60).round();
     if (minutes < 60) {
-      return '${minutes} min';
+      return '$minutes min';
     } else {
       final hours = (minutes / 60).floor();
       final remainingMinutes = minutes % 60;

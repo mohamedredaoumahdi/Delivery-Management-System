@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:core/core.dart';
 import '../../data/earnings_service.dart';
 import '../../domain/models/earnings_data.dart';
 
@@ -8,9 +9,10 @@ part 'earnings_state.dart';
 
 class EarningsBloc extends Bloc<EarningsEvent, EarningsState> {
   final EarningsService _earningsService;
+  final LoggerService _logger;
   String _currentPeriod = 'today';
 
-  EarningsBloc(this._earningsService) : super(const EarningsInitial()) {
+  EarningsBloc(this._earningsService, this._logger) : super(const EarningsInitial()) {
     on<EarningsLoadEvent>(_onLoad);
     on<EarningsRefreshEvent>(_onRefresh);
     on<EarningsPeriodChangedEvent>(_onPeriodChanged);
@@ -20,14 +22,14 @@ class EarningsBloc extends Bloc<EarningsEvent, EarningsState> {
     EarningsLoadEvent event,
     Emitter<EarningsState> emit,
   ) async {
-    print('🚀 EarningsBloc: Loading earnings data');
+    _logger.i('🚀 EarningsBloc: Loading earnings data');
     try {
       emit(const EarningsLoading());
       final data = await _earningsService.getEarnings(period: _currentPeriod);
-      print('✅ EarningsBloc: Successfully loaded earnings data');
+      _logger.i('✅ EarningsBloc: Successfully loaded earnings data');
       emit(EarningsLoaded(data));
     } catch (e) {
-      print('❌ EarningsBloc: Error loading earnings: $e');
+      _logger.e('❌ EarningsBloc: Error loading earnings: $e');
       emit(EarningsError(e.toString()));
     }
   }
@@ -36,14 +38,14 @@ class EarningsBloc extends Bloc<EarningsEvent, EarningsState> {
     EarningsRefreshEvent event,
     Emitter<EarningsState> emit,
   ) async {
-    print('🔄 EarningsBloc: Refreshing earnings data');
+    _logger.i('🔄 EarningsBloc: Refreshing earnings data');
     try {
       emit(const EarningsLoading());
       final data = await _earningsService.getEarnings(period: _currentPeriod);
-      print('✅ EarningsBloc: Successfully refreshed earnings data');
+      _logger.i('✅ EarningsBloc: Successfully refreshed earnings data');
       emit(EarningsLoaded(data));
     } catch (e) {
-      print('❌ EarningsBloc: Error refreshing earnings: $e');
+      _logger.e('❌ EarningsBloc: Error refreshing earnings: $e');
       emit(EarningsError(e.toString()));
     }
   }
@@ -52,15 +54,15 @@ class EarningsBloc extends Bloc<EarningsEvent, EarningsState> {
     EarningsPeriodChangedEvent event,
     Emitter<EarningsState> emit,
   ) async {
-    print('🔄 EarningsBloc: Changing period to: ${event.period}');
+    _logger.i('🔄 EarningsBloc: Changing period to: ${event.period}');
     try {
       emit(const EarningsLoading());
       _currentPeriod = event.period;
       final data = await _earningsService.getEarnings(period: _currentPeriod);
-      print('✅ EarningsBloc: Successfully loaded earnings for new period');
+      _logger.i('✅ EarningsBloc: Successfully loaded earnings for new period');
       emit(EarningsLoaded(data));
     } catch (e) {
-      print('❌ EarningsBloc: Error changing period: $e');
+      _logger.e('❌ EarningsBloc: Error changing period: $e');
       emit(EarningsError(e.toString()));
     }
   }

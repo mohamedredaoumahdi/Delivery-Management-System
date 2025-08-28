@@ -101,7 +101,7 @@ class AppCard extends StatelessWidget {
                       child: Text(
                         subtitle!,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          color: theme.colorScheme.onSurface.withValues(alpha:0.7),
                         ),
                       ),
                     ),
@@ -124,7 +124,7 @@ class AppCard extends StatelessWidget {
           Divider(
             height: 1,
             thickness: 1,
-            color: theme.dividerColor.withOpacity(0.5),
+            color: theme.dividerColor.withValues(alpha:0.5),
           ),
         Flexible(
           child: Padding(

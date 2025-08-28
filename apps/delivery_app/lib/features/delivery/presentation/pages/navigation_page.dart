@@ -557,7 +557,7 @@ class _NavigationPageState extends State<NavigationPage> {
             Expanded(
               child: Column(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.attach_money,
                     color: Colors.green,
                   ),

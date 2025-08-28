@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AppError } from '@/utils/appError';
+import { boundingBox, haversineKm } from '@/utils/geo';
 import { catchAsync } from '@/utils/catchAsync';
 
-const prisma = new PrismaClient();
+// Use shared Prisma client to avoid multiple connections
+import { prisma } from '@/config/database';
 
 export class ShopController {
   getShops = catchAsync(async (req: Request, res: Response) => {
@@ -65,15 +67,30 @@ export class ShopController {
       throw new AppError('Location coordinates are required', 400);
     }
 
-    // Note: This is a simplified version. For actual geospatial queries,
-    // you'll need to use Prisma's geospatial features or a specialized service
-    const shops = await prisma.shop.findMany({
+    const latNum = Number(lat);
+    const lngNum = Number(lng);
+    const radiusKm = Number(radius);
+
+    // Pre-filter using bounding box to reduce result set
+    const box = boundingBox(latNum, lngNum, radiusKm);
+    const candidates = await prisma.shop.findMany({
       where: {
         isActive: true,
-        // Add geospatial query here when needed
+        latitude: { gte: box.minLat, lte: box.maxLat },
+        longitude: { gte: box.minLon, lte: box.maxLon },
       },
-      take: 20,
+      take: 200,
     });
+
+    // Precise filter using Haversine
+    const shops = candidates
+      .map((s: any) => ({
+        ...s,
+        distanceKm: haversineKm(latNum, lngNum, s.latitude, s.longitude),
+      }))
+      .filter((s: any) => s.distanceKm <= radiusKm)
+      .sort((a: any, b: any) => a.distanceKm - b.distanceKm)
+      .slice(0, 50);
 
     return res.json({ status: 'success', data: shops });
   });
