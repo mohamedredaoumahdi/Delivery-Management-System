@@ -24,7 +24,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<Dio>(() {
     final dio = Dio();
     dio.options = BaseOptions(
-      baseUrl: 'http://localhost:8000/api',
+      baseUrl: 'http://localhost:3000/api',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -52,7 +52,7 @@ Future<void> initializeDependencies() async {
             try {
               // Attempt to refresh token
               final refreshResponse = await Dio().post(
-                'http://localhost:8000/api/auth/refresh',
+                'http://localhost:3000/api/auth/refresh',
                 data: {'refreshToken': refreshToken},
               );
               
@@ -404,15 +404,12 @@ class MenuService {
   
   Future<Map<String, dynamic>> createMenuItem(Map<String, dynamic> data) async {
     try {
-      // Create category first if it doesn't exist
-      final categoryId = await _getOrCreateCategory(data['categoryName'] ?? 'Main Course');
-      
       final requestData = {
         'name': data['name'],
         'description': data['description'],
         'price': data['price'],
-        'categoryId': categoryId,
-        'isAvailable': data['inStock'] ?? true,
+        'categoryName': data['categoryName'] ?? 'Main Course',
+        'inStock': data['inStock'] ?? true,
       };
       
       // Add preparation time if provided
@@ -479,15 +476,12 @@ class MenuService {
   
   Future<Map<String, dynamic>> updateMenuItem(String id, Map<String, dynamic> data) async {
     try {
-      // Get or create category
-      final categoryId = await _getOrCreateCategory(data['categoryName'] ?? 'Main Course');
-      
       final requestData = {
         'name': data['name'],
         'description': data['description'],
         'price': data['price'],
-        'categoryId': categoryId,
-        'isAvailable': data['inStock'] ?? true,
+        'categoryName': data['categoryName'] ?? 'Main Course',
+        'inStock': data['inStock'] ?? true,
       };
       
       // Add preparation time if provided

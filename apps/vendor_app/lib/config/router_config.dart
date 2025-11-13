@@ -97,6 +97,23 @@ class AppRouter {
               },
             ),
           ),
+          
+          // Add Menu Item (with bottom navigation)
+          GoRoute(
+            path: '/add-menu-item',
+            name: 'add-menu-item',
+            builder: (context, state) => const AddMenuItemPage(),
+          ),
+          
+          // Edit Menu Item (with bottom navigation)
+          GoRoute(
+            path: '/edit-menu-item/:itemId',
+            name: 'edit-menu-item',
+            builder: (context, state) {
+              final itemId = state.pathParameters['itemId']!;
+              return EditMenuItemPage(itemId: itemId);
+            },
+          ),
         ],
       ),
       
@@ -107,21 +124,6 @@ class AppRouter {
         builder: (context, state) {
           final orderId = state.pathParameters['orderId']!;
           return OrderDetailsPage(orderId: orderId);
-        },
-      ),
-      
-      GoRoute(
-        path: '/add-menu-item',
-        name: 'add-menu-item',
-        builder: (context, state) => const AddMenuItemPage(),
-      ),
-      
-      GoRoute(
-        path: '/edit-menu-item/:itemId',
-        name: 'edit-menu-item',
-        builder: (context, state) {
-          final itemId = state.pathParameters['itemId']!;
-          return EditMenuItemPage(itemId: itemId);
         },
       ),
     ],

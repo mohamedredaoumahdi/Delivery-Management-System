@@ -1,176 +1,112 @@
 import 'package:flutter/material.dart';
+import 'package:ui_kit/ui_kit.dart';
 
+/// Theme configuration for Delivery App
+/// Uses the same design system as User App and Vendor App for consistency
+/// Primary color is yellow to differentiate from other apps
 class DeliveryAppTheme {
-  // Delivery-focused color scheme
-  static const Color primaryColor = Color(0xFF2E7D32); // Green for go/active
-  static const Color secondaryColor = Color(0xFF1976D2); // Blue for info
-  static const Color accentColor = Color(0xFFFF9800); // Orange for warnings/pending
-  static const Color errorColor = Color(0xFFD32F2F);
-  static const Color successColor = Color(0xFF388E3C);
-  static const Color warningColor = Color(0xFFF57C00);
-  static const Color backgroundColor = Color(0xFFF5F5F5);
-  static const Color surfaceColor = Colors.white;
-  static const Color onSurfaceColor = Color(0xFF212121);
+  /// Create a custom yellow theme for Delivery App
+  static DeliverySystemTheme _createYellowTheme() {
+    return const DeliverySystemTheme(
+      primaryColor: Color(0xFFF59E0B), // Yellow/Amber for delivery
+      secondaryColor: Color(0xFFFBBF24), // Lighter yellow
+      accentColor: Color(0xFFEF4444), // Red for urgent/important
+    );
+  }
   
-  static ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        brightness: Brightness.light,
-        primary: primaryColor,
-        secondary: secondaryColor,
-        error: errorColor,
-        surface: surfaceColor,
-        onSurface: onSurfaceColor,
-      ),
-      fontFamily: 'Inter',
-      
-      appBarTheme: const AppBarTheme(
-        backgroundColor: surfaceColor,
-        foregroundColor: onSurfaceColor,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: onSurfaceColor,
-        ),
-      ),
-      
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: surfaceColor,
-        selectedItemColor: primaryColor,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
+  /// Create the theme for the Delivery App based on DeliverySystemTheme
+  static ThemeData createTheme() {
+    // Use yellow theme for delivery app
+    final baseTheme = _createYellowTheme();
+    
+    // Customize for Delivery App (if needed)
+    return baseTheme.themeData.copyWith(
+      // Custom bottom navigation bar theme
+      navigationBarTheme: NavigationBarThemeData(
         elevation: 8,
-      ),
-      
-      cardTheme: const CardThemeData(
-        color: surfaceColor,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
+        indicatorColor: baseTheme.primaryColor.withValues(alpha: 0.2),
+        labelTextStyle: WidgetStateProperty.all(
+          const TextStyle(
+            fontSize: 12,
+          fontWeight: FontWeight.w600,
+          ),
         ),
-        margin: EdgeInsets.all(8),
       ),
       
+      // Custom app bar theme (matching user_app)
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: Colors.black87,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          fontFamily: baseTheme.fontFamily,
+      ),
+        iconTheme: const IconThemeData(
+          color: Colors.black87,
+        ),
+        ),
+      
+      // Custom button shapes
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 12,
+          ),
+        ),
+      ),
+      
+      // Custom text button theme
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
         ),
-      ),
-      
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: primaryColor,
-          side: const BorderSide(color: primaryColor),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          textStyle: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-      
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-      ),
-      
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.grey),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: errorColor),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }
   
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        brightness: Brightness.dark,
-        primary: const Color(0xFF66BB6A),
-        secondary: const Color(0xFF42A5F5),
-        error: const Color(0xFFEF5350),
-        surface: const Color(0xFF1E1E1E),
-        onSurface: Colors.white,
+  /// Create a dark theme for the Delivery App based on DeliverySystemTheme
+  static ThemeData createDarkTheme() {
+    // Use yellow theme for delivery app dark mode
+    final baseDarkTheme = _createYellowTheme().darkThemeData;
+    
+    // Customize for Delivery App dark theme (if needed)
+    return baseDarkTheme.copyWith(
+      // Custom bottom navigation bar theme for dark mode
+      navigationBarTheme: NavigationBarThemeData(
+        elevation: 8,
+        indicatorColor: Colors.amber.shade300.withValues(alpha: 0.3),
+        labelTextStyle: WidgetStateProperty.all(
+          const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
-      fontFamily: 'Inter',
       
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF1E1E1E),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+      // Custom app bar theme for dark mode
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.grey[900],
+        elevation: 0.5,
+        centerTitle: false,
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        iconTheme: const IconThemeData(
           color: Colors.white,
         ),
       ),
-      
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFF1E1E1E),
-        selectedItemColor: Color(0xFF66BB6A),
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-      ),
-      
-      cardTheme: const CardThemeData(
-        color: Color(0xFF1E1E1E),
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-        ),
-        margin: EdgeInsets.all(8),
-      ),
     );
   }
-  
-  // Custom colors for delivery states
-  static const MaterialColor deliveryStateColors = MaterialColor(
-    0xFF2E7D32,
-    <int, Color>{
-      50: Color(0xFFE8F5E8),   // Available
-      100: Color(0xFFC8E6C9),  // Assigned
-      200: Color(0xFFA5D6A7),  // Picking up
-      300: Color(0xFF81C784),  // In transit
-      400: Color(0xFF66BB6A),  // Nearby
-      500: Color(0xFF4CAF50),  // Delivered
-      600: Color(0xFF43A047),  // Completed
-      700: Color(0xFF388E3C),  // Success
-      800: Color(0xFF2E7D32),  // Primary
-      900: Color(0xFF1B5E20),  // Dark
-    },
-  );
-} 
+}

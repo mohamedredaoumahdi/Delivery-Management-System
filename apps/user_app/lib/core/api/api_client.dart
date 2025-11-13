@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiClient {
   final Dio _dio;
   final SharedPreferences _prefs;
-  static const String _baseUrl = 'http://localhost:8000/api'; // Update with your backend URL
+  static const String _baseUrl = 'http://localhost:3000/api'; // Update with your backend URL
 
   ApiClient(this._prefs) : _dio = Dio(BaseOptions(
     baseUrl: _baseUrl,

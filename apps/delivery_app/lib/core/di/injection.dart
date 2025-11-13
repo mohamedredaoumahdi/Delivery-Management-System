@@ -30,6 +30,9 @@ Future<void> configureDependencies() async {
 }
 
 Future<void> _registerExternalDependencies() async {
+  // Register LoggerService first (needed by other services)
+  getIt.registerLazySingleton<LoggerService>(() => LoggerService());
+  
   // Shared Preferences
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
@@ -40,7 +43,7 @@ Future<void> _registerExternalDependencies() async {
   // Configure Dio
   getIt.registerLazySingleton<Dio>(() {
     final dio = Dio();
-    dio.options.baseUrl = 'http://localhost:8000/api';
+    dio.options.baseUrl = 'http://localhost:3000/api';
     dio.options.connectTimeout = const Duration(minutes: 2); // Increased timeout
     dio.options.receiveTimeout = const Duration(minutes: 2); // Increased timeout
     dio.options.sendTimeout = const Duration(minutes: 2); // Increased timeout

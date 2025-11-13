@@ -106,6 +106,15 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
       _logger.i('📦 DashboardBloc: Converted to ${recentDeliveries.length} recent delivery objects');
 
+      // Filter out delivered orders - only show active deliveries (accepted, picked up, in transit)
+      final activeDeliveries = recentDeliveries.where((delivery) {
+        return delivery.status != DeliveryStatus.delivered && 
+               delivery.status != DeliveryStatus.pending &&
+               delivery.status != DeliveryStatus.readyForPickup;
+      }).toList();
+
+      _logger.i('📦 DashboardBloc: Filtered to ${activeDeliveries.length} active deliveries (excluding delivered)');
+
       final dashboardData = DashboardLoaded(
         driverStatus: driverStatus,
         todayStats: DashboardStats(
@@ -115,7 +124,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           averageRating: (statsData['rating'] ?? 5.0).toDouble(),
         ),
         availableDeliveries: availableDeliveries,
-        recentDeliveries: recentDeliveries, // Now using real data
+        recentDeliveries: activeDeliveries, // Only active deliveries (not delivered)
         currentDelivery: null,
       );
 
@@ -186,10 +195,17 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           );
         }).toList();
         
+        // Filter out delivered orders - only show active deliveries
+        final activeDeliveries = recentDeliveries.where((delivery) {
+          return delivery.status != DeliveryStatus.delivered && 
+                 delivery.status != DeliveryStatus.pending &&
+                 delivery.status != DeliveryStatus.readyForPickup;
+        }).toList();
+        
         // Updated data with fresh orders and stats
         final updatedData = currentState.copyWith(
           availableDeliveries: availableDeliveries,
-          recentDeliveries: recentDeliveries,
+          recentDeliveries: activeDeliveries, // Only active deliveries (not delivered)
           todayStats: DashboardStats(
             deliveryCount: statsData['deliveryCount'] ?? 0,
             earnings: (statsData['earnings'] ?? 0).toDouble(),

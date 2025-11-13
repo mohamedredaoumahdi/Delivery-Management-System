@@ -51,8 +51,8 @@ class VendorApp extends StatelessWidget {
       child: MaterialApp.router(
         title: AppConfig.appName,
         debugShowCheckedModeBanner: false,
-        theme: ThemeConfig.lightTheme,
-        darkTheme: ThemeConfig.darkTheme,
+        theme: VendorAppTheme.createTheme(),
+        darkTheme: VendorAppTheme.createDarkTheme(),
         themeMode: ThemeMode.system,
         routerConfig: AppRouter.router,
       ),

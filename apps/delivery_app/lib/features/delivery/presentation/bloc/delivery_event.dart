@@ -11,6 +11,10 @@ class DeliveryLoadAvailableEvent extends DeliveryEvent {
   const DeliveryLoadAvailableEvent();
 }
 
+class DeliveryLoadAssignedEvent extends DeliveryEvent {
+  const DeliveryLoadAssignedEvent();
+}
+
 class DeliveryLoadDetailsEvent extends DeliveryEvent {
   final String deliveryId;
 
@@ -36,4 +40,13 @@ class DeliveryUpdateStatusEvent extends DeliveryEvent {
 
   @override
   List<Object> get props => [status];
+}
+
+class DeliveryMarkDeliveredEvent extends DeliveryEvent {
+  final String deliveryId;
+
+  const DeliveryMarkDeliveredEvent(this.deliveryId);
+
+  @override
+  List<Object> get props => [deliveryId];
 } 

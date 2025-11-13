@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:core/core.dart';
 
 class PushNotificationService {
   final LoggerService _logger;
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  FirebaseMessaging? _firebaseMessaging;
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
   
   // Stream controllers
@@ -15,7 +16,21 @@ class PushNotificationService {
   final StreamController<RemoteMessage> _notificationTapController = 
       StreamController<RemoteMessage>.broadcast();
 
-  PushNotificationService(this._logger);
+  bool _isFirebaseAvailable = false;
+
+  PushNotificationService(this._logger) {
+    // Try to initialize Firebase Messaging, but don't fail if Firebase isn't configured
+    try {
+      // Check if Firebase is initialized first
+      Firebase.app(); // This will throw if Firebase isn't initialized
+      _firebaseMessaging = FirebaseMessaging.instance;
+      _isFirebaseAvailable = true;
+    } catch (e) {
+      _logger.w('Firebase Messaging not available: $e');
+      _isFirebaseAvailable = false;
+      _firebaseMessaging = null;
+    }
+  }
 
   // Streams
   Stream<RemoteMessage> get onMessageReceived => _messageController.stream;
@@ -25,6 +40,14 @@ class PushNotificationService {
   Future<void> initialize() async {
     try {
       _logger.i('Initializing push notification service');
+      
+      // Check if Firebase is available
+      if (!_isFirebaseAvailable || _firebaseMessaging == null) {
+        _logger.w('Firebase not available, skipping Firebase Messaging initialization');
+        // Still initialize local notifications
+        await _initializeLocalNotifications();
+        return;
+      }
       
       // Request permission
       await _requestPermission();
@@ -46,8 +69,9 @@ class PushNotificationService {
 
   /// Request notification permissions
   Future<void> _requestPermission() async {
+    if (_firebaseMessaging == null) return;
     try {
-      NotificationSettings settings = await _firebaseMessaging.requestPermission(
+      NotificationSettings settings = await _firebaseMessaging!.requestPermission(
         alert: true,
         announcement: false,
         badge: true,
@@ -95,6 +119,7 @@ class PushNotificationService {
 
   /// Setup message handlers
   Future<void> _setupMessageHandlers() async {
+    if (_firebaseMessaging == null) return;
     // Handle messages when app is in foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       _logger.i('Got a message whilst in the foreground!');
@@ -115,7 +140,7 @@ class PushNotificationService {
     });
 
     // Handle notification tap when app is terminated
-    RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
+    RemoteMessage? initialMessage = await _firebaseMessaging!.getInitialMessage();
     if (initialMessage != null) {
       _logger.i('App opened from terminated state via notification');
       _notificationTapController.add(initialMessage);
@@ -124,8 +149,9 @@ class PushNotificationService {
 
   /// Get FCM token
   Future<String?> _getFCMToken() async {
+    if (_firebaseMessaging == null) return null;
     try {
-      String? token = await _firebaseMessaging.getToken();
+      String? token = await _firebaseMessaging!.getToken();
       if (token != null) {
         _logger.i('FCM Token: $token');
         return token;
@@ -191,8 +217,9 @@ class PushNotificationService {
 
   /// Subscribe to topic
   Future<void> subscribeToTopic(String topic) async {
+    if (_firebaseMessaging == null) return;
     try {
-      await _firebaseMessaging.subscribeToTopic(topic);
+      await _firebaseMessaging!.subscribeToTopic(topic);
       _logger.i('Subscribed to topic: $topic');
     } catch (e) {
       _logger.e('Error subscribing to topic: $topic', e);
@@ -201,8 +228,9 @@ class PushNotificationService {
 
   /// Unsubscribe from topic
   Future<void> unsubscribeFromTopic(String topic) async {
+    if (_firebaseMessaging == null) return;
     try {
-      await _firebaseMessaging.unsubscribeFromTopic(topic);
+      await _firebaseMessaging!.unsubscribeFromTopic(topic);
       _logger.i('Unsubscribed from topic: $topic');
     } catch (e) {
       _logger.e('Error unsubscribing from topic: $topic', e);
@@ -211,7 +239,8 @@ class PushNotificationService {
 
   /// Get current FCM token
   Future<String?> getToken() async {
-    return await _firebaseMessaging.getToken();
+    if (_firebaseMessaging == null) return null;
+    return await _firebaseMessaging!.getToken();
   }
 
   /// Dispose of resources

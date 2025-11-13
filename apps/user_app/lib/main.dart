@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_it/get_it.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'config/routes.dart';
 import 'config/theme.dart';
@@ -27,6 +28,16 @@ final getIt = GetIt.instance;
 void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    // Firebase initialization failed - might be missing config files
+    // This is okay for development, but should be configured for production
+    debugPrint('⚠️ Firebase initialization failed: $e');
+    debugPrint('⚠️ Push notifications will not work without Firebase configuration');
+  }
   
   // Initialize dependency injection
   await initializeDependencies();

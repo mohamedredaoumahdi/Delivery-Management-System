@@ -17,7 +17,10 @@ export const createProductSchema = Joi.object({
   name: Joi.string().required().min(2).max(100),
   description: Joi.string().required().min(10).max(500),
   price: Joi.number().required().min(0),
-  categoryId: Joi.string().required(),
-  isAvailable: Joi.boolean(),
-  preparationTime: Joi.number().min(0),
-}); 
+  categoryId: Joi.string().optional(),
+  categoryName: Joi.string().optional().min(2).max(50),
+  isAvailable: Joi.boolean().optional(),
+  inStock: Joi.boolean().optional(),
+  preparationTime: Joi.number().min(0).optional(),
+  images: Joi.array().items(Joi.string()).optional(),
+}).or('categoryId', 'categoryName'); // Require at least one of categoryId or categoryName 

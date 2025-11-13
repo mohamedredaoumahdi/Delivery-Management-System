@@ -79,16 +79,58 @@ export class VendorController {
       throw new AppError('Shop not found', 404);
     }
 
-    const { name, description, price, categoryId, images } = req.body;
+    const { name, description, price, categoryId, categoryName, images, inStock, isAvailable } = req.body;
+
+    // Find or create category
+    let category;
+    if (categoryId) {
+      category = await prisma.category.findUnique({ 
+        where: { id: categoryId } 
+      });
+    }
+
+    // If categoryId doesn't exist or categoryName is provided, find or create by name
+    if (!category && categoryName) {
+      category = await prisma.category.findFirst({
+        where: {
+          shopId: shop.id,
+          name: {
+            equals: categoryName,
+            mode: 'insensitive'
+          }
+        }
+      });
+
+      // Create category if it doesn't exist
+      if (!category) {
+        category = await prisma.category.create({
+          data: {
+            name: categoryName,
+            description: `${categoryName} category`,
+            shopId: shop.id,
+            status: 'ACTIVE'
+          }
+        });
+      }
+    }
+
+    if (!category) {
+      throw new AppError('Category is required. Please provide categoryId or categoryName', 400);
+    }
+
+    // Handle availability - use inStock if provided, otherwise isAvailable, default to true
+    const productInStock = inStock !== undefined ? inStock : (isAvailable !== undefined ? isAvailable : true);
 
     const product = await prisma.product.create({
       data: {
         name,
         description,
         price,
-        categoryId,
+        categoryId: category.id,
         images,
-        categoryName: (await prisma.category.findUnique({ where: { id: categoryId } }))!.name,
+        categoryName: category.name,
+        inStock: productInStock,
+        isActive: productInStock, // Set isActive to match inStock
         shopId: shop.id
       }
     });
@@ -106,22 +148,66 @@ export class VendorController {
     }
 
     const { id } = req.params;
-    const { name, description, price, categoryId, images, inStock, isActive } = req.body;
+    const { name, description, price, categoryId, categoryName, images, inStock, isAvailable } = req.body;
+
+    // Find or create category if categoryName is provided
+    let category;
+    if (categoryName) {
+      category = await prisma.category.findFirst({
+        where: {
+          shopId: shop.id,
+          name: {
+            equals: categoryName,
+            mode: 'insensitive'
+          }
+        }
+      });
+
+      // Create category if it doesn't exist
+      if (!category) {
+        category = await prisma.category.create({
+          data: {
+            name: categoryName,
+            description: `${categoryName} category`,
+            shopId: shop.id,
+            status: 'ACTIVE'
+          }
+        });
+      }
+    } else if (categoryId) {
+      category = await prisma.category.findUnique({ 
+        where: { id: categoryId } 
+      });
+    }
+
+    // Build update data - only include fields that are provided
+    const updateData: any = {};
+    
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (price !== undefined) updateData.price = price;
+    if (images !== undefined) updateData.images = images;
+    
+    // Handle availability - use inStock if provided, otherwise isAvailable
+    if (inStock !== undefined) {
+      updateData.inStock = inStock;
+      updateData.isActive = inStock; // Keep isActive in sync with inStock
+    } else if (isAvailable !== undefined) {
+      updateData.inStock = isAvailable;
+      updateData.isActive = isAvailable;
+    }
+
+    if (category) {
+      updateData.categoryId = category.id;
+      updateData.categoryName = category.name;
+    }
 
     const product = await prisma.product.update({
       where: {
         id,
         shopId: shop.id
       },
-      data: {
-        name,
-        description,
-        price,
-        categoryId,
-        images,
-        inStock,
-        isActive
-      }
+      data: updateData
     });
 
     if (!product) {

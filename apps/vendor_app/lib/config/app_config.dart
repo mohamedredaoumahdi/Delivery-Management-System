@@ -3,7 +3,7 @@ class AppConfig {
   static const String appVersion = '1.0.0';
   
   // API Configuration
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'http://localhost:3000/api';
   static const String apiVersion = 'v1';
   
   // App Settings

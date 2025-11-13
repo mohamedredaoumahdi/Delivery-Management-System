@@ -89,8 +89,8 @@ class DeliveryApp extends StatelessWidget {
         },
         child: MaterialApp.router(
           title: 'Delivery Driver',
-          theme: DeliveryAppTheme.lightTheme,
-          darkTheme: DeliveryAppTheme.darkTheme,
+          theme: DeliveryAppTheme.createTheme(),
+          darkTheme: DeliveryAppTheme.createDarkTheme(),
           themeMode: ThemeMode.system,
           routerConfig: AppRouter.router,
           debugShowCheckedModeBanner: false,

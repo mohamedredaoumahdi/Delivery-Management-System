@@ -57,7 +57,7 @@ Future<void> initializeDependencies() async {
   getIt.registerSingleton<SocketService>(
     SocketService(
       logger: getIt<LoggerService>(),
-      baseUrl: 'http://localhost:8000', // TODO: Make this configurable
+      baseUrl: 'http://localhost:3000', // TODO: Make this configurable
       authToken: null, // Will be updated when user logs in
     ),
   );

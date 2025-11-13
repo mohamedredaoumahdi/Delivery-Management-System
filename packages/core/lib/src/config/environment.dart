@@ -18,9 +18,9 @@ class Environment {
         if (defaultTargetPlatform == TargetPlatform.android) {
           return 'http://10.0.2.2:3000/api'; // Android emulator
         } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-                return 'http://localhost:8000/api'; // iOS simulator
+          return 'http://localhost:3000/api'; // iOS simulator
     } else {
-      return 'http://localhost:8000/api'; // Web/Desktop
+          return 'http://localhost:3000/api'; // Web/Desktop
         }
       case _staging:
         return 'https://staging-api.yourapp.com/api';

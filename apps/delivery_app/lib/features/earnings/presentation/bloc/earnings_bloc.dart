@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
 import 'package:core/core.dart';
 import '../../data/earnings_service.dart';
 import '../../domain/models/earnings_data.dart';
@@ -57,7 +56,7 @@ class EarningsBloc extends Bloc<EarningsEvent, EarningsState> {
     _logger.i('🔄 EarningsBloc: Changing period to: ${event.period}');
     try {
       emit(const EarningsLoading());
-      _currentPeriod = event.period;
+      _currentPeriod = event.period.toLowerCase();
       final data = await _earningsService.getEarnings(period: _currentPeriod);
       _logger.i('✅ EarningsBloc: Successfully loaded earnings for new period');
       emit(EarningsLoaded(data));

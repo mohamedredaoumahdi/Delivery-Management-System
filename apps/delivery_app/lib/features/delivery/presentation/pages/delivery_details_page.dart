@@ -6,6 +6,7 @@ import 'package:core/core.dart';
 import 'package:get_it/get_it.dart';
 
 import '../bloc/delivery_bloc.dart';
+import '../../../earnings/presentation/bloc/earnings_bloc.dart';
 
 class DeliveryDetailsPage extends StatefulWidget {
   final String deliveryId;
@@ -66,6 +67,31 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
                 backgroundColor: Colors.blue,
               ),
             );
+          } else if (state is DeliveryMarkedAsDelivered) {
+            // Order was just marked as delivered
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Order marked as delivered successfully!'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+            // Trigger refresh of deliveries list and earnings before navigating back
+            // This ensures the list and earnings are updated when we return
+            context.read<DeliveryBloc>().add(const DeliveryLoadAssignedEvent());
+            // Refresh earnings to reflect the new delivery
+            try {
+              final earningsBloc = context.read<EarningsBloc>();
+              earningsBloc.add(const EarningsRefreshEvent());
+            } catch (e) {
+              _logger.w('⚠️ Could not refresh earnings: $e');
+            }
+            // Navigate back to deliveries list
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+            });
           } else if (state is DeliveryError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -146,50 +172,7 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
     );
   }
 
-  Widget _buildErrorView(BuildContext context, String message) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: theme.colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Unable to load delivery details',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                context.read<DeliveryBloc>().add(DeliveryLoadDetailsEvent(widget.deliveryId));
-              },
-              child: const Text('Try Again'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildDeliveryDetails(BuildContext context, DeliveryOrder delivery) {
-    final theme = Theme.of(context);
     final earnings = _calculateEarnings(delivery.total, delivery.distance);
 
     return SingleChildScrollView(
@@ -307,32 +290,53 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '+1 (555) 123-4567',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      if (delivery.customerPhone != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          delivery.customerPhone!,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          ),
                         ),
-                      ),
+                      ] else ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'No phone number available',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
                 IconButton(
-                  onPressed: () => _callCustomer(),
+                  onPressed: delivery.customerPhone != null
+                      ? () => _callCustomer(delivery.customerPhone!)
+                      : null,
                   icon: const Icon(Icons.phone),
                   style: IconButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    foregroundColor: theme.colorScheme.primary,
+                    foregroundColor: delivery.customerPhone != null
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
+                  tooltip: delivery.customerPhone != null ? 'Call Customer' : 'Phone number not available',
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  onPressed: () => _messageCustomer(),
+                  onPressed: delivery.customerPhone != null
+                      ? () => _messageCustomer(delivery.customerPhone!)
+                      : null,
                   icon: const Icon(Icons.message),
                   style: IconButton.styleFrom(
                     backgroundColor: theme.colorScheme.secondary.withValues(alpha: 0.1),
-                    foregroundColor: theme.colorScheme.secondary,
+                    foregroundColor: delivery.customerPhone != null
+                        ? theme.colorScheme.secondary
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
+                  tooltip: delivery.customerPhone != null ? 'Message Customer' : 'Phone number not available',
                 ),
               ],
             ),
@@ -472,53 +476,123 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
               ),
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(
-                  Icons.credit_card,
-                  size: 20,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Credit Card •••• 4532',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+            if (delivery.paymentMethod != null) ...[
+              Row(
+                children: [
+                  Icon(
+                    delivery.paymentMethod == 'CASH_ON_DELIVERY' 
+                        ? Icons.money 
+                        : Icons.credit_card,
+                    size: 20,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
-                  child: Text(
-                    'PAID',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _formatPaymentMethod(delivery.paymentMethod!),
+                      style: theme.textTheme.bodyMedium,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Subtotal:', style: theme.textTheme.bodyMedium),
-                Text('\$${(delivery.total - 2.99).toStringAsFixed(2)}', style: theme.textTheme.bodyMedium),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Delivery Fee:', style: theme.textTheme.bodyMedium),
-                Text('\$2.99', style: theme.textTheme.bodyMedium),
-              ],
-            ),
+                  if (delivery.paymentMethod != 'CASH_ON_DELIVERY')
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'PAID',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'CASH',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 8),
+            ],
+            if (delivery.subtotal > 0) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Subtotal:', style: theme.textTheme.bodyMedium),
+                  Text('\$${delivery.subtotal.toStringAsFixed(2)}', style: theme.textTheme.bodyMedium),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
+            if (delivery.deliveryFee > 0) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Delivery Fee:', style: theme.textTheme.bodyMedium),
+                  Text('\$${delivery.deliveryFee.toStringAsFixed(2)}', style: theme.textTheme.bodyMedium),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
+            if (delivery.serviceFee > 0) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Service Fee:', style: theme.textTheme.bodyMedium),
+                  Text('\$${delivery.serviceFee.toStringAsFixed(2)}', style: theme.textTheme.bodyMedium),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
+            if (delivery.tax > 0) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Tax:', style: theme.textTheme.bodyMedium),
+                  Text('\$${delivery.tax.toStringAsFixed(2)}', style: theme.textTheme.bodyMedium),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
+            if (delivery.tip > 0) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Tip:', style: theme.textTheme.bodyMedium),
+                  Text('\$${delivery.tip.toStringAsFixed(2)}', style: theme.textTheme.bodyMedium),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
+            if (delivery.discount > 0) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Discount:', style: theme.textTheme.bodyMedium),
+                  Text('-\$${delivery.discount.toStringAsFixed(2)}', 
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -576,8 +650,6 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
   }
 
   Widget _buildActionButtons(BuildContext context, DeliveryOrder delivery) {
-    final theme = Theme.of(context);
-
     if (delivery.status == DeliveryStatus.pending || delivery.status == DeliveryStatus.readyForPickup) {
       return Column(
         children: [
@@ -607,40 +679,58 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
       );
     }
 
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              context.go('/navigation/${delivery.id}');
-            },
-            icon: const Icon(Icons.navigation),
-            label: const Text('Start Navigation'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+    // For active deliveries (picked up, in transit), show navigation and mark as delivered buttons
+    if (delivery.status == DeliveryStatus.pickedUp || 
+        delivery.status == DeliveryStatus.inTransit ||
+        delivery.status == DeliveryStatus.accepted) {
+      return Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                context.go('/navigation/${delivery.id}');
+              },
+              icon: const Icon(Icons.navigation),
+              label: const Text('Start Navigation'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => _callCustomer(),
-                child: const Text('Call Customer'),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                _showMarkDeliveredDialog(context, delivery);
+              },
+              icon: const Icon(Icons.check_circle),
+              label: const Text('Mark as Delivered'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => _messageCustomer(),
-                child: const Text('Message'),
-              ),
-            ),
-          ],
+          ),
+        ],
+      );
+    }
+
+    // For delivered orders, just show navigation button
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          context.go('/navigation/${delivery.id}');
+        },
+        icon: const Icon(Icons.navigation),
+        label: const Text('View Navigation'),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
         ),
-      ],
+      ),
     );
   }
 
@@ -698,17 +788,306 @@ class _DeliveryDetailsPageState extends State<DeliveryDetailsPage> {
     return baseDeliveryFee + distanceBonus + orderPercentage;
   }
 
-  void _callCustomer() async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: '+15551234567');
+  String _formatPaymentMethod(String paymentMethod) {
+    switch (paymentMethod.toUpperCase()) {
+      case 'CASH_ON_DELIVERY':
+        return 'Cash on Delivery';
+      case 'CREDIT_CARD':
+        return 'Credit Card';
+      case 'DEBIT_CARD':
+        return 'Debit Card';
+      case 'PAYPAL':
+        return 'PayPal';
+      case 'STRIPE':
+        return 'Stripe';
+      default:
+        return paymentMethod.replaceAll('_', ' ');
+    }
+  }
+
+  void _callCustomer(String phoneNumber) async {
+    // Remove any non-digit characters except +
+    final cleanedPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final Uri phoneUri = Uri(scheme: 'tel', path: cleanedPhone);
     if (await canLaunchUrl(phoneUri)) {
       await launchUrl(phoneUri);
     }
   }
 
-  void _messageCustomer() async {
-    final Uri smsUri = Uri(scheme: 'sms', path: '+15551234567');
+  void _messageCustomer(String phoneNumber) async {
+    // Remove any non-digit characters except +
+    final cleanedPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final Uri smsUri = Uri(scheme: 'sms', path: cleanedPhone);
     if (await canLaunchUrl(smsUri)) {
       await launchUrl(smsUri);
     }
+  }
+
+  void _showMarkDeliveredDialog(BuildContext context, DeliveryOrder delivery) {
+    final theme = Theme.of(context);
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with icon
+              Row(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mark as Delivered',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Confirm delivery completion',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              
+              // Instruction text
+              Text(
+                'Please confirm that the order has been delivered successfully to the customer.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Order details card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.receipt_long,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Order Details',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDialogDetailRow(
+                      context,
+                      Icons.tag,
+                      'Order Number',
+                      '#${delivery.orderNumber}',
+                    ),
+                    const SizedBox(height: 8),
+                    _buildDialogDetailRow(
+                      context,
+                      Icons.person,
+                      'Customer',
+                      delivery.customerName,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildDialogDetailRow(
+                      context,
+                      Icons.attach_money,
+                      'Total Amount',
+                      '\$${delivery.total.toStringAsFixed(2)}',
+                      isHighlighted: true,
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Cash payment warning
+              if (delivery.paymentMethod == 'CASH_ON_DELIVERY') ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.orange.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.orange.shade700,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cash Payment Required',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange.shade700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Make sure to collect \$${delivery.total.toStringAsFixed(2)} from the customer before confirming delivery.',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: Colors.orange.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              
+              const SizedBox(height: 24),
+              
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(
+                          color: theme.colorScheme.outline.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        context.read<DeliveryBloc>().add(DeliveryMarkDeliveredEvent(delivery.id));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 2,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle, size: 20),
+                          SizedBox(width: 8),
+                          Text('Confirm Delivery'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDialogDetailRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value, {
+    bool isHighlighted = false,
+  }) {
+    final theme = Theme.of(context);
+    
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: isHighlighted
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w500,
+                  color: isHighlighted
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurface,
+                  fontSize: isHighlighted ? 16 : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 } 

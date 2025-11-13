@@ -10,9 +10,11 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
 
   DeliveryBloc(this._deliveryService) : super(const DeliveryInitial()) {
     on<DeliveryLoadAvailableEvent>(_onLoadAvailable);
+    on<DeliveryLoadAssignedEvent>(_onLoadAssigned);
     on<DeliveryLoadDetailsEvent>(_onLoadDetails);
     on<DeliveryAcceptEvent>(_onAccept);
     on<DeliveryUpdateStatusEvent>(_onUpdateStatus);
+    on<DeliveryMarkDeliveredEvent>(_onMarkDelivered);
   }
 
   Future<void> _onLoadAvailable(
@@ -75,8 +77,16 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
           id: orderData['id'] ?? '',
           orderNumber: orderNumber,
           customerName: customerName,
+          customerPhone: orderData['user']?['phone'],
           deliveryAddress: deliveryAddress,
           total: (orderData['total'] ?? 0).toDouble(),
+          subtotal: (orderData['subtotal'] ?? 0).toDouble(),
+          deliveryFee: (orderData['deliveryFee'] ?? 0).toDouble(),
+          serviceFee: (orderData['serviceFee'] ?? 0).toDouble(),
+          tax: (orderData['tax'] ?? 0).toDouble(),
+          tip: (orderData['tip'] ?? 0).toDouble(),
+          discount: (orderData['discount'] ?? 0).toDouble(),
+          paymentMethod: orderData['paymentMethod'],
           distance: 2.0, // TODO: Calculate actual distance
           status: deliveryStatus,
           items: orderItems,
@@ -100,6 +110,78 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
       print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
       emit(DeliveryError(error.toString()));
       print('📊 DeliveryBloc: Emitted DeliveryError state: $error');
+    }
+  }
+
+  Future<void> _onLoadAssigned(
+    DeliveryLoadAssignedEvent event,
+    Emitter<DeliveryState> emit,
+  ) async {
+    print('🚀 DeliveryBloc: LoadAssignedEvent received');
+    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
+    
+    if (state is! DeliveryLoading) {
+      emit(const DeliveryLoading());
+      print('📊 DeliveryBloc: State updated to DeliveryLoading');
+    }
+
+    try {
+      print('🔄 DeliveryBloc: Calling deliveryService.getAssignedOrders()');
+      final ordersData = await _deliveryService.getAssignedOrders();
+      
+      print('✅ DeliveryBloc: Successfully received ${ordersData.length} assigned orders from service');
+      
+      // Convert API response to DeliveryOrder objects
+      final deliveries = ordersData.map((orderData) {
+        final customerName = orderData['user']?['name'] ?? 'Unknown Customer';
+        final shopName = orderData['shopName'] ?? orderData['shop_name'] ?? 'Unknown Shop';
+        final orderNumber = orderData['orderNumber'] ?? orderData['order_number'] ?? '';
+        final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
+        final backendStatus = orderData['status'] ?? 'PENDING';
+        
+        // Map backend status to delivery status
+        final deliveryStatus = _mapBackendStatusToDeliveryStatus(backendStatus);
+        
+        // Parse order items
+        final itemsData = orderData['items'] as List<dynamic>? ?? [];
+        final orderItems = itemsData.map((itemData) {
+          return OrderItem(
+            name: itemData['productName'] ?? 'Unknown Item',
+            quantity: itemData['quantity'] ?? 1,
+            price: (itemData['productPrice'] ?? 0).toDouble(),
+            totalPrice: (itemData['totalPrice'] ?? 0).toDouble(),
+          );
+        }).toList();
+        
+        return DeliveryOrder(
+          id: orderData['id'] ?? '',
+          orderNumber: orderNumber,
+          customerName: customerName,
+          customerPhone: orderData['user']?['phone'],
+          deliveryAddress: deliveryAddress,
+          total: (orderData['total'] ?? 0).toDouble(),
+          subtotal: (orderData['subtotal'] ?? 0).toDouble(),
+          deliveryFee: (orderData['deliveryFee'] ?? 0).toDouble(),
+          serviceFee: (orderData['serviceFee'] ?? 0).toDouble(),
+          tax: (orderData['tax'] ?? 0).toDouble(),
+          tip: (orderData['tip'] ?? 0).toDouble(),
+          discount: (orderData['discount'] ?? 0).toDouble(),
+          paymentMethod: orderData['paymentMethod'],
+          distance: 2.0, // TODO: Calculate actual distance
+          status: deliveryStatus,
+          items: orderItems,
+          shopName: shopName,
+          pickupAddress: orderData['shop']?['address'] ?? 'Unknown Address',
+        );
+      }).toList();
+      
+      print('📦 DeliveryBloc: Final assigned deliveries list: ${deliveries.length} items');
+      emit(DeliveryLoaded(deliveries));
+      print('✅ DeliveryBloc: Successfully emitted DeliveryLoaded with ${deliveries.length} deliveries');
+
+    } catch (error) {
+      print('❌ DeliveryBloc: Error loading assigned orders: $error');
+      emit(DeliveryError(error.toString()));
     }
   }
 
@@ -157,8 +239,16 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
         id: event.deliveryId,
         orderNumber: orderNumber,
         customerName: customerName,
+        customerPhone: orderData['user']?['phone'],
         deliveryAddress: deliveryAddress,
         total: total,
+        subtotal: (orderData['subtotal'] ?? 0).toDouble(),
+        deliveryFee: (orderData['deliveryFee'] ?? 0).toDouble(),
+        serviceFee: (orderData['serviceFee'] ?? 0).toDouble(),
+        tax: (orderData['tax'] ?? 0).toDouble(),
+        tip: (orderData['tip'] ?? 0).toDouble(),
+        discount: (orderData['discount'] ?? 0).toDouble(),
+        paymentMethod: orderData['paymentMethod'],
         distance: 2.0, // TODO: Calculate actual distance
         status: deliveryStatus,
         items: orderItems,
@@ -225,6 +315,37 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     }
   }
 
+  Future<void> _onMarkDelivered(
+    DeliveryMarkDeliveredEvent event,
+    Emitter<DeliveryState> emit,
+  ) async {
+    print('🚀 DeliveryBloc: MarkDeliveredEvent received for delivery: ${event.deliveryId}');
+    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
+    
+    emit(const DeliveryLoading());
+    print('📊 DeliveryBloc: State updated to DeliveryLoading');
+    
+    try {
+      print('🔄 DeliveryBloc: Calling deliveryService.markDelivered()');
+      await _deliveryService.markDelivered(event.deliveryId);
+      print('✅ DeliveryBloc: Order marked as delivered successfully');
+      
+      // Emit success state first
+      emit(DeliveryMarkedAsDelivered(event.deliveryId));
+      print('📊 DeliveryBloc: Emitted DeliveryMarkedAsDelivered state');
+      
+      // Reload the order details to get updated status
+      print('🔄 DeliveryBloc: Reloading order details after marking as delivered');
+      add(DeliveryLoadDetailsEvent(event.deliveryId));
+      
+    } catch (error) {
+      print('❌ DeliveryBloc: Error marking order as delivered: $error');
+      print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
+      emit(DeliveryError(error.toString()));
+      print('📊 DeliveryBloc: Emitted DeliveryError state: $error');
+    }
+  }
+
   /// Maps backend order status to delivery app status
   DeliveryStatus _mapBackendStatusToDeliveryStatus(String backendStatus) {
     switch (backendStatus.toUpperCase()) {
@@ -251,8 +372,16 @@ class DeliveryOrder {
   final String id;
   final String orderNumber;
   final String customerName;
+  final String? customerPhone;
   final String deliveryAddress;
   final double total;
+  final double subtotal;
+  final double deliveryFee;
+  final double serviceFee;
+  final double tax;
+  final double tip;
+  final double discount;
+  final String? paymentMethod;
   final double distance;
   final DeliveryStatus status;
   final DateTime? deliveredAt;
@@ -264,8 +393,16 @@ class DeliveryOrder {
     required this.id,
     required this.orderNumber,
     required this.customerName,
+    this.customerPhone,
     required this.deliveryAddress,
     required this.total,
+    this.subtotal = 0.0,
+    this.deliveryFee = 0.0,
+    this.serviceFee = 0.0,
+    this.tax = 0.0,
+    this.tip = 0.0,
+    this.discount = 0.0,
+    this.paymentMethod,
     required this.distance,
     required this.status,
     this.deliveredAt,

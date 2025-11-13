@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class EarningsData {
   final double totalEarnings;
   final double todayEarnings;

@@ -54,8 +54,22 @@ class _ProfilePageState extends State<ProfilePage> {
         body: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
             if (state is ProfileLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Loading profile...',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
               );
             }
 
@@ -99,28 +113,28 @@ class _ProfilePageState extends State<ProfilePage> {
                   context.read<ProfileBloc>().add(LoadProfile());
                 },
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
                       // Profile Header
                       _buildProfileHeader(state.user),
                       
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       
                       // Business Information
                       _buildBusinessInfoSection(state.user),
                       
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       
                       // Statistics
                       _buildStatisticsSection(),
                       
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       
                       // Account Settings
                       _buildAccountSettingsSection(),
                       
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       
                       // Actions
                       _buildActionsSection(),
@@ -142,29 +156,55 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileHeader(Map<String, dynamic> user) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           children: [
             // Profile Image
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-              child: Icon(
-                Icons.store,
-                size: 50,
-                color: Theme.of(context).colorScheme.primary,
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: Colors.white,
+                child: Icon(
+                  Icons.store,
+                  size: 50,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
             // Business Name or User Name
             Text(
               user['businessName'] ?? user['name'] ?? 'Your Business',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
@@ -176,7 +216,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Text(
                 'Owner: ${user['name']}',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[600],
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
             
@@ -187,7 +227,7 @@ class _ProfilePageState extends State<ProfilePage> {
             Text(
               user['email'] ?? 'No email provided',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
             
@@ -195,25 +235,32 @@ class _ProfilePageState extends State<ProfilePage> {
             
             // Status Badge - Show account status
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: _getAccountStatusColor(user).withValues(alpha: 0.1),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  width: 1,
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    _getAccountStatusIcon(user),
-                    size: 16,
-                    color: _getAccountStatusColor(user),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _getAccountStatusColor(user),
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Text(
                     _getAccountStatusText(user),
                     style: TextStyle(
-                      color: _getAccountStatusColor(user),
-                      fontSize: 12,
+                      color: Colors.white,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -228,44 +275,65 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildBusinessInfoSection(Map<String, dynamic> user) {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.business,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.business,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
                   'Business Information',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
             _buildInfoRow(Icons.person, 'Name', user['name'] ?? 'Not provided'),
+            const Divider(height: 24),
             _buildInfoRow(Icons.email, 'Email', user['email'] ?? 'Not provided'),
-            if (user['phone'] != null)
+            if (user['phone'] != null) ...[
+              const Divider(height: 24),
               _buildInfoRow(Icons.phone, 'Phone', user['phone']),
+            ],
+            const Divider(height: 24),
             _buildInfoRow(Icons.verified_user, 'Account Status', 
               user['isActive'] == true ? 'Active' : 'Inactive'),
+            const Divider(height: 24),
             _buildInfoRow(Icons.email_outlined, 'Email Verified', 
               user['isEmailVerified'] == true ? 'Yes' : 'No'),
-            if (user['phone'] != null)
+            if (user['phone'] != null) ...[
+              const Divider(height: 24),
               _buildInfoRow(Icons.phone_android, 'Phone Verified', 
                 user['isPhoneVerified'] == true ? 'Yes' : 'No'),
-            if (user['lastLoginAt'] != null)
+            ],
+            if (user['lastLoginAt'] != null) ...[
+              const Divider(height: 24),
               _buildInfoRow(Icons.access_time, 'Last Login', 
                 _formatDate(user['lastLoginAt'])),
+            ],
+            const Divider(height: 24),
             _buildInfoRow(Icons.calendar_today, 'Member Since', 
               _formatDate(user['createdAt'])),
           ],
@@ -276,50 +344,78 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildStatisticsSection() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.analytics,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.analytics,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
                   'Business Analytics',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[200]!),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                  width: 1,
+                ),
               ),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.bar_chart,
-                    size: 48,
-                    color: Colors.grey[400],
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.bar_chart,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Text(
-                    'View your business analytics',
+                    'View Your Business Analytics',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -330,7 +426,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   ElevatedButton.icon(
                     onPressed: () {
                       // Navigate to analytics tab using callback
@@ -341,6 +437,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
                 ],
@@ -354,29 +451,40 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildAccountSettingsSection() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.settings,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.settings,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
                   'Account Settings',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
             _buildSettingsItem(
               Icons.edit,
@@ -385,6 +493,8 @@ class _ProfilePageState extends State<ProfilePage> {
               () => _showEditProfileDialog(),
             ),
             
+            const Divider(height: 24),
+            
             _buildSettingsItem(
               Icons.notifications,
               'Notifications',
@@ -392,12 +502,16 @@ class _ProfilePageState extends State<ProfilePage> {
               () => _showNotificationSettings(),
             ),
             
+            const Divider(height: 24),
+            
             _buildSettingsItem(
               Icons.payment,
               'Payment Settings',
               'Manage payment methods and payouts',
               () => _showPaymentSettings(),
             ),
+            
+            const Divider(height: 24),
             
             _buildSettingsItem(
               Icons.security,
@@ -413,29 +527,40 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildActionsSection() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.help,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.help,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
                   'Help & Support',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
             _buildSettingsItem(
               Icons.help_outline,
@@ -444,12 +569,16 @@ class _ProfilePageState extends State<ProfilePage> {
               () => _showHelpCenter(),
             ),
             
+            const Divider(height: 24),
+            
             _buildSettingsItem(
               Icons.support_agent,
               'Contact Support',
               'Reach out to our support team',
               () => _contactSupport(),
             ),
+            
+            const Divider(height: 24),
             
             _buildSettingsItem(
               Icons.info_outline,
@@ -458,7 +587,7 @@ class _ProfilePageState extends State<ProfilePage> {
               () => _showAboutDialog(),
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
             // Logout Button
             SizedBox(
@@ -468,11 +597,17 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: const Icon(Icons.logout, color: Colors.red),
                 label: const Text(
                   'Sign Out',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.red),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: const BorderSide(color: Colors.red, width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -483,37 +618,40 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
           ),
-        ],
-      ),
+          child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -523,24 +661,53 @@ class _ProfilePageState extends State<ProfilePage> {
     String subtitle,
     VoidCallback onTap,
   ) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.grey[600]),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey[600],
-        ),
-      ),
-      trailing: const Icon(Icons.chevron_right),
+    return InkWell(
       onTap: onTap,
-      contentPadding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.grey[400],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

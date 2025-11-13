@@ -46,6 +46,15 @@ class DeliveryStatusUpdated extends DeliveryState {
   List<Object> get props => [status];
 }
 
+class DeliveryMarkedAsDelivered extends DeliveryState {
+  final String deliveryId;
+
+  const DeliveryMarkedAsDelivered(this.deliveryId);
+
+  @override
+  List<Object> get props => [deliveryId];
+}
+
 class DeliveryError extends DeliveryState {
   final String message;
 

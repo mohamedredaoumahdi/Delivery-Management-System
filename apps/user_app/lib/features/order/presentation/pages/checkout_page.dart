@@ -53,6 +53,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
     super.dispose();
   }
 
+  /// Extracts user-friendly message from AppException string
+  /// Removes "AppException: " prefix and " (CODE)" suffix
+  String _extractUserFriendlyMessage(String errorMessage) {
+    String message = errorMessage;
+    
+    // Remove "AppException: " prefix if present
+    if (message.startsWith('AppException: ')) {
+      message = message.substring('AppException: '.length);
+    }
+    
+    // Remove " (CODE)" suffix if present (e.g., " (VALIDATION_ERROR)")
+    final codePattern = RegExp(r'\s*\([^)]+\)\s*$');
+    message = message.replaceAll(codePattern, '');
+    
+    return message.trim();
+  }
+
   void _handleAuthError() {
     // Clear any existing dialogs
     Navigator.of(context).popUntil((route) => route.isFirst);
@@ -121,6 +138,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               context.go('/orders');
               print('✅ CheckoutPage: Navigation completed');
             } else if (state is OrderError) {
+              // Log full technical error to console
               print('❌ CheckoutPage: Order error received: ${state.message}');
               
               // Check if it's an authentication error
@@ -131,12 +149,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 return;
               }
               
-              // Show error dialog
+              // Extract user-friendly message (removes AppException prefix and error code)
+              final userFriendlyMessage = _extractUserFriendlyMessage(state.message);
+              
+              // Show error dialog with user-friendly message
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Order Failed'),
-                  content: Text(state.message),
+                  content: Text(userFriendlyMessage),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../bloc/menu_bloc.dart';
 
@@ -42,22 +43,70 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              _showAddMenuItemDialog();
+              context.push('/add-menu-item');
             },
             tooltip: 'Add Menu Item',
           ),
         ],
       ),
-      drawer: _buildDrawer(),
       body: Column(
         children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'Search menu items...',
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.grey[600],
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.clear, color: Colors.grey[600]),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.grey[50],
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              ),
+            ),
+          ),
+          
           // Category Filter
           Container(
             height: 50,
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: _categories.length,
               itemBuilder: (context, index) {
                 final category = _categories[index];
@@ -74,44 +123,18 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
                       });
                     },
                     backgroundColor: Colors.grey[100],
-                    selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                    selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                     checkmarkColor: Theme.of(context).colorScheme.primary,
+                    labelStyle: TextStyle(
+                      color: isSelected 
+                          ? Theme.of(context).colorScheme.primary 
+                          : Colors.grey[700],
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 );
               },
-            ),
-          ),
-          
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search menu items...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Colors.grey[50],
-              ),
             ),
           ),
           
@@ -139,8 +162,22 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
               },
               builder: (context, state) {
                 if (state is MenuLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Loading menu items...',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 }
                 
@@ -234,70 +271,53 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
     // Improved availability detection - check multiple possible field names
     final isAvailable = _getItemAvailability(menuItem);
     final price = (menuItem['price'] as num).toDouble();
-    final allergens = List<String>.from(menuItem['allergens'] ?? []);
-    final dietaryTags = List<String>.from(menuItem['dietaryTags'] ?? menuItem['tags'] ?? []);
 
     return Card(
+      elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: InkWell(
         onTap: () {
           _showMenuItemDetails(menuItem);
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Menu Item Image Placeholder
+              // Menu Item Image Placeholder - Smaller size
               Container(
-                width: 80,
-                height: 80,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.restaurant,
-                  size: 40,
-                  color: Colors.grey[400],
+                  size: 30,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               
               // Menu Item Details
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            menuItem['name'],
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        Switch(
-                          value: isAvailable,
-                          onChanged: (value) {
-                            _toggleAvailability(menuItem['id'], value);
-                          },
-                          activeThumbColor: Theme.of(context).colorScheme.primary,
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    
+                    // Title - Full width
                     Text(
-                      menuItem['description'],
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
+                      menuItem['name'],
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        height: 1.3,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -307,64 +327,144 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
                     
                     Row(
                       children: [
-                        Text(
-                          '\$${price.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: isAvailable ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            isAvailable ? 'Available' : 'Unavailable',
+                            '\$${price.toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: isAvailable ? Colors.green : Colors.red,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                         ),
+                        if (menuItem['categoryName'] != null || menuItem['category'] != null) ...[
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                menuItem['categoryName'] ?? menuItem['category'] ?? '',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
-                    
-                    if (allergens.isNotEmpty || dietaryTags.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: [
-                          ...dietaryTags.map((tag) => _buildTag(tag, Colors.green)),
-                          ...allergens.map((allergen) => _buildTag(allergen, Colors.orange)),
-                        ],
-                      ),
-                    ],
                   ],
                 ),
               ),
               
-              // Action Buttons
+              const SizedBox(width: 12),
+              
+              // Status Badge and Action Buttons - Right aligned
               Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    onPressed: () {
-                      _editMenuItem(menuItem);
-                    },
-                    color: Theme.of(context).colorScheme.primary,
+                  // Status Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isAvailable 
+                          ? Colors.green.withValues(alpha: 0.15) 
+                          : Colors.red.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isAvailable ? Colors.green : Colors.red,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: isAvailable ? Colors.green : Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          isAvailable ? 'Available' : 'Unavailable',
+                          style: TextStyle(
+                            color: isAvailable ? Colors.green : Colors.red,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () {
-                      _deleteMenuItem(menuItem);
-                    },
-                    color: Colors.red,
+                  
+                  const SizedBox(height: 10),
+                  
+                  // Action Buttons
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            context.push('/edit-menu-item/${menuItem['id']}');
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.edit_outlined,
+                              size: 18,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            _deleteMenuItem(menuItem);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.delete_outline,
+                              size: 18,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -412,148 +512,385 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
   }
 
   void _showMenuItemDetails(Map<String, dynamic> menuItem) {
+    final isAvailable = _getItemAvailability(menuItem);
+    final price = ((menuItem['price'] as num?) ?? 0.0).toStringAsFixed(2);
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
+        initialChildSize: 0.75,
         minChildSize: 0.5,
-        maxChildSize: 0.9,
+        maxChildSize: 0.95,
         expand: false,
         builder: (context, scrollController) {
-          return Padding(
-            padding: const EdgeInsets.all(20),
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Handle bar
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
                 
-                // Menu item details content
+                // Header with close button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Menu Item Details',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Content
                 Expanded(
                   child: SingleChildScrollView(
                     controller: scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Image placeholder
                         Container(
                           width: double.infinity,
-                          height: 200,
+                          height: 220,
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(
                             Icons.restaurant,
                             size: 80,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        Text(
-                          menuItem['name'],
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 8),
-                        
-                        Text(
-                          '\$${(menuItem['price'] as double).toStringAsFixed(2)}',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 20),
+                        
+                        // Name and Price Row
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    menuItem['name'] ?? 'Unnamed Item',
+                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      '\$$price',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isAvailable 
+                                    ? Colors.green.withValues(alpha: 0.15) 
+                                    : Colors.red.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isAvailable ? Colors.green : Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: isAvailable ? Colors.green : Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    isAvailable ? 'Available' : 'Unavailable',
+                                    style: TextStyle(
+                                      color: isAvailable ? Colors.green : Colors.red,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // Description Card
+                        Card(
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Icon(
+                                        Icons.description,
+                                        size: 16,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Description',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  menuItem['description'] ?? 'No description available',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.grey[700],
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         
                         const SizedBox(height: 16),
                         
-                        Text(
-                          'Description:',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                        // Details Card
+                        Card(
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          menuItem['description'],
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        Text(
-                          'Category: ${menuItem['category']}',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        
-                        const SizedBox(height: 8),
-                        
-                        Text(
-                          'Preparation Time: ${menuItem['preparationTime']} minutes',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        
-                        if (menuItem['calories'] != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Calories: ${menuItem['calories']}',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                        
-                        if ((menuItem['allergens'] as List).isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          Text(
-                            'Allergens:',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Icon(
+                                        Icons.info_outline,
+                                        size: 16,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Item Information',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                
+                                if (menuItem['categoryName'] != null || menuItem['category'] != null) ...[
+                                  _buildDetailRow(
+                                    context,
+                                    Icons.category,
+                                    'Category',
+                                    menuItem['categoryName'] ?? menuItem['category'] ?? 'N/A',
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                
+                                if (menuItem['preparationTime'] != null) ...[
+                                  _buildDetailRow(
+                                    context,
+                                    Icons.timer_outlined,
+                                    'Preparation Time',
+                                    '${menuItem['preparationTime']} minutes',
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                
+                                if (menuItem['calories'] != null) ...[
+                                  _buildDetailRow(
+                                    context,
+                                    Icons.local_fire_department_outlined,
+                                    'Calories',
+                                    '${menuItem['calories']} kcal',
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: (menuItem['allergens'] as List)
-                                .map((allergen) => _buildTag(allergen.toString(), Colors.orange))
-                                .toList(),
+                        ),
+                        
+                        // Allergens Card
+                        if (menuItem['allergens'] != null && 
+                            (menuItem['allergens'] is List) && 
+                            (menuItem['allergens'] as List).isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Card(
+                            elevation: 1,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Icon(
+                                          Icons.warning_amber_rounded,
+                                          size: 16,
+                                          color: Colors.orange,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        'Allergens',
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: (menuItem['allergens'] as List)
+                                        .map((allergen) => _buildTag(allergen.toString(), Colors.orange))
+                                        .toList(),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                         
-                        if ((menuItem['dietaryTags'] as List).isNotEmpty) ...[
+                        // Dietary Tags Card
+                        if (menuItem['dietaryTags'] != null && 
+                            (menuItem['dietaryTags'] is List) && 
+                            (menuItem['dietaryTags'] as List).isNotEmpty) ...[
                           const SizedBox(height: 16),
-                          Text(
-                            'Dietary Information:',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                          Card(
+                            elevation: 1,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Icon(
+                                          Icons.eco,
+                                          size: 16,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        'Dietary Information',
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: (menuItem['dietaryTags'] as List)
+                                        .map((tag) => _buildTag(tag.toString(), Colors.green))
+                                        .toList(),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: (menuItem['dietaryTags'] as List)
-                                .map((tag) => _buildTag(tag.toString(), Colors.green))
-                                .toList(),
-                          ),
                         ],
+                        
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -565,241 +902,43 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
       ),
     );
   }
-
-  void _showAddMenuItemDialog() {
-    _showMenuItemForm(isEditing: false);
-  }
-
-  void _showMenuItemForm({bool isEditing = false, Map<String, dynamic>? menuItem}) {
-    final formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController(text: isEditing ? menuItem!['name'] : '');
-    final descriptionController = TextEditingController(text: isEditing ? menuItem!['description'] : '');
-    final priceController = TextEditingController(text: isEditing ? (menuItem!['price'] as num).toString() : '');
-    final preparationTimeController = TextEditingController(text: isEditing ? menuItem!['preparationTime']?.toString() ?? '15' : '15');
-    
-    String selectedCategory = isEditing ? menuItem!['categoryName'] ?? 'Main Course' : 'Main Course';
-    bool isAvailable = isEditing ? _getItemAvailability(menuItem!) : true;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text(isEditing ? 'Edit Menu Item' : 'Add Menu Item'),
-          content: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Name Field
-                  TextFormField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Item Name *',
-                      hintText: 'e.g., Margherita Pizza',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter an item name';
-                      }
-                      if (value.trim().length < 2) {
-                        return 'Name must be at least 2 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Description Field
-                  TextFormField(
-                    controller: descriptionController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Description *',
-                      hintText: 'Describe your delicious item...',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a description';
-                      }
-                      if (value.trim().length < 10) {
-                        return 'Description must be at least 10 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Price Field
-                  TextFormField(
-                    controller: priceController,
-                    keyboardType: TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Price (\$) *',
-                      hintText: '12.99',
-                      border: OutlineInputBorder(),
-                      prefixText: '\$ ',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a price';
-                      }
-                      final price = double.tryParse(value.trim());
-                      if (price == null || price < 0) {
-                        return 'Please enter a valid price';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Category Dropdown
-                  DropdownButtonFormField<String>(
-                    value: selectedCategory,
-                    decoration: const InputDecoration(
-                      labelText: 'Category *',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: ['Main Course', 'Salads', 'Beverages', 'Desserts', 'Appetizers', 'Sides']
-                        .map((category) => DropdownMenuItem(
-                              value: category,
-                              child: Text(category),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCategory = value!;
-                      });
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Preparation Time Field
-                  TextFormField(
-                    controller: preparationTimeController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Preparation Time (minutes)',
-                      hintText: '15',
-                      border: OutlineInputBorder(),
-                      suffixText: 'min',
-                    ),
-                    validator: (value) {
-                      if (value != null && value.isNotEmpty) {
-                        final time = int.tryParse(value.trim());
-                        if (time == null || time < 0) {
-                          return 'Please enter a valid preparation time';
-                        }
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Availability Switch
-                  SwitchListTile(
-                    title: const Text('Available'),
-                    subtitle: Text(isAvailable ? 'Item is available for orders' : 'Item is currently unavailable'),
-                    value: isAvailable,
-                    onChanged: (value) {
-                      setState(() {
-                        isAvailable = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () => _saveMenuItem(
-                context,
-                formKey,
-                nameController,
-                descriptionController,
-                priceController,
-                preparationTimeController,
-                selectedCategory,
-                isAvailable,
-                isEditing,
-                menuItem?['id'],
-              ),
-              child: Text(isEditing ? 'Update' : 'Add Item'),
-            ),
-          ],
+  
+  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: Colors.grey[600],
         ),
-      ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  void _saveMenuItem(
-    BuildContext context,
-    GlobalKey<FormState> formKey,
-    TextEditingController nameController,
-    TextEditingController descriptionController,
-    TextEditingController priceController,
-    TextEditingController preparationTimeController,
-    String selectedCategory,
-    bool isAvailable,
-    bool isEditing,
-    String? itemId,
-  ) {
-    if (!formKey.currentState!.validate()) {
-      return;
-    }
-
-    final data = {
-      'name': nameController.text.trim(),
-      'description': descriptionController.text.trim(),
-      'price': double.parse(priceController.text.trim()),
-      'categoryName': selectedCategory,
-      'inStock': isAvailable,
-    };
-
-    // Add preparation time if provided
-    if (preparationTimeController.text.isNotEmpty) {
-      data['preparationTime'] = int.parse(preparationTimeController.text.trim());
-    }
-
-    Navigator.pop(context);
-
-    if (isEditing && itemId != null) {
-      context.read<MenuBloc>().add(UpdateMenuItem(itemId, data));
-    } else {
-      context.read<MenuBloc>().add(CreateMenuItem(data));
-    }
-  }
-
-  void _toggleAvailability(String itemId, bool isAvailable) {
-    // Call the bloc to toggle availability
-    context.read<MenuBloc>().add(ToggleMenuItemAvailability(itemId, isAvailable));
-  }
-
-  // Helper method to get menu item by ID for the edit action
-  Map<String, dynamic> _getMenuItemById(String itemId) {
-    return context.read<MenuBloc>().state is MenuLoaded 
-        ? (context.read<MenuBloc>().state as MenuLoaded).menuItems.firstWhere(
-            (item) => item['id'] == itemId,
-            orElse: () => <String, dynamic>{},
-          )
-        : <String, dynamic>{};
-  }
-
-  void _editMenuItem(Map<String, dynamic> menuItem) {
-    _showMenuItemForm(isEditing: true, menuItem: menuItem);
-  }
+  // Dialog methods removed - now using full-screen pages
+  // Navigation: context.push('/add-menu-item') or context.push('/edit-menu-item/:id')
 
   void _deleteMenuItem(Map<String, dynamic> menuItem) {
     showDialog(
@@ -915,58 +1054,76 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
 
     if (filteredItems.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _searchQuery.isNotEmpty ? Icons.search_off : Icons.restaurant_menu,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _searchQuery.isNotEmpty 
-                  ? 'No items found'
-                  : 'No menu items found',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.grey[600],
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _searchQuery.isNotEmpty ? Icons.search_off : Icons.restaurant_menu,
+                  size: 50,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _searchQuery.isNotEmpty
-                  ? 'Try adjusting your search or filters'
-                  : _selectedFilter == 'All' && _selectedCategory == 'All'
-                      ? 'Add your first menu item to get started'
-                      : 'No items match your current filters',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
+              const SizedBox(height: 24),
+              Text(
+                _searchQuery.isNotEmpty 
+                    ? 'No items found'
+                    : 'No menu items found',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            if (_searchQuery.isNotEmpty || _selectedFilter != 'All' || _selectedCategory != 'All')
-              ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _searchQuery = '';
-                    _selectedFilter = 'All';
-                    _selectedCategory = 'All';
-                    _searchController.clear();
-                  });
-                },
-                icon: const Icon(Icons.clear_all),
-                label: const Text('Clear Filters'),
-              )
-            else
-              ElevatedButton.icon(
-                onPressed: () {
-                  _showAddMenuItemDialog();
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('Add Menu Item'),
+              const SizedBox(height: 8),
+              Text(
+                _searchQuery.isNotEmpty
+                    ? 'Try adjusting your search or filters'
+                    : _selectedFilter == 'All' && _selectedCategory == 'All'
+                        ? 'Add your first menu item to get started'
+                        : 'No items match your current filters',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
               ),
-          ],
+              const SizedBox(height: 32),
+              if (_searchQuery.isNotEmpty || _selectedFilter != 'All' || _selectedCategory != 'All')
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _searchQuery = '';
+                      _selectedFilter = 'All';
+                      _selectedCategory = 'All';
+                      _searchController.clear();
+                    });
+                  },
+                  icon: const Icon(Icons.clear_all),
+                  label: const Text('Clear Filters'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                )
+              else
+                ElevatedButton.icon(
+                  onPressed: () {
+                    context.push('/add-menu-item');
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Menu Item'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                ),
+            ],
+          ),
         ),
       );
     }
@@ -979,40 +1136,85 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
         children: [
           // Results summary
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Row(
               children: [
-                Text(
-                  '${filteredItems.length} item${filteredItems.length != 1 ? 's' : ''}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.restaurant_menu,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${filteredItems.length} item${filteredItems.length != 1 ? 's' : ''}',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 if (_selectedFilter != 'All' || _searchQuery.isNotEmpty || _selectedCategory != 'All') ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'filtered',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.w500,
+                      color: Colors.orange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.3),
+                        width: 1,
                       ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.filter_list,
+                          size: 14,
+                          color: Colors.orange[700],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'filtered',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.orange[700],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
                 const Spacer(),
-                Text(
-                  'Sort: $_selectedSort',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[500],
+                TextButton.icon(
+                  onPressed: () {
+                    // Show sort dialog
+                  },
+                  icon: Icon(
+                    Icons.sort,
+                    size: 16,
+                    color: Colors.grey[600],
+                  ),
+                  label: Text(
+                    _selectedSort,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -1022,7 +1224,7 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
           // Menu items list
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: filteredItems.length,
               itemBuilder: (context, index) {
                 final menuItem = filteredItems[index];
@@ -1035,184 +1237,6 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
     );
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-      child: Column(
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.restaurant_menu,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Menu Options',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Manage your restaurant menu',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          Expanded(
-            child: ListView(
-              children: [
-                // Quick Actions Section
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Quick Actions',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
-                
-                ListTile(
-                  leading: const Icon(Icons.refresh, color: Colors.blue),
-                  title: const Text('Reload Menu'),
-                  subtitle: const Text('Refresh all menu items'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.read<MenuBloc>().add(LoadMenuItems());
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Reloading menu...'),
-                        backgroundColor: Colors.blue,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                ),
-                
-                ListTile(
-                  leading: const Icon(Icons.add_circle, color: Colors.green),
-                  title: const Text('Add New Item'),
-                  subtitle: const Text('Create a new menu item'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showAddMenuItemDialog();
-                  },
-                ),
-                
-                const Divider(),
-                
-                // Filter Section
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Filter Options',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
-                
-                ..._filters.map((filter) => RadioListTile<String>(
-                  title: Text(filter),
-                  subtitle: Text(_getFilterDescription(filter)),
-                  value: filter,
-                  groupValue: _selectedFilter,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedFilter = value!;
-                    });
-                    Navigator.pop(context);
-                  },
-                )),
-                
-                const Divider(),
-                
-                // Sort Section
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Sort Options',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
-                
-                ..._sortOptions.map((sort) => RadioListTile<String>(
-                  title: Text(sort),
-                  value: sort,
-                  groupValue: _selectedSort,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedSort = value!;
-                    });
-                    Navigator.pop(context);
-                  },
-                )),
-              ],
-            ),
-          ),
-          
-          // Footer with current filter/sort info
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: Colors.grey[300]!)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Current Settings',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.filter_list, size: 16, color: Colors.grey[600]),
-                    const SizedBox(width: 4),
-                    Text('Filter: $_selectedFilter', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.sort, size: 16, color: Colors.grey[600]),
-                    const SizedBox(width: 4),
-                    Text('Sort: $_selectedSort', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
   String _getFilterDescription(String filter) {
     switch (filter) {
       case 'All':
