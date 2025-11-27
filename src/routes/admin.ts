@@ -1,1 +1,0 @@
-router.use(requireRole(['ADMIN'])); 

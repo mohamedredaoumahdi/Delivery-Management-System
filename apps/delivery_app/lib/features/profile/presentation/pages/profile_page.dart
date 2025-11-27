@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../data/profile_service.dart';
 import '../bloc/profile_bloc.dart';
-import '../../../../core/di/injection.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -77,11 +75,24 @@ class _ProfilePageState extends State<ProfilePage> {
             print('✅ ProfilePage: Showing profile content');
             final profile = state.profile;
             
-            return ListView(
-              padding: const EdgeInsets.all(16),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Profile Header
-                Center(
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: Colors.grey.withValues(alpha: 0.15),
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
                   child: Column(
                     children: [
                       CircleAvatar(
@@ -97,115 +108,129 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 16),
                       Text(
                         profile.name,
-                        style: theme.textTheme.titleLarge,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                       ),
+                            const SizedBox(height: 4),
                       Text(
                         profile.email,
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha:0.6),
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
-                // Stats Section
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.shadowColor.withValues(alpha:0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                  // Driver Information Section
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.person_outline,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Driver Information',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                       ),
                     ],
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      _buildStatRow(
-                        theme,
+                  const SizedBox(height: 12),
+                  _buildInfoTile(
+                    context,
                         'Vehicle Type',
                         profile.vehicleType,
                         Icons.directions_car,
+                    theme.colorScheme.primary,
                       ),
-                      const Divider(),
-                      _buildStatRow(
-                        theme,
+                  const SizedBox(height: 4),
+                  _buildInfoTile(
+                    context,
                         'License Number',
                         profile.licenseNumber,
                         Icons.badge,
+                    theme.colorScheme.primary,
                       ),
-                      const Divider(),
-                      _buildStatRow(
-                        theme,
+                  const SizedBox(height: 4),
+                  _buildInfoTile(
+                    context,
                         'Status',
                         profile.isActive ? 'Active' : 'Offline',
                         Icons.circle,
+                    profile.isActive ? Colors.green : Colors.grey,
                         valueColor: profile.isActive ? Colors.green : Colors.grey,
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
-                // Account Actions
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.shadowColor.withValues(alpha:0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
+                  // Account Settings Section
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Row(
                     children: [
-                      ListTile(
-                        leading: const Icon(Icons.notifications),
-                        title: const Text('Notifications'),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          // TODO: Implement notifications settings
-                        },
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: const Icon(Icons.help),
-                        title: const Text('Help & Support'),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          // TODO: Implement help & support
-                        },
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: Icon(
-                          Icons.logout,
-                          color: theme.colorScheme.error,
+                        Icon(
+                          Icons.settings_outlined,
+                          size: 20,
+                          color: theme.colorScheme.primary,
                         ),
-                        title: Text(
-                          'Logout',
-                          style: TextStyle(
-                            color: theme.colorScheme.error,
+                        const SizedBox(width: 8),
+                        Text(
+                          'Account Settings',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildSettingsTile(
+                    context,
+                    'Notifications',
+                    Icons.notifications_outlined,
                         onTap: () {
+                      context.go('/profile/notifications');
+                        },
+                      ),
+                  const SizedBox(height: 4),
+                  _buildSettingsTile(
+                    context,
+                    'Help & Support',
+                    Icons.help_outline,
+                        onTap: () {
+                      context.go('/profile/help');
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Logout Button
+                  ElevatedButton(
+                    onPressed: () {
                           print('🚪 ProfilePage: Logout button pressed');
                           _showLogoutDialog(context);
                         },
-                      ),
-                    ],
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                   ),
+                    ),
+                    child: const Text('Sign Out'),
                 ),
               ],
+              ),
             );
           }
 
@@ -215,28 +240,49 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildStatRow(
-    ThemeData theme,
+  Widget _buildInfoTile(
+    BuildContext context,
     String label,
     String value,
-    IconData icon, {
+    IconData icon,
+    Color iconColor, {
     Color? valueColor,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          Icon(
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
             icon,
-            color: theme.colorScheme.primary,
+                color: iconColor,
             size: 20,
+              ),
           ),
           const SizedBox(width: 12),
-          Text(
+            Expanded(
+              child: Text(
             label,
             style: theme.textTheme.bodyLarge,
           ),
-          const Spacer(),
+            ),
             Text(
             value,
             style: theme.textTheme.bodyLarge?.copyWith(
@@ -245,6 +291,62 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsTile(
+    BuildContext context,
+    String title,
+    IconData icon, {
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  color: theme.colorScheme.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.bodyLarge,
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

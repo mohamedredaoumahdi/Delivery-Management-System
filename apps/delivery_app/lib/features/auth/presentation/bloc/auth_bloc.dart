@@ -109,26 +109,53 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthRegisterEvent event,
     Emitter<AuthState> emit,
   ) async {
+    print('🚀 AuthBloc: RegisterEvent received for email: ${event.email}');
+    print('📊 AuthBloc: Current state: ${state.runtimeType}');
+    
     emit(const AuthLoading());
+    print('📊 AuthBloc: State updated to AuthLoading');
 
     try {
-      // Simulate API call for registration
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Mock registration success
-      final driver = DriverUser(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        email: event.email,
+      print('🔄 AuthBloc: Calling authService.register()');
+      final success = await _authService.register(
         name: event.name,
+        email: event.email,
+        password: event.password,
         phone: event.phone,
+      );
+      
+      print('📥 AuthBloc: Register service returned: $success');
+      
+      if (success) {
+        print('✅ AuthBloc: Registration successful, creating DriverUser object');
+        final driver = DriverUser(
+          id: 'current_user',
+          email: event.email,
+          name: event.name,
+          phone: event.phone ?? '',
         vehicleType: event.vehicleType,
         licenseNumber: event.licenseNumber,
         isActive: true,
       );
+        
+        print('👤 AuthBloc: Created driver object: ${driver.email}');
+        print('📊 AuthBloc: Emitting AuthAuthenticated state');
 
       emit(AuthAuthenticated(driver));
+        
+        print('✅ AuthBloc: Successfully emitted AuthAuthenticated state');
+      } else {
+        print('❌ AuthBloc: Registration failed - service returned false');
+        emit(const AuthError('Registration failed'));
+      }
     } catch (error) {
+      print('❌ AuthBloc: Exception occurred during registration');
+      print('❌ AuthBloc: Error details: $error');
+      print('❌ AuthBloc: Error type: ${error.runtimeType}');
+      
       emit(AuthError(error.toString()));
+      
+      print('📊 AuthBloc: Error state emitted with message: $error');
     }
   }
 }

@@ -43,6 +43,7 @@ class _LoginPageState extends State<LoginPage> {
           }
         },
         child: SafeArea(
+          child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Form(
@@ -156,55 +157,15 @@ class _LoginPageState extends State<LoginPage> {
                   // Register Link
                   TextButton(
                     onPressed: () => context.go('/register'),
-                    child: const Text('Don\'t have an account? Register'),
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Demo Credentials
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    child: Text(
+                      'Don\'t have an account? Register',
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Test Account',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Email: delivery@example.com\nPassword: password123',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            _emailController.text = 'delivery@example.com';
-                            _passwordController.text = 'password123';
-                          },
-                          icon: const Icon(Icons.input, size: 16),
-                          label: const Text('Fill Credentials'),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(150, 32),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
               ),
             ),
           ),

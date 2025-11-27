@@ -38,6 +38,13 @@ class AuthInterceptor extends Interceptor {
     if (err.response?.statusCode == 401) {
       print('🚫 AuthInterceptor: 401 Unauthorized - Token may be expired');
       
+      // Skip token refresh for auth endpoints to avoid infinite loops
+      if (err.requestOptions.path.startsWith('/auth/')) {
+        print('⚠️ AuthInterceptor: Skipping token refresh for auth endpoint');
+        handler.next(err);
+        return;
+      }
+      
       // Try to refresh token
       final refreshToken = _prefs.getString('refreshToken');
       if (refreshToken != null && refreshToken.isNotEmpty) {
@@ -46,10 +53,9 @@ class AuthInterceptor extends Interceptor {
           final dio = Dio();
           dio.options.baseUrl = err.requestOptions.baseUrl;
           
-          final userId = _prefs.getString('userId');
+          print('🔄 AuthInterceptor: Attempting to refresh token...');
           final response = await dio.post('/auth/refresh', data: {
             'refreshToken': refreshToken,
-            'userId': userId,
           });
           
           if (response.data['status'] == 'success') {
@@ -77,13 +83,13 @@ class AuthInterceptor extends Interceptor {
         }
       }
       
-      // Clear all user data
+      // Clear all user data only if refresh failed
+      print('🔓 AuthInterceptor: Clearing all user data, user needs to login again');
       await _prefs.remove('accessToken');
       await _prefs.remove('refreshToken');
       await _prefs.remove('userId');
       await _prefs.remove('userRole');
       await _prefs.remove('userName');
-      print('🔓 AuthInterceptor: Cleared all user data, user needs to login again');
     }
     
     handler.next(err);

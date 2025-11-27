@@ -159,7 +159,7 @@ class ShopRepositoryImpl implements ShopRepository {
   Future<Either<Failure, List<Shop>>> getNearbyShops({
     required double latitude,
     required double longitude,
-    double radius = 5.0,
+    double radius = 50.0,
     int limit = 20,
   }) async {
     try {

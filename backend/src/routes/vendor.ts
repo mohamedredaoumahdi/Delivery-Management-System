@@ -36,5 +36,6 @@ router.post('/orders/:id/cancel', vendorController.cancelOrder);
 // Analytics
 router.get('/analytics/sales', vendorController.getSalesAnalytics);
 router.get('/analytics/products', vendorController.getProductAnalytics);
+router.get('/analytics/performance', catchAsync(vendorController.getPerformanceAnalytics));
 
 export default router; 

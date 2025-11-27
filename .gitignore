@@ -1,45 +1,66 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+# Environment files
+.env
+.env.local
+.env.*.local
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# Dependencies
+node_modules/
+.pub-cache/
 .dart_tool/
+build/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# Uploads
+uploads/
+backend/uploads/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+*.apk
+*.ipa
+*.app
+*.dmg
+
+# Coverage
+coverage/
+*.lcov
+
+# Prisma
+backend/prisma/migrations/
+
+# Flutter
 .flutter-plugins
 .flutter-plugins-dependencies
-.pub-cache/
+.packages
 .pub/
-/build/
+pubspec.lock
 
-# Symbolication related
-app.*.symbols
+# Melos
+.melos_tool/
 
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# Config (keep template, ignore actual)
+config/whitelabel.json
+!config/whitelabel.example.json

@@ -63,12 +63,20 @@ class UserModel {
   
   /// Convert UserModel to User domain entity
   User toDomain() {
+    // Helper function to convert relative URLs to absolute URLs
+    String? toAbsoluteUrl(String? url) {
+      if (url == null || url.isEmpty) return null;
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      const baseUrl = 'http://localhost:3000';
+      return url.startsWith('/') ? '$baseUrl$url' : '$baseUrl/$url';
+    }
+
     return User(
       id: id,
       email: email,
       name: name,
       phone: phone,
-      profilePicture: profilePicture,
+      profilePicture: toAbsoluteUrl(profilePicture),
       role: _mapStringToUserRole(roleString),
       isEmailVerified: isEmailVerified,
       isPhoneVerified: isPhoneVerified,

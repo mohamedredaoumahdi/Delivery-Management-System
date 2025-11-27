@@ -125,22 +125,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         BlocListener<OrderBloc, OrderState>(
           listener: (context, state) {
-            print('🎧 CheckoutPage BlocListener received state: ${state.runtimeType}');
-            
             if (state is OrderPlaced) {
-              print('🎉 CheckoutPage: Order placed successfully!');
-              
-              // Clear cart first
+              // Clear cart after successful order placement
               context.read<CartBloc>().add(const CartClearEvent());
               
               // Navigate to orders page using context.go to update bottom navigation
-              print('🚀 CheckoutPage: Navigating to orders page...');
               context.go('/orders');
-              print('✅ CheckoutPage: Navigation completed');
             } else if (state is OrderError) {
-              // Log full technical error to console
-              print('❌ CheckoutPage: Order error received: ${state.message}');
-              
               // Check if it's an authentication error
               if (state.message.toLowerCase().contains('unauthorized') || 
                   state.message.toLowerCase().contains('access denied') ||
@@ -270,7 +261,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     
     return AppCard(
       title: 'Order Summary',
-      backgroundColor: theme.colorScheme.surfaceVariant,
+      backgroundColor: theme.colorScheme.surfaceContainerHighest,
       child: Column(
         children: [
           _buildSummaryRow('Subtotal', '\$${summary.subtotal.toStringAsFixed(2)}'),

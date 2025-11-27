@@ -164,7 +164,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             // Password changed successfully
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Row(
+                content: const Row(
                   children: [
                     Icon(Icons.check_circle, color: Colors.white),
                     SizedBox(width: 8),
@@ -172,7 +172,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   ],
                 ),
                 backgroundColor: Colors.green,
-                duration: Duration(seconds: 4),
+                duration: const Duration(seconds: 4),
                 action: SnackBarAction(
                   label: 'OK',
                   textColor: Colors.white,
@@ -199,13 +199,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               SnackBar(
                 content: Row(
                   children: [
-                    Icon(Icons.error, color: Colors.white),
-                    SizedBox(width: 8),
+                    const Icon(Icons.error, color: Colors.white),
+                    const SizedBox(width: 8),
                     Expanded(child: Text(state.message)),
                   ],
                 ),
                 backgroundColor: Colors.red,
-                duration: Duration(seconds: 6),
+                duration: const Duration(seconds: 6),
                 action: SnackBarAction(
                   label: 'DISMISS',
                   textColor: Colors.white,
@@ -221,13 +221,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  icon: Icon(Icons.error, color: Colors.red, size: 48),
-                  title: Text('Incorrect Password'),
-                  content: Text('The current password you entered is incorrect. Please enter your actual login password.'),
+                  icon: const Icon(Icons.error, color: Colors.red, size: 48),
+                  title: const Text('Incorrect Password'),
+                  content: const Text('The current password you entered is incorrect. Please enter your actual login password.'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: Text('OK'),
+                      child: const Text('OK'),
                     ),
                   ],
                 ),

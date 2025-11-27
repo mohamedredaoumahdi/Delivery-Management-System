@@ -251,6 +251,35 @@ class AuthService {
     }
   }
 
+  Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/users/profile', data: data);
+      return response.data['data'] ?? response.data;
+    } on DioException catch (e) {
+      String errorMessage = _handleDioError(e);
+      throw Exception(errorMessage);
+    } catch (e) {
+      throw Exception('Failed to update profile. Please check your connection and try again.');
+    }
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _dio.put('/users/password', data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+    } on DioException catch (e) {
+      String errorMessage = _handleDioError(e);
+      throw Exception(errorMessage);
+    } catch (e) {
+      throw Exception('Failed to change password. Please check your connection and try again.');
+    }
+  }
+
   String _handleDioError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout || 
         e.type == DioExceptionType.receiveTimeout ||
@@ -331,12 +360,36 @@ class VendorService {
       final response = await _dio.get('/vendor/analytics/sales', queryParameters: {
         if (period != null) 'period': period,
       });
-      return response.data;
+      return response.data['data'] ?? response.data;
     } on DioException catch (e) {
       String errorMessage = _handleDioError(e);
       throw Exception(errorMessage);
     } catch (e) {
       throw Exception('Unable to load analytics data. Please check your connection and try again.');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getProductAnalytics() async {
+    try {
+      final response = await _dio.get('/vendor/analytics/products');
+      return List<Map<String, dynamic>>.from(response.data['data'] ?? response.data);
+    } on DioException catch (e) {
+      String errorMessage = _handleDioError(e);
+      throw Exception(errorMessage);
+    } catch (e) {
+      throw Exception('Unable to load product analytics. Please check your connection and try again.');
+    }
+  }
+
+  Future<Map<String, dynamic>> getPerformanceAnalytics() async {
+    try {
+      final response = await _dio.get('/vendor/analytics/performance');
+      return response.data['data'] ?? response.data;
+    } on DioException catch (e) {
+      String errorMessage = _handleDioError(e);
+      throw Exception(errorMessage);
+    } catch (e) {
+      throw Exception('Unable to load performance analytics. Please check your connection and try again.');
     }
   }
 
@@ -417,6 +470,11 @@ class MenuService {
         requestData['preparationTime'] = data['preparationTime'];
       }
       
+      // Optional single image URL (stored on product.imageUrl)
+      if (data['imageUrl'] != null && (data['imageUrl'] as String).isNotEmpty) {
+        requestData['imageUrl'] = data['imageUrl'];
+      }
+      
       print('Creating menu item with data: $requestData');
       
       final response = await _dio.post('/vendor/products', data: requestData);
@@ -487,6 +545,10 @@ class MenuService {
       // Add preparation time if provided
       if (data['preparationTime'] != null) {
         requestData['preparationTime'] = data['preparationTime'];
+      }
+      
+      if (data['imageUrl'] != null && (data['imageUrl'] as String).isNotEmpty) {
+        requestData['imageUrl'] = data['imageUrl'];
       }
       
       final response = await _dio.put('/vendor/products/$id', data: requestData);
@@ -635,6 +697,18 @@ class OrderService {
       throw Exception(errorMessage);
     } catch (e) {
       throw Exception('Unable to load order statistics. Please check your connection and try again.');
+    }
+  }
+
+  Future<Map<String, dynamic>> getOrderById(String orderId) async {
+    try {
+      final response = await _dio.get('/orders/$orderId');
+      return response.data['data'] ?? response.data;
+    } on DioException catch (e) {
+      String errorMessage = _handleDioError(e);
+      throw Exception(errorMessage);
+    } catch (e) {
+      throw Exception('Unable to load order details. Please check your connection and try again.');
     }
   }
 

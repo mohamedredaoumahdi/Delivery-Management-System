@@ -10,6 +10,13 @@ import '../features/menu/presentation/pages/edit_menu_item_page.dart';
 import '../features/orders/presentation/pages/orders_page.dart';
 import '../features/orders/presentation/pages/order_details_page.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
+import '../features/profile/presentation/pages/edit_profile_page.dart';
+import '../features/profile/presentation/pages/notifications_settings_page.dart';
+import '../features/profile/presentation/pages/payment_settings_page.dart';
+import '../features/profile/presentation/pages/add_payment_method_page.dart';
+import '../features/profile/presentation/pages/security_settings_page.dart';
+import '../features/profile/presentation/pages/help_center_page.dart';
+import '../features/profile/presentation/pages/contact_support_page.dart';
 import '../features/analytics/presentation/pages/analytics_page.dart';
 import '../common/presentation/pages/main_wrapper_page.dart';
 import '../common/presentation/pages/splash_page.dart';
@@ -125,6 +132,46 @@ class AppRouter {
           final orderId = state.pathParameters['orderId']!;
           return OrderDetailsPage(orderId: orderId);
         },
+      ),
+      
+      // Profile Settings Routes
+      GoRoute(
+        path: '/edit-profile',
+        name: 'edit-profile',
+        builder: (context, state) {
+          final user = state.extra as Map<String, dynamic>;
+          return EditProfilePage(user: user);
+        },
+      ),
+      GoRoute(
+        path: '/notifications-settings',
+        name: 'notifications-settings',
+        builder: (context, state) => const NotificationsSettingsPage(),
+      ),
+      GoRoute(
+        path: '/payment-settings',
+        name: 'payment-settings',
+        builder: (context, state) => const PaymentSettingsPage(),
+      ),
+      GoRoute(
+        path: '/add-payment-method',
+        name: 'add-payment-method',
+        builder: (context, state) => const AddPaymentMethodPage(),
+      ),
+      GoRoute(
+        path: '/help-center',
+        name: 'help-center',
+        builder: (context, state) => const HelpCenterPage(),
+      ),
+      GoRoute(
+        path: '/contact-support',
+        name: 'contact-support',
+        builder: (context, state) => const ContactSupportPage(),
+      ),
+      GoRoute(
+        path: '/security-settings',
+        name: 'security-settings',
+        builder: (context, state) => const SecuritySettingsPage(),
       ),
     ],
     

@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Management System - Complete Project Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 45px 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 30px 40px;
+        }
+
+        section {
+            margin-bottom: 45px;
+        }
+
+        h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-top: 25px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h3 {
+            color: #764ba2;
+            font-size: 1.4em;
+            margin-top: 28px;
+            margin-bottom: 15px;
+        }
+
+        h4 {
+            color: #555;
+            font-size: 1.1em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 10px;
+            text-align: justify;
+            font-size: 1em;
+            line-height: 1.65;
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+            margin-top: 6px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            font-size: 1em;
+            line-height: 1.55;
+        }
+
+        .tech-section {
+            page-break-before: always;
+            margin-top: 20px;
+        }
+
+        .tech-list {
+            list-style: none;
+            margin-left: 0;
+            margin-top: 15px;
+            margin-bottom: 18px;
+        }
+
+        .tech-item {
+            background: #f8f9fa;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+
+        .tech-item h4 {
+            color: #667eea;
+            margin: 0 0 5px 0;
+            font-size: 1.1em;
+        }
+
+        .tech-item p {
+            margin: 0;
+            font-size: 0.95em;
+            line-height: 1.45;
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e0e0e0;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        .screenshot-section {
+            margin: 40px 0;
+        }
+
+        .screenshot-item {
+            margin-bottom: 35px;
+            page-break-inside: avoid;
+            text-align: center;
+        }
+
+        .screenshot-item h4 {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+
+        .screenshot-item img {
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin: 0 auto 12px auto;
+            display: block;
+        }
+
+        /* First screenshot (login) is smaller to fit on same page */
+        .screenshot-item:first-of-type img {
+            max-width: 250px;
+        }
+
+        /* Admin web panel screenshots are larger (desktop) */
+        .screenshot-item.admin-screenshot img {
+            max-width: 800px;
+        }
+
+        /* First admin screenshot is smaller */
+        .screenshot-item.admin-screenshot:first-of-type img {
+            max-width: 500px;
+        }
+
+        .screenshot-description {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 4px solid #764ba2;
+            font-size: 0.95em;
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.55;
+        }
+
+        .app-section {
+            background: #f8f9fa;
+            padding: 18px 20px;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+
+        .app-section h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .app-section p {
+            margin-bottom: 8px;
+        }
+
+        .app-section ul {
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .app-section ul li {
+            margin-bottom: 5px;
+        }
+
+        .feature-list {
+            columns: 2;
+            column-gap: 30px;
+        }
+
+        .feature-list li {
+            break-inside: avoid;
+            margin-bottom: 5px;
+            line-height: 1.45;
+        }
+
+        .architecture-diagram {
+            background: #f8f9fa;
+            padding: 20px 15px;
+            border-radius: 12px;
+            border: 2px solid #667eea;
+            margin: 20px auto;
+            text-align: center;
+            page-break-inside: avoid;
+            max-width: 800px;
+        }
+
+        .arch-layer {
+            margin: 12px 0;
+            position: relative;
+        }
+
+        .arch-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin: 8px auto;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .arch-box h4 {
+            margin: 0 0 8px 0;
+            color: #667eea;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .arch-box p {
+            margin: 3px 0;
+            font-size: 0.75em;
+            color: #555;
+        }
+
+        .arch-apps-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+
+        .arch-app-box {
+            background: white;
+            border: 2px solid #764ba2;
+            border-radius: 6px;
+            padding: 8px 12px;
+            min-width: 110px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .arch-app-box h5 {
+            margin: 0 0 3px 0;
+            color: #764ba2;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .arch-app-box p {
+            margin: 0;
+            font-size: 0.7em;
+            color: #666;
+        }
+
+        .arch-connector {
+            width: 2px;
+            height: 20px;
+            background: #667eea;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .arch-connector::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 6px solid #667eea;
+        }
+
+        .arch-inner-box {
+            background: #f0f4ff;
+            border: 1px solid #667eea;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        .arch-inner-box p {
+            margin: 2px 0;
+            font-size: 0.7em;
+            color: #444;
+        }
+
+        .arch-infra-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .arch-infra-box {
+            background: #fff5e6;
+            border: 1px solid #f59e0b;
+            border-radius: 4px;
+            padding: 8px 12px;
+            min-width: 100px;
+        }
+
+        .arch-infra-box h5 {
+            margin: 0 0 3px 0;
+            color: #f59e0b;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        .arch-infra-box p {
+            margin: 0;
+            font-size: 0.7em;
+            color: #666;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            margin-top: 50px;
+        }
+
+        .page-break-before {
+            page-break-before: always;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+            section {
+                page-break-inside: avoid;
+            }
+            .page-break-before {
+                page-break-before: always;
+            }
+        }
+
+        .toc {
+            background: #f8f9fa;
+            padding: 20px 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            page-break-after: always;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 1.5em;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .toc > ul {
+            margin-bottom: 0;
+        }
+
+        .toc li {
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .toc > ul > li {
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .toc ul ul {
+            margin-left: 18px;
+            margin-top: 2px;
+            margin-bottom: 4px;
+        }
+
+        .toc ul ul li {
+            font-weight: normal;
+            font-size: 0.92em;
+            margin-bottom: 2px;
+        }
+
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚚 Delivery Management System</h1>
+            <p>Complete Multi-Platform Solution for Food Delivery Operations</p>
+        </header>
+
+        <div class="content">
+            <!-- Table of Contents -->
+            <section class="toc page-break-before">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#overview">1. Project Overview</a>
+                        <ul>
+                            <li><a href="#overview">What is the Delivery Management System?</a></li>
+                            <li><a href="#overview">Purpose & Problem It Solves</a></li>
+                            <li><a href="#overview">Target Users</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#features">2. Features & App Logic</a>
+                        <ul>
+                            <li><a href="#features">Customer Application Features</a></li>
+                            <li><a href="#features">Vendor Application Features</a></li>
+                            <li><a href="#features">Delivery Driver Application Features</a></li>
+                            <li><a href="#features">Admin Web Panel Features</a></li>
+                            <li><a href="#features">How the App Works - Order Flow</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#tech-stack">3. Technical Stack</a>
+                        <ul>
+                            <li><a href="#tech-stack">Frontend Technologies</a></li>
+                            <li><a href="#tech-stack">Backend Technologies</a></li>
+                            <li><a href="#tech-stack">Additional Technologies & Services</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#architecture">4. Architecture & Workflow</a>
+                        <ul>
+                            <li><a href="#architecture">System Architecture</a></li>
+                            <li><a href="#architecture">Clean Architecture Layers</a></li>
+                            <li><a href="#architecture">Component Interaction Flow</a></li>
+                            <li><a href="#architecture">Real-Time Communication</a></li>
+                            <li><a href="#architecture">Order Tracking & Status Management</a></li>
+                            <li><a href="#architecture">Security Architecture</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#api-docs">6. API Documentation</a>
+                        <ul>
+                            <li><a href="#api-docs">Base URL & Authentication</a></li>
+                            <li><a href="#api-docs">API Endpoints</a></li>
+                            <li><a href="#api-docs">Response Format & Rate Limiting</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#database-schema">7. Database Schema</a>
+                        <ul>
+                            <li><a href="#database-schema">Database Overview</a></li>
+                            <li><a href="#database-schema">Core Entities</a></li>
+                            <li><a href="#database-schema">Relationships</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#security">8. Security Features</a>
+                        <ul>
+                            <li><a href="#security">Authentication & Authorization</a></li>
+                            <li><a href="#security">API Security</a></li>
+                            <li><a href="#security">Data & Payment Security</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#troubleshooting">9. Troubleshooting</a>
+                        <ul>
+                            <li><a href="#troubleshooting">Common Issues</a></li>
+                            <li><a href="#troubleshooting">Error Codes & Debugging</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#performance">10. Performance & Scalability</a>
+                        <ul>
+                            <li><a href="#performance">Performance Optimizations</a></li>
+                            <li><a href="#performance">Scalability Considerations</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#screenshots">11. Application Screenshots</a>
+                        <ul>
+                            <li><a href="#screenshots">Customer Application</a></li>
+                            <li><a href="#screenshots">Vendor Application</a></li>
+                            <li><a href="#screenshots">Delivery Application</a></li>
+                            <li><a href="#screenshots">Admin Web Panel</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Project Overview -->
+            <section id="overview">
+                <h2>1. Project Overview</h2>
+                
+                <h3>What is the Delivery Management System?</h3>
+                <p>
+                    The <span class="highlight">Delivery Management System</span> is a comprehensive, enterprise-grade 
+                    multi-platform solution designed to streamline and optimize food delivery operations. This complete 
+                    ecosystem connects four distinct user types through a unified, real-time platform that handles everything 
+                    from order placement to delivery completion.
+                </p>
+
+                <h3>Purpose & Problem It Solves</h3>
+                <p>
+                    The modern food delivery industry faces numerous challenges: fragmented communication between customers, 
+                    restaurants, and delivery drivers; lack of real-time order tracking; inefficient order management; and 
+                    difficulty in scaling operations. This system addresses all these pain points by providing:
+                </p>
+                <ul>
+                    <li><strong>Unified Platform:</strong> A single ecosystem connecting customers, vendors, delivery drivers, and administrators</li>
+                    <li><strong>Real-Time Communication:</strong> Instant updates and notifications for all stakeholders</li>
+                    <li><strong>Efficient Order Management:</strong> Streamlined workflow from order placement to delivery completion</li>
+                    <li><strong>Comprehensive Analytics:</strong> Data-driven insights for business optimization</li>
+                    <li><strong>Scalable Architecture:</strong> Built to handle growth from small operations to enterprise-level businesses</li>
+                    <li><strong>Multi-Platform Support:</strong> Native mobile apps for iOS and Android, plus web dashboard</li>
+                </ul>
+
+                <h3 class="page-break-before" style="padding-top: 20px;">Target Users</h3>
+                <div class="app-section">
+                    <h4>👤 Customers</h4>
+                    <p>End users who want to browse restaurants, place food orders, track deliveries in real-time, and manage their accounts.</p>
+                </div>
+                <div class="app-section">
+                    <h4>🏪 Vendors (Restaurants)</h4>
+                    <p>Restaurant owners and staff who need to manage orders, update menus, track sales analytics, and handle customer interactions.</p>
+                </div>
+                <div class="app-section">
+                    <h4>🚗 Delivery Drivers</h4>
+                    <p>Delivery personnel who accept orders, navigate to locations, update delivery status, and track their earnings.</p>
+                </div>
+                <div class="app-section">
+                    <h4>👨‍💼 Administrators</h4>
+                    <p>Platform administrators who oversee the entire system, manage users, shops, orders, and analyze platform-wide metrics.</p>
+                </div>
+            </section>
+
+            <!-- Features & App Logic -->
+            <section id="features">
+                <h2>2. Features & App Logic</h2>
+
+                <h3>Customer Application Features</h3>
+                <div class="feature-list">
+                    <ul>
+                        <li><strong>Authentication:</strong> Secure registration, login, email verification, and password reset</li>
+                        <li><strong>Shop Browsing:</strong> Browse restaurants by category, location, rating, and search functionality</li>
+                        <li><strong>Menu Exploration:</strong> View detailed menus with images, descriptions, prices, and availability</li>
+                        <li><strong>Shopping Cart:</strong> Add items, adjust quantities, and manage cart before checkout</li>
+                        <li><strong>Order Placement:</strong> Secure checkout with multiple payment methods and delivery address selection</li>
+                        <li><strong>Real-Time Tracking:</strong> Live order status updates and delivery tracking</li>
+                        <li><strong>Order History:</strong> Complete order history with details and reorder functionality</li>
+                        <li><strong>Favorites System:</strong> Save favorite restaurants and products for quick access</li>
+                        <li><strong>Address Management:</strong> Multiple delivery addresses with GPS-based location detection</li>
+                        <li><strong>Payment Methods:</strong> Manage credit cards, digital wallets, and payment preferences</li>
+                        <li><strong>Reviews & Ratings:</strong> Rate and review restaurants and products</li>
+                        <li><strong>Multi-Language:</strong> Support for multiple languages (English, French)</li>
+                        <li><strong>Theme Support:</strong> Light and dark mode preferences</li>
+                    </ul>
+                </div>
+
+                <h3>Vendor Application Features</h3>
+                <div class="feature-list">
+                    <ul>
+                        <li><strong>Dashboard:</strong> Real-time statistics, order overview, and quick actions</li>
+                        <li><strong>Order Management:</strong> View, accept, reject, and update order status in real-time</li>
+                        <li><strong>Menu Management:</strong> Add, edit, delete products with images, categories, and pricing</li>
+                        <li><strong>Analytics:</strong> Sales analytics, performance metrics, revenue trends, and top products</li>
+                        <li><strong>Order Status Updates:</strong> Update orders from pending → accepted → preparing → ready → delivered</li>
+                        <li><strong>Business Information:</strong> Manage shop details, operating hours, and pricing information</li>
+                        <li><strong>Profile Management:</strong> Update vendor profile, settings, and preferences</li>
+                        <li><strong>Payment Settings:</strong> Configure payout methods and tax information</li>
+                        <li><strong>Notifications:</strong> Real-time order notifications and alerts</li>
+                    </ul>
+                </div>
+
+                <h3>Delivery Driver Application Features</h3>
+                <div class="feature-list">
+                    <ul>
+                        <li><strong>Driver Dashboard:</strong> Today's summary, available deliveries, and active orders</li>
+                        <li><strong>Order Acceptance:</strong> View available orders and accept deliveries</li>
+                        <li><strong>Delivery Management:</strong> Track active deliveries, update status, and mark as delivered</li>
+                        <li><strong>Earnings Tracking:</strong> View earnings, payment history, and performance metrics</li>
+                        <li><strong>Location Services:</strong> GPS tracking for delivery navigation and location updates</li>
+                        <li><strong>Order History:</strong> View completed deliveries and delivery statistics</li>
+                        <li><strong>Profile Management:</strong> Manage driver profile, vehicle information, and settings</li>
+                        <li><strong>Real-Time Updates:</strong> Receive instant notifications for new orders and status changes</li>
+                    </ul>
+                </div>
+
+                <h3>Admin Web Panel Features</h3>
+                <div class="feature-list">
+                    <ul>
+                        <li><strong>System Dashboard:</strong> Comprehensive overview with real-time statistics and metrics</li>
+                        <li><strong>User Management:</strong> View, edit, activate/deactivate all users (customers, vendors, drivers)</li>
+                        <li><strong>Shop Management:</strong> Approve shops, manage shop information, and control shop status</li>
+                        <li><strong>Order Management:</strong> View all orders, update status, and handle order issues</li>
+                        <li><strong>Analytics:</strong> System-wide analytics including revenue, orders, user growth, and shop performance</li>
+                        <li><strong>Content Moderation:</strong> Review moderation and content management</li>
+                        <li><strong>System Configuration:</strong> Platform settings, fee configuration, and system parameters</li>
+                    </ul>
+                </div>
+
+                <h3>How the App Works - Order Flow</h3>
+                <ol>
+                    <li><strong>Customer Places Order:</strong> Customer browses shops, adds items to cart, selects delivery address and payment method, then places order</li>
+                    <li><strong>Vendor Receives Notification:</strong> Vendor app receives real-time notification of new order</li>
+                    <li><strong>Vendor Accepts/Rejects:</strong> Vendor reviews order details and accepts or rejects the order</li>
+                    <li><strong>Order Preparation:</strong> Vendor updates order status to "Preparing" and then "Ready for Pickup"</li>
+                    <li><strong>Driver Assignment:</strong> Available drivers can see and accept the delivery order</li>
+                    <li><strong>Driver Picks Up:</strong> Driver navigates to restaurant, picks up order, and updates status to "In Transit"</li>
+                    <li><strong>Delivery:</strong> Driver navigates to customer location and marks order as "Delivered"</li>
+                    <li><strong>Completion:</strong> Customer receives notification, can rate the experience, and order is completed</li>
+                </ol>
+            </section>
+
+            <!-- Technical Stack -->
+            <section id="tech-stack">
+                <h2 class="page-break-before" style="padding-top: 20px;">3. Technical Stack</h2>
+
+                <h3>Frontend Technologies</h3>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>Flutter Framework</h4>
+                        <p>Cross-platform mobile development framework for iOS and Android applications. Enables code sharing across all four apps.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Dart Language</h4>
+                        <p>Modern programming language optimized for client-side development with strong typing and excellent performance.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>BLoC Pattern</h4>
+                        <p>State management architecture for predictable state management and reactive programming.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GoRouter</h4>
+                        <p>Declarative routing solution for Flutter applications with deep linking support.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GetIt</h4>
+                        <p>Dependency injection container for managing service dependencies and lifecycle.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Socket.io Client</h4>
+                        <p>Real-time bidirectional communication between client and server for live updates.</p>
+                    </li>
+                </ul>
+
+                <h3 class="tech-section">Backend Technologies</h3>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>Node.js</h4>
+                        <p>JavaScript runtime environment for building scalable server-side applications.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>TypeScript</h4>
+                        <p>Typed superset of JavaScript providing type safety and enhanced developer experience.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Express.js</h4>
+                        <p>Fast, unopinionated web framework for building RESTful APIs and web applications.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Prisma ORM</h4>
+                        <p>Next-generation ORM for type-safe database access and migrations.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>PostgreSQL</h4>
+                        <p>Advanced open-source relational database with robust features and reliability.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Redis</h4>
+                        <p>In-memory data structure store for caching, session management, and real-time features.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Socket.io</h4>
+                        <p>Real-time event-based communication library for bidirectional client-server communication.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>JWT Authentication</h4>
+                        <p>JSON Web Tokens for secure, stateless authentication and authorization.</p>
+                    </li>
+                </ul>
+
+                <h3>Additional Technologies & Services</h3>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>Payment Gateways</h4>
+                        <p>Integration ready for Stripe, PayPal, and Razorpay payment processing.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Google Maps API</h4>
+                        <p>Location services, geocoding, distance calculation, and route planning.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Firebase Cloud Messaging</h4>
+                        <p>Push notification service for real-time alerts and updates.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>SMTP Email Service</h4>
+                        <p>Email verification, password reset, and notification emails.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Image Processing</h4>
+                        <p>Sharp library for image optimization and processing.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>Melos</h4>
+                        <p>Monorepo management tool for coordinating multiple packages and apps.</p>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Architecture & Workflow -->
+            <section id="architecture">
+                <h2>4. Architecture & Workflow</h2>
+
+                <h3>System Architecture</h3>
+                <p>
+                    The Delivery Management System follows a <span class="highlight">Clean Architecture</span> pattern with 
+                    clear separation of concerns and a microservice-inspired structure. The system is organized as a monorepo 
+                    managed by Melos, allowing shared code and dependencies across all applications.
+                </p>
+
+                <div class="architecture-diagram">
+                    <!-- Flutter Applications Layer -->
+                    <div class="arch-layer">
+                        <div class="arch-box">
+                            <h4>Flutter Applications</h4>
+                            <div class="arch-apps-container">
+                                <div class="arch-app-box">
+                                    <h5>User App</h5>
+                                    <p>(Customer)</p>
+                                </div>
+                                <div class="arch-app-box">
+                                    <h5>Vendor App</h5>
+                                    <p>(Restaurant)</p>
+                                </div>
+                                <div class="arch-app-box">
+                                    <h5>Delivery App</h5>
+                                    <p>(Driver)</p>
+                                </div>
+                                <div class="arch-app-box">
+                                    <h5>Admin App</h5>
+                                    <p>(Platform)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="arch-connector"></div>
+
+                    <!-- Backend API Layer -->
+                    <div class="arch-layer">
+                        <div class="arch-box">
+                            <h4>Backend API (Node.js)</h4>
+                            <div class="arch-inner-box">
+                                <p><strong>Express + TypeScript</strong></p>
+                                <p><strong>Socket.io</strong> (Real-time)</p>
+                                <p><strong>JWT Authentication</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="arch-connector"></div>
+
+                    <!-- Infrastructure Layer -->
+                    <div class="arch-layer">
+                        <div class="arch-box">
+                            <h4>Infrastructure</h4>
+                            <div class="arch-infra-container">
+                                <div class="arch-infra-box">
+                                    <h5>PostgreSQL</h5>
+                                    <p>Database</p>
+                                </div>
+                                <div class="arch-infra-box">
+                                    <h5>Redis</h5>
+                                    <p>Cache</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="page-break-before" style="padding-top: 20px;">Clean Architecture Layers</h3>
+                <div class="app-section">
+                    <h4>Presentation Layer</h4>
+                    <p>Contains UI components (Widgets, Pages, Screens), state management using BLoC pattern, and user interactions. Each app has its own presentation layer tailored to its specific user needs.</p>
+                </div>
+                <div class="app-section">
+                    <h4>Domain Layer (Shared Package)</h4>
+                    <p>Contains business entities, repository interfaces, use cases, and core business logic. This layer is shared across all applications to ensure consistency.</p>
+                </div>
+                <div class="app-section">
+                    <h4>Data Layer (Shared Package)</h4>
+                    <p>Implements repository interfaces, handles remote data sources (API clients), local data sources (caching, storage), and data models. Provides a unified data access layer.</p>
+                </div>
+                <div class="app-section">
+                    <h4>Core Layer (Shared Package)</h4>
+                    <p>Contains common utilities, API client configuration, error handling, logging services, and shared UI components. Ensures code reusability and consistency.</p>
+                </div>
+
+                <h3>Component Interaction Flow</h3>
+                <ol>
+                    <li><strong>User Action:</strong> User interacts with UI (e.g., places an order)</li>
+                    <li><strong>BLoC Event:</strong> UI dispatches an event to the BLoC</li>
+                    <li><strong>Business Logic:</strong> BLoC processes the event using domain layer logic</li>
+                    <li><strong>Repository Call:</strong> BLoC calls repository interface from domain layer</li>
+                    <li><strong>Data Fetching:</strong> Repository implementation in data layer makes API call</li>
+                    <li><strong>API Request:</strong> HTTP request sent to Node.js backend with JWT authentication</li>
+                    <li><strong>Backend Processing:</strong> Express routes handle request, validate, and process business logic</li>
+                    <li><strong>Database Operation:</strong> Prisma ORM executes database queries on PostgreSQL</li>
+                    <li><strong>Real-Time Update:</strong> Socket.io emits event to all connected clients</li>
+                    <li><strong>Response Flow:</strong> Response flows back through layers, updating UI state</li>
+                </ol>
+
+                <h3>Real-Time Communication</h3>
+                <p>
+                    The system uses <span class="highlight">Socket.io</span> for real-time bidirectional communication. 
+                    When an order status changes, the backend emits a Socket.io event that is received by all relevant 
+                    clients (customer, vendor, driver) simultaneously, ensuring everyone sees updates in real-time without 
+                    manual refresh.
+                </p>
+
+                <h3 class="page-break-before" style="padding-top: 20px;">Order Tracking & Status Management</h3>
+                
+                <h4>Order Status Flow</h4>
+                <p>
+                    Orders progress through a well-defined status lifecycle. Each status change triggers real-time 
+                    notifications to relevant parties and updates the order history for audit purposes.
+                </p>
+                
+                <div class="app-section">
+                    <h4>Status Progression</h4>
+                    <ol>
+                        <li><strong>PENDING</strong> - Order created, awaiting vendor acceptance</li>
+                        <li><strong>ACCEPTED</strong> - Vendor accepted the order</li>
+                        <li><strong>PREPARING</strong> - Vendor is preparing the order</li>
+                        <li><strong>READY_FOR_PICKUP</strong> - Order ready for driver pickup</li>
+                        <li><strong>IN_DELIVERY</strong> - Driver picked up and is delivering</li>
+                        <li><strong>DELIVERED</strong> - Order successfully delivered</li>
+                        <li><strong>CANCELLED</strong> - Order cancelled (before delivery)</li>
+                        <li><strong>REFUNDED</strong> - Order refunded (after delivery or cancellation)</li>
+                    </ol>
+                </div>
+
+                <h4>Who Can Change Order Status</h4>
+                <div class="app-section">
+                    <h4>Vendor Actions</h4>
+                    <ul>
+                        <li><strong>Accept Order:</strong> Change status from PENDING → ACCEPTED</li>
+                        <li><strong>Reject Order:</strong> Change status from PENDING → CANCELLED (with reason)</li>
+                        <li><strong>Start Preparing:</strong> Change status from ACCEPTED → PREPARING</li>
+                        <li><strong>Mark Ready:</strong> Change status from PREPARING → READY_FOR_PICKUP</li>
+                        <li><strong>Cancel Order:</strong> Can cancel orders in PENDING or ACCEPTED status</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Delivery Driver Actions</h4>
+                    <ul>
+                        <li><strong>Accept Delivery:</strong> Accepts available order, changes status to IN_DELIVERY</li>
+                        <li><strong>Mark Picked Up:</strong> Changes status from READY_FOR_PICKUP → IN_DELIVERY</li>
+                        <li><strong>Mark Delivered:</strong> Changes status from IN_DELIVERY → DELIVERED</li>
+                        <li><strong>Update Location:</strong> Sends real-time GPS coordinates during delivery</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Admin Actions</h4>
+                    <ul>
+                        <li><strong>Update Any Status:</strong> Admins can change order status to any valid state</li>
+                        <li><strong>Assign Driver:</strong> Manually assign delivery driver to orders</li>
+                        <li><strong>Process Refund:</strong> Change status to REFUNDED and process payment refund</li>
+                        <li><strong>Cancel Order:</strong> Cancel any order at any stage</li>
+                    </ul>
+                </div>
+
+                <h4>Real-Time Status Broadcasting</h4>
+                <p>
+                    When an order status changes, the system uses <span class="highlight">Socket.io</span> to broadcast 
+                    updates to all relevant parties simultaneously. The broadcasting mechanism ensures that each role 
+                    receives only the information they need.
+                </p>
+
+                <div class="app-section">
+                    <h4>Socket.io Room System</h4>
+                    <p>The system uses a room-based messaging system for efficient real-time updates:</p>
+                    <ul>
+                        <li><strong>Order Rooms:</strong> <code>order:{orderId}</code> - All parties tracking a specific order join this room</li>
+                        <li><strong>User Rooms:</strong> <code>user:{userId}</code> - Customer receives updates for their orders</li>
+                        <li><strong>Shop Rooms:</strong> <code>shop:{shopId}</code> - Vendor receives updates for their shop's orders</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Status Update Events</h4>
+                    <p>When status changes, the following events are emitted:</p>
+                    <ul>
+                        <li><strong>order:status</strong> - Emitted to order room, user room, and shop room with new status</li>
+                        <li><strong>order:new</strong> - Emitted to shop room when new order is created</li>
+                        <li><strong>order:created</strong> - Emitted to user room when order is successfully created</li>
+                        <li><strong>order:payment_succeeded</strong> - Emitted when payment is confirmed</li>
+                    </ul>
+                </div>
+
+                <h4>Role-Based Status Visibility</h4>
+                <div class="app-section">
+                    <h4>Customer View</h4>
+                    <ul>
+                        <li><strong>Sees All Statuses:</strong> Customers can see the complete order status progression</li>
+                        <li><strong>Real-Time Updates:</strong> Receives instant notifications when status changes</li>
+                        <li><strong>Location Tracking:</strong> Can view driver's real-time location when order is IN_DELIVERY</li>
+                        <li><strong>Order History:</strong> Complete order timeline with timestamps for each status change</li>
+                        <li><strong>Estimated Delivery Time:</strong> Shows estimated delivery time based on distance and traffic</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Vendor View</h4>
+                    <ul>
+                        <li><strong>Order Management:</strong> Sees orders filtered by status (Pending, Preparing, Ready, etc.)</li>
+                        <li><strong>Status Control:</strong> Can update status from PENDING through READY_FOR_PICKUP</li>
+                        <li><strong>New Order Alerts:</strong> Receives instant notification when new order is placed</li>
+                        <li><strong>Order Details:</strong> Full order information including customer details and delivery address</li>
+                        <li><strong>Status History:</strong> Can view complete status change history for each order</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Delivery Driver View</h4>
+                    <ul>
+                        <li><strong>Available Orders:</strong> Sees orders with status READY_FOR_PICKUP that are available</li>
+                        <li><strong>Assigned Orders:</strong> Sees orders assigned to them (status IN_DELIVERY)</li>
+                        <li><strong>Status Updates:</strong> Can update status when picking up and delivering</li>
+                        <li><strong>Location Sharing:</strong> Automatically shares GPS location during active deliveries</li>
+                        <li><strong>Order Details:</strong> Full delivery information including customer address and instructions</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Admin View</h4>
+                    <ul>
+                        <li><strong>All Orders:</strong> Can view all orders across the platform</li>
+                        <li><strong>Status Override:</strong> Can change any order status to any valid state</li>
+                        <li><strong>Order Timeline:</strong> Complete audit trail of all status changes</li>
+                        <li><strong>Analytics:</strong> Status distribution and order flow analytics</li>
+                        <li><strong>Issue Resolution:</strong> Can intervene in problematic orders</li>
+                    </ul>
+                </div>
+
+                <h4>Real-Time Location Tracking</h4>
+                <div class="app-section">
+                    <h4>Driver Location Updates</h4>
+                    <ul>
+                        <li><strong>GPS Tracking:</strong> Delivery drivers share their GPS coordinates during active deliveries</li>
+                        <li><strong>Update Frequency:</strong> Location updates sent every few seconds when order is IN_DELIVERY</li>
+                        <li><strong>Location Storage:</strong> Coordinates stored in OrderTracking table for historical tracking</li>
+                        <li><strong>Customer Visibility:</strong> Customers can see driver's real-time location on map</li>
+                        <li><strong>Route Optimization:</strong> System calculates optimal routes and ETA based on real-time location</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Order Tracking Endpoint</h4>
+                    <p>The <code>GET /api/orders/:id/track</code> endpoint provides:</p>
+                    <ul>
+                        <li>Current order status</li>
+                        <li>Real-time driver location (if in delivery)</li>
+                        <li>Estimated delivery time</li>
+                        <li>Status change history with timestamps</li>
+                        <li>Location tracking points (breadcrumb trail)</li>
+                    </ul>
+                </div>
+
+                <h4>Status Change Workflow Example</h4>
+                <div class="app-section">
+                    <p><strong>Scenario:</strong> Customer places an order for pizza delivery</p>
+                    <ol>
+                        <li><strong>Order Created:</strong> Status = PENDING
+                            <ul>
+                                <li>Socket.io emits <code>order:new</code> to shop room</li>
+                                <li>Socket.io emits <code>order:created</code> to user room</li>
+                                <li>Vendor receives push notification: "New order received"</li>
+                                <li>Customer sees order in "Pending" status</li>
+                            </ul>
+                        </li>
+                        <li><strong>Vendor Accepts:</strong> Status = ACCEPTED
+                            <ul>
+                                <li>Socket.io emits <code>order:status</code> to order, user, and shop rooms</li>
+                                <li>Customer receives push notification: "Order accepted"</li>
+                                <li>Status history entry created</li>
+                            </ul>
+                        </li>
+                        <li><strong>Vendor Starts Preparing:</strong> Status = PREPARING
+                            <ul>
+                                <li>Socket.io broadcasts status update</li>
+                                <li>Customer sees "Preparing" status</li>
+                            </ul>
+                        </li>
+                        <li><strong>Order Ready:</strong> Status = READY_FOR_PICKUP
+                            <ul>
+                                <li>Socket.io broadcasts status update</li>
+                                <li>Order appears in "Available Deliveries" for drivers</li>
+                                <li>Customer sees "Ready for pickup" status</li>
+                            </ul>
+                        </li>
+                        <li><strong>Driver Accepts:</strong> Status = IN_DELIVERY
+                            <ul>
+                                <li>Socket.io broadcasts status update</li>
+                                <li>Driver location tracking begins</li>
+                                <li>Customer receives notification and can track driver location</li>
+                                <li>Vendor sees order assigned to driver</li>
+                            </ul>
+                        </li>
+                        <li><strong>Driver Delivers:</strong> Status = DELIVERED
+                            <ul>
+                                <li>Socket.io broadcasts final status update</li>
+                                <li>Location tracking stops</li>
+                                <li>All parties see order as completed</li>
+                                <li>Customer can rate the experience</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+
+                <h4>Status History & Audit Trail</h4>
+                <div class="app-section">
+                    <p>Every status change is recorded in the <code>OrderStatusHistory</code> table:</p>
+                    <ul>
+                        <li><strong>Timestamp:</strong> Exact time of status change</li>
+                        <li><strong>Status:</strong> New status value</li>
+                        <li><strong>Notes:</strong> Optional notes about the change</li>
+                        <li><strong>Order Reference:</strong> Links back to the order</li>
+                    </ul>
+                    <p>This provides a complete audit trail for order tracking, dispute resolution, and analytics.</p>
+                </div>
+
+                <h3>Security Architecture</h3>
+                <ul>
+                    <li><strong>JWT Authentication:</strong> Secure token-based authentication with access and refresh tokens</li>
+                    <li><strong>Role-Based Access Control:</strong> Different permissions for customers, vendors, drivers, and admins</li>
+                    <li><strong>Password Hashing:</strong> Bcrypt for secure password storage</li>
+                    <li><strong>API Rate Limiting:</strong> Protection against abuse and DDoS attacks</li>
+                    <li><strong>Input Validation:</strong> Comprehensive validation on both client and server side</li>
+                    <li><strong>HTTPS/SSL:</strong> Encrypted communication for all API requests</li>
+                </ul>
+            </section>
+
+            <!-- API Documentation -->
+            <section id="api-docs">
+                <h2 class="page-break-before" style="padding-top: 20px;">6. API Documentation</h2>
+
+                <h3>Base URL</h3>
+                <p>All API endpoints are prefixed with <code>/api</code>. The base URL structure is:</p>
+                <div class="app-section">
+                    <p><strong>Development:</strong> <code>http://localhost:3000/api</code></p>
+                    <p><strong>Production:</strong> <code>https://your-domain.com/api</code></p>
+                </div>
+
+                <h3>Authentication</h3>
+                <p>Most endpoints require authentication using JWT (JSON Web Tokens). Include the token in the Authorization header:</p>
+                <div class="app-section">
+                    <p><code>Authorization: Bearer &lt;access_token&gt;</code></p>
+                </div>
+                <p>Access tokens expire after 15 minutes. Use the refresh token endpoint to obtain a new access token.</p>
+
+                <h3>API Endpoints</h3>
+
+                <h4>Authentication Endpoints</h4>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>POST /api/auth/register</h4>
+                        <p>Register a new user account. Returns access token and refresh token.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>POST /api/auth/login</h4>
+                        <p>Authenticate user and receive JWT tokens.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>POST /api/auth/refresh</h4>
+                        <p>Refresh access token using refresh token.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>POST /api/auth/logout</h4>
+                        <p>Logout user and invalidate refresh token.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>POST /api/auth/forgot-password</h4>
+                        <p>Request password reset email.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>POST /api/auth/reset-password</h4>
+                        <p>Reset password using reset token.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>POST /api/auth/verify-email/:token</h4>
+                        <p>Verify user email address.</p>
+                    </li>
+                </ul>
+
+                <h4>User Endpoints</h4>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>GET /api/users/profile</h4>
+                        <p>Get current user profile information.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>PUT /api/users/profile</h4>
+                        <p>Update user profile information.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>PUT /api/users/password</h4>
+                        <p>Change user password.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/users/addresses</h4>
+                        <p>Get all user delivery addresses.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>POST /api/users/addresses</h4>
+                        <p>Add new delivery address.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/users/orders</h4>
+                        <p>Get user order history.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/users/favorites</h4>
+                        <p>Get user favorite shops.</p>
+                    </li>
+                </ul>
+
+                <h4>Shop Endpoints</h4>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>GET /api/shops</h4>
+                        <p>Get all shops with filtering and pagination.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/shops/featured</h4>
+                        <p>Get featured shops.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/shops/nearby</h4>
+                        <p>Get shops near a location (requires latitude/longitude).</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/shops/:id</h4>
+                        <p>Get shop details by ID.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/shops/:id/products</h4>
+                        <p>Get all products for a specific shop.</p>
+                    </li>
+                </ul>
+
+                <h4>Order Endpoints</h4>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>POST /api/orders</h4>
+                        <p>Create a new order.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/orders</h4>
+                        <p>Get user's orders with filtering.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/orders/:id</h4>
+                        <p>Get order details by ID.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/orders/:id/track</h4>
+                        <p>Track order in real-time.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>PATCH /api/orders/:id/cancel</h4>
+                        <p>Cancel an order.</p>
+                    </li>
+                </ul>
+
+                <h4>Vendor Endpoints</h4>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>GET /api/vendor/shop</h4>
+                        <p>Get vendor's shop information.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/vendor/orders</h4>
+                        <p>Get vendor's orders with status filtering.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>PATCH /api/vendor/orders/:id/status</h4>
+                        <p>Update order status (accept, preparing, ready, etc.).</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/vendor/products</h4>
+                        <p>Get vendor's products.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>POST /api/vendor/products</h4>
+                        <p>Create new product.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/vendor/analytics/sales</h4>
+                        <p>Get sales analytics data.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/vendor/analytics/performance</h4>
+                        <p>Get performance metrics (prep time, accuracy, peak hours).</p>
+                    </li>
+                </ul>
+
+                <h4>Delivery Endpoints</h4>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>GET /api/delivery/orders/available</h4>
+                        <p>Get available orders for delivery drivers.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/delivery/orders</h4>
+                        <p>Get assigned orders for current driver.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>PATCH /api/delivery/orders/:id/accept</h4>
+                        <p>Accept a delivery order.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>PATCH /api/delivery/orders/:id/pickup</h4>
+                        <p>Mark order as picked up.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>PATCH /api/delivery/orders/:id/delivered</h4>
+                        <p>Mark order as delivered.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/delivery/stats</h4>
+                        <p>Get driver statistics (deliveries, earnings, rating).</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/delivery/earnings</h4>
+                        <p>Get driver earnings data.</p>
+                    </li>
+                </ul>
+
+                <h4>Admin Endpoints</h4>
+                <ul class="tech-list">
+                    <li class="tech-item">
+                        <h4>GET /api/admin/dashboard/overview</h4>
+                        <p>Get system-wide dashboard statistics.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/admin/users</h4>
+                        <p>Get all users with filtering and search.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/admin/shops</h4>
+                        <p>Get all shops for management.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/admin/orders</h4>
+                        <p>Get all orders across the platform.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>POST /api/admin/orders/:id/refund</h4>
+                        <p>Process order refund through payment gateway.</p>
+                    </li>
+                    <li class="tech-item">
+                        <h4>GET /api/admin/analytics/revenue</h4>
+                        <p>Get revenue analytics.</p>
+                    </li>
+                </ul>
+
+                <h3>Response Format</h3>
+                <p>All API responses follow a consistent format:</p>
+                <div class="app-section">
+                    <p><strong>Success Response:</strong></p>
+                    <pre style="background: #f8f9fa; padding: 15px; border-radius: 6px; overflow-x: auto;">
+{
+  "status": "success",
+  "data": { ... },
+  "message": "Optional success message"
+}</pre>
+                    <p><strong>Error Response:</strong></p>
+                    <pre style="background: #f8f9fa; padding: 15px; border-radius: 6px; overflow-x: auto;">
+{
+  "status": "error",
+  "message": "Error description",
+  "errors": [ ... ] // Optional validation errors
+}</pre>
+                </div>
+
+                <h3>Rate Limiting</h3>
+                <p>The API implements rate limiting to prevent abuse:</p>
+                <ul>
+                    <li><strong>Global Rate Limit:</strong> 100 requests per 15 minutes per IP</li>
+                    <li><strong>Auth Endpoints:</strong> 5 requests per 15 minutes (production), 100 (development)</li>
+                    <li><strong>Shop Endpoints:</strong> 120 requests per minute</li>
+                    <li><strong>Delivery Endpoints:</strong> 60 requests per minute</li>
+                </ul>
+            </section>
+
+            <!-- Database Schema -->
+            <section id="database-schema">
+                <h2 class="page-break-before" style="padding-top: 20px;">7. Database Schema</h2>
+
+                <h3>Overview</h3>
+                <p>The system uses <strong>PostgreSQL</strong> as the primary database with <strong>Prisma ORM</strong> for type-safe database access. The schema is designed to support multi-role users, order management, real-time tracking, and comprehensive analytics.</p>
+
+                <h3>Core Entities</h3>
+
+                <h4>User Model</h4>
+                <div class="app-section">
+                    <p><strong>Purpose:</strong> Central user table supporting all user types (Customer, Vendor, Delivery, Admin)</p>
+                    <p><strong>Key Fields:</strong></p>
+                    <ul>
+                        <li><code>id</code> - UUID primary key</li>
+                        <li><code>email</code> - Unique email address</li>
+                        <li><code>name</code> - User's full name</li>
+                        <li><code>role</code> - UserRole enum (CUSTOMER, VENDOR, DELIVERY, ADMIN)</li>
+                        <li><code>passwordHash</code> - Bcrypt hashed password</li>
+                        <li><code>vehicleType</code> - For delivery drivers</li>
+                        <li><code>licenseNumber</code> - For delivery drivers</li>
+                        <li><code>isEmailVerified</code> - Email verification status</li>
+                        <li><code>isActive</code> - Account activation status</li>
+                    </ul>
+                    <p><strong>Relationships:</strong> Orders, Shops (as owner), Addresses, Reviews, Payment Methods, Device Tokens</p>
+                </div>
+
+                <h4>Shop Model</h4>
+                <div class="app-section">
+                    <p><strong>Purpose:</strong> Restaurant/shop information and configuration</p>
+                    <p><strong>Key Fields:</strong></p>
+                    <ul>
+                        <li><code>id</code> - UUID primary key</li>
+                        <li><code>name</code> - Shop name</li>
+                        <li><code>category</code> - ShopCategory enum (RESTAURANT, GROCERY, PHARMACY, RETAIL, OTHER)</li>
+                        <li><code>address</code> - Physical address</li>
+                        <li><code>latitude</code>, <code>longitude</code> - GPS coordinates</li>
+                        <li><code>deliveryRadius</code> - Delivery radius in kilometers</li>
+                        <li><code>openingHours</code> - JSON object with operating hours</li>
+                        <li><code>rating</code>, <code>ratingCount</code> - Average rating and count</li>
+                        <li><code>isOpen</code> - Current open/closed status</li>
+                        <li><code>ownerId</code> - Foreign key to User (vendor)</li>
+                    </ul>
+                    <p><strong>Relationships:</strong> Owner (User), Products, Orders, Reviews, Categories</p>
+                </div>
+
+                <h4>Product Model</h4>
+                <div class="app-section">
+                    <p><strong>Purpose:</strong> Menu items and products sold by shops</p>
+                    <p><strong>Key Fields:</strong></p>
+                    <ul>
+                        <li><code>id</code> - UUID primary key</li>
+                        <li><code>name</code> - Product name</li>
+                        <li><code>description</code> - Product description</li>
+                        <li><code>price</code> - Current price</li>
+                        <li><code>discountedPrice</code> - Optional discounted price</li>
+                        <li><code>imageUrl</code> - Primary product image</li>
+                        <li><code>images</code> - Array of additional image URLs</li>
+                        <li><code>categoryId</code> - Foreign key to Category</li>
+                        <li><code>inStock</code> - Availability status</li>
+                        <li><code>stockQuantity</code> - Available quantity</li>
+                        <li><code>rating</code>, <code>ratingCount</code> - Product ratings</li>
+                    </ul>
+                    <p><strong>Relationships:</strong> Shop, Category, OrderItems, Reviews</p>
+                </div>
+
+                <h4>Order Model</h4>
+                <div class="app-section">
+                    <p><strong>Purpose:</strong> Order information and tracking</p>
+                    <p><strong>Key Fields:</strong></p>
+                    <ul>
+                        <li><code>id</code> - UUID primary key</li>
+                        <li><code>orderNumber</code> - Human-readable order number</li>
+                        <li><code>userId</code> - Customer (User)</li>
+                        <li><code>shopId</code> - Shop (Shop)</li>
+                        <li><code>deliveryAddress</code> - Full delivery address</li>
+                        <li><code>deliveryLatitude</code>, <code>deliveryLongitude</code> - Delivery coordinates</li>
+                        <li><code>subtotal</code>, <code>deliveryFee</code>, <code>serviceFee</code>, <code>tax</code>, <code>tip</code>, <code>discount</code>, <code>total</code> - Financial breakdown</li>
+                        <li><code>paymentMethod</code> - PaymentMethod enum</li>
+                        <li><code>status</code> - OrderStatus enum (PENDING, ACCEPTED, PREPARING, READY_FOR_PICKUP, IN_DELIVERY, DELIVERED, CANCELLED, REFUNDED)</li>
+                        <li><code>deliveryPersonId</code> - Assigned delivery driver</li>
+                        <li><code>estimatedDeliveryTime</code> - Expected delivery timestamp</li>
+                    </ul>
+                    <p><strong>Relationships:</strong> User (customer), Shop, Address, User (delivery person), OrderItems, OrderStatusHistory, OrderTracking</p>
+                </div>
+
+                <h4>OrderItem Model</h4>
+                <div class="app-section">
+                    <p><strong>Purpose:</strong> Individual items within an order</p>
+                    <p><strong>Key Fields:</strong> orderId, productId, productName (snapshot), productPrice (snapshot), quantity, totalPrice, instructions</p>
+                </div>
+
+                <h4>Review Model</h4>
+                <div class="app-section">
+                    <p><strong>Purpose:</strong> User reviews and ratings for shops and products</p>
+                    <p><strong>Key Fields:</strong> userId, shopId (optional), productId (optional), rating (1-5), comment</p>
+                </div>
+
+                <h4>Address Model</h4>
+                <div class="app-section">
+                    <p><strong>Purpose:</strong> User delivery addresses</p>
+                    <p><strong>Key Fields:</strong> label, fullAddress, latitude, longitude, instructions, isDefault</p>
+                </div>
+
+                <h4>UserPaymentMethod Model</h4>
+                <div class="app-section">
+                    <p><strong>Purpose:</strong> Saved payment methods for users</p>
+                    <p><strong>Key Fields:</strong> type (PaymentMethodType enum), card details, wallet information, bank account details, isDefault</p>
+                </div>
+
+                <h3>Supporting Models</h3>
+                <ul>
+                    <li><strong>RefreshToken</strong> - JWT refresh token storage</li>
+                    <li><strong>PasswordResetToken</strong> - Password reset token management</li>
+                    <li><strong>EmailVerificationToken</strong> - Email verification tokens</li>
+                    <li><strong>Category</strong> - Product categories per shop</li>
+                    <li><strong>OrderStatusHistory</strong> - Order status change tracking</li>
+                    <li><strong>OrderTracking</strong> - Real-time order location tracking</li>
+                    <li><strong>DeliveryLocation</strong> - Delivery driver location tracking</li>
+                    <li><strong>UserFavorite</strong> - User favorite shops</li>
+                    <li><strong>DeviceToken</strong> - Push notification device tokens</li>
+                    <li><strong>Config</strong> - System configuration key-value store</li>
+                </ul>
+
+                <h3>Database Relationships</h3>
+                <div class="app-section">
+                    <p><strong>User Relationships:</strong></p>
+                    <ul>
+                        <li>One-to-Many: Shops (as owner), Orders (as customer), Orders (as delivery person)</li>
+                        <li>One-to-Many: Addresses, Reviews, Payment Methods, Device Tokens</li>
+                    </ul>
+                    <p><strong>Shop Relationships:</strong></p>
+                    <ul>
+                        <li>Many-to-One: Owner (User)</li>
+                        <li>One-to-Many: Products, Orders, Reviews, Categories</li>
+                    </ul>
+                    <p><strong>Order Relationships:</strong></p>
+                    <ul>
+                        <li>Many-to-One: User (customer), Shop, Address, User (delivery person)</li>
+                        <li>One-to-Many: OrderItems, OrderStatusHistory, OrderTracking</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Security Features -->
+            <section id="security">
+                <h2 class="page-break-before" style="padding-top: 20px;">8. Security Features</h2>
+
+                <h3>Authentication & Authorization</h3>
+                <div class="app-section">
+                    <h4>JWT Token Authentication</h4>
+                    <ul>
+                        <li><strong>Access Tokens:</strong> Short-lived tokens (15 minutes) for API access</li>
+                        <li><strong>Refresh Tokens:</strong> Long-lived tokens (7 days) stored securely in database</li>
+                        <li><strong>Token Rotation:</strong> Refresh tokens are rotated on each use</li>
+                        <li><strong>Token Validation:</strong> All tokens are verified against secret keys and expiration</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Password Security</h4>
+                    <ul>
+                        <li><strong>Bcrypt Hashing:</strong> All passwords are hashed using bcrypt with salt rounds</li>
+                        <li><strong>Password Requirements:</strong> Minimum 8 characters with complexity requirements</li>
+                        <li><strong>Password Reset:</strong> Secure token-based password reset with expiration</li>
+                        <li><strong>Password History:</strong> Prevents reuse of recent passwords</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Role-Based Access Control (RBAC)</h4>
+                    <ul>
+                        <li><strong>Four User Roles:</strong> CUSTOMER, VENDOR, DELIVERY, ADMIN</li>
+                        <li><strong>Route Protection:</strong> Middleware enforces role-based access to endpoints</li>
+                        <li><strong>Resource Ownership:</strong> Users can only access their own resources</li>
+                        <li><strong>Admin Override:</strong> Admins have access to all resources</li>
+                    </ul>
+                </div>
+
+                <h3>API Security</h3>
+                <div class="app-section">
+                    <h4>Rate Limiting</h4>
+                    <ul>
+                        <li><strong>Global Rate Limiting:</strong> 100 requests per 15 minutes per IP address</li>
+                        <li><strong>Auth-Specific Limiting:</strong> 5 requests per 15 minutes for authentication endpoints (production)</li>
+                        <li><strong>Endpoint-Specific Limits:</strong> Custom limits for shop browsing, delivery operations</li>
+                        <li><strong>IP-Based Tracking:</strong> Rate limits tracked per IP address</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Input Validation</h4>
+                    <ul>
+                        <li><strong>Request Validation:</strong> All inputs validated using Zod schemas</li>
+                        <li><strong>SQL Injection Prevention:</strong> Prisma ORM provides parameterized queries</li>
+                        <li><strong>XSS Protection:</strong> Input sanitization and output encoding</li>
+                        <li><strong>File Upload Validation:</strong> File type, size, and content validation</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>CORS Configuration</h4>
+                    <ul>
+                        <li><strong>Origin Whitelist:</strong> Only allowed origins can access the API</li>
+                        <li><strong>Production Restrictions:</strong> Wildcard CORS disabled in production</li>
+                        <li><strong>Credential Support:</strong> Supports credentials for authenticated requests</li>
+                    </ul>
+                </div>
+
+                <h3>Data Security</h3>
+                <div class="app-section">
+                    <h4>Data Encryption</h4>
+                    <ul>
+                        <li><strong>HTTPS/SSL:</strong> All API communication encrypted via HTTPS</li>
+                        <li><strong>Password Hashing:</strong> Bcrypt with salt for password storage</li>
+                        <li><strong>Token Encryption:</strong> JWT tokens signed with secret keys</li>
+                        <li><strong>Sensitive Data:</strong> Payment information and tokens stored securely</li>
+                    </ul>
+                </div>
+
+                <div class="app-section">
+                    <h4>Email Verification</h4>
+                    <ul>
+                        <li><strong>Email Verification Required:</strong> Configurable requirement for email verification</li>
+                        <li><strong>Verification Tokens:</strong> Secure, time-limited verification tokens</li>
+                        <li><strong>Resend Functionality:</strong> Users can request new verification emails</li>
+                    </ul>
+                </div>
+
+                <h3>Account Security</h3>
+                <div class="app-section">
+                    <h4>Account Management</h4>
+                    <ul>
+                        <li><strong>Account Activation:</strong> Accounts can be activated/deactivated by admins</li>
+                        <li><strong>Email Verification:</strong> Email addresses must be verified before full access</li>
+                        <li><strong>Last Login Tracking:</strong> Tracks user login timestamps</li>
+                        <li><strong>Session Management:</strong> Refresh tokens stored in database for revocation</li>
+                    </ul>
+                </div>
+
+                <h3>Payment Security</h3>
+                <div class="app-section">
+                    <h4>Payment Gateway Integration</h4>
+                    <ul>
+                        <li><strong>PCI Compliance:</strong> Payment data handled through PCI-compliant gateways</li>
+                        <li><strong>Tokenization:</strong> Payment methods stored as tokens, not raw card data</li>
+                        <li><strong>Webhook Verification:</strong> Payment webhooks verified with signatures</li>
+                        <li><strong>Refund Security:</strong> Secure refund processing through payment gateways</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Troubleshooting -->
+            <section id="troubleshooting">
+                <h2 class="page-break-before" style="padding-top: 20px;">9. Troubleshooting</h2>
+
+                <h3>Common Issues & Solutions</h3>
+
+                <h4>Authentication Issues</h4>
+                <div class="app-section">
+                    <p><strong>Issue:</strong> "Access denied. No token provided"</p>
+                    <p><strong>Solution:</strong> Ensure the Authorization header is included in the request: <code>Authorization: Bearer &lt;token&gt;</code></p>
+                </div>
+
+                <div class="app-section">
+                    <p><strong>Issue:</strong> "Token is not valid" or "Token expired"</p>
+                    <p><strong>Solution:</strong> Access tokens expire after 15 minutes. Use the refresh token endpoint to obtain a new access token. If refresh token is expired, user must login again.</p>
+                </div>
+
+                <div class="app-section">
+                    <p><strong>Issue:</strong> "Please verify your email address"</p>
+                    <p><strong>Solution:</strong> Check email inbox for verification link. Use the resend verification endpoint if email was not received.</p>
+                </div>
+
+                <h4>Order Issues</h4>
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Order creation fails with "Delivery zone validation failed"</p>
+                    <p><strong>Solution:</strong> Ensure the delivery address is within the shop's delivery radius. Check shop's deliveryRadius setting and customer's delivery coordinates.</p>
+                </div>
+
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Order status not updating in real-time</p>
+                    <p><strong>Solution:</strong> Check Socket.io connection. Ensure client is connected to the Socket.io server. Verify network connectivity and firewall settings.</p>
+                </div>
+
+                <h4>Payment Issues</h4>
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Payment gateway integration not working</p>
+                    <p><strong>Solution:</strong> Verify payment gateway API keys are correctly configured in environment variables. Check whitelabel configuration for payment gateway selection. Ensure webhook endpoints are properly configured.</p>
+                </div>
+
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Refund processing fails</p>
+                    <p><strong>Solution:</strong> Verify the original payment was successful. Check payment gateway credentials. Ensure order status allows refunds (must be DELIVERED or CANCELLED).</p>
+                </div>
+
+                <h4>Location & Delivery Issues</h4>
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Nearby shops not showing</p>
+                    <p><strong>Solution:</strong> Check location permissions are granted. Verify user's location coordinates are valid. Ensure shops have valid coordinates and delivery radius set. Check distance calculation logic.</p>
+                </div>
+
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Delivery driver location not updating</p>
+                    <p><strong>Solution:</strong> Verify location permissions on mobile device. Check GPS is enabled. Ensure driver app is sending location updates via the update location endpoint.</p>
+                </div>
+
+                <h4>Database Issues</h4>
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Database connection errors</p>
+                    <p><strong>Solution:</strong> Verify DATABASE_URL environment variable is correct. Check PostgreSQL service is running. Verify database credentials and network connectivity. Check database connection pool settings.</p>
+                </div>
+
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Migration errors</p>
+                    <p><strong>Solution:</strong> Run <code>npx prisma migrate dev</code> to apply pending migrations. Check for migration conflicts. Verify database schema matches Prisma schema.</p>
+                </div>
+
+                <h4>Performance Issues</h4>
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Slow API responses</p>
+                    <p><strong>Solution:</strong> Check database query performance. Enable query logging to identify slow queries. Verify indexes are properly set on frequently queried fields. Check Redis cache is working. Review rate limiting settings.</p>
+                </div>
+
+                <div class="app-section">
+                    <p><strong>Issue:</strong> High memory usage</p>
+                    <p><strong>Solution:</strong> Check for memory leaks in long-running processes. Review image processing settings (Sharp library). Monitor Socket.io connections. Check for unbounded data queries.</p>
+                </div>
+
+                <h4>Email Issues</h4>
+                <div class="app-section">
+                    <p><strong>Issue:</strong> Emails not being sent</p>
+                    <p><strong>Solution:</strong> Verify SMTP configuration (host, port, username, password). Check email service credentials. Review email service logs. In development, emails may be logged to console instead of sent.</p>
+                </div>
+
+                <h3>Error Codes</h3>
+                <ul>
+                    <li><strong>400 Bad Request:</strong> Invalid request data or validation errors</li>
+                    <li><strong>401 Unauthorized:</strong> Missing or invalid authentication token</li>
+                    <li><strong>403 Forbidden:</strong> Insufficient permissions or role restrictions</li>
+                    <li><strong>404 Not Found:</strong> Resource does not exist</li>
+                    <li><strong>409 Conflict:</strong> Resource conflict (e.g., duplicate email)</li>
+                    <li><strong>429 Too Many Requests:</strong> Rate limit exceeded</li>
+                    <li><strong>500 Internal Server Error:</strong> Server-side error, check logs</li>
+                </ul>
+
+                <h3>Debugging Tips</h3>
+                <ul>
+                    <li><strong>Enable Logging:</strong> Set log level to DEBUG for detailed information</li>
+                    <li><strong>Check API Logs:</strong> Review server logs for error messages and stack traces</li>
+                    <li><strong>Database Queries:</strong> Enable Prisma query logging to see executed queries</li>
+                    <li><strong>Network Inspection:</strong> Use browser DevTools or Postman to inspect API requests/responses</li>
+                    <li><strong>Token Inspection:</strong> Decode JWT tokens at jwt.io to verify payload</li>
+                </ul>
+            </section>
+
+            <!-- Performance & Scalability -->
+            <section id="performance">
+                <h2 class="page-break-before" style="padding-top: 20px;">10. Performance & Scalability</h2>
+
+                <h3>Performance Optimizations</h3>
+
+                <h4>Database Optimization</h4>
+                <div class="app-section">
+                    <ul>
+                        <li><strong>Indexing:</strong> Strategic indexes on frequently queried fields (email, userId, shopId, orderNumber, status)</li>
+                        <li><strong>Query Optimization:</strong> Prisma ORM optimizes queries with selective field loading</li>
+                        <li><strong>Connection Pooling:</strong> PostgreSQL connection pooling for efficient database connections</li>
+                        <li><strong>Pagination:</strong> All list endpoints support pagination to limit result sets</li>
+                        <li><strong>Aggregations:</strong> Database-level aggregations for analytics to reduce data transfer</li>
+                    </ul>
+                </div>
+
+                <h4>Caching Strategy</h4>
+                <div class="app-section">
+                    <ul>
+                        <li><strong>Redis Caching:</strong> Shop listings, featured shops, and product catalogs cached</li>
+                        <li><strong>Cache Durations:</strong> Shop data cached for 5-10 minutes, product data for 3 minutes</li>
+                        <li><strong>Cache Invalidation:</strong> Automatic cache invalidation on data updates</li>
+                        <li><strong>Session Storage:</strong> Redis used for session management and temporary data</li>
+                    </ul>
+                </div>
+
+                <h4>API Optimization</h4>
+                <div class="app-section">
+                    <ul>
+                        <li><strong>Response Compression:</strong> Gzip compression enabled for API responses</li>
+                        <li><strong>Selective Field Loading:</strong> Only required fields loaded from database</li>
+                        <li><strong>Batch Operations:</strong> Bulk operations where possible to reduce round trips</li>
+                        <li><strong>Lazy Loading:</strong> Related data loaded only when needed</li>
+                    </ul>
+                </div>
+
+                <h4>Image Optimization</h4>
+                <div class="app-section">
+                    <ul>
+                        <li><strong>Image Processing:</strong> Sharp library for server-side image optimization</li>
+                        <li><strong>Multiple Sizes:</strong> Images resized to appropriate dimensions for different use cases</li>
+                        <li><strong>Format Optimization:</strong> Images converted to efficient formats (WebP, optimized JPEG)</li>
+                        <li><strong>CDN Ready:</strong> Image URLs structured for CDN integration</li>
+                    </ul>
+                </div>
+
+                <h3>Scalability Considerations</h3>
+
+                <h4>Horizontal Scaling</h4>
+                <div class="app-section">
+                    <ul>
+                        <li><strong>Stateless API:</strong> API is stateless, allowing multiple server instances</li>
+                        <li><strong>Load Balancing:</strong> Multiple Node.js instances can be load balanced</li>
+                        <li><strong>Database Scaling:</strong> PostgreSQL supports read replicas for read-heavy workloads</li>
+                        <li><strong>Redis Clustering:</strong> Redis can be clustered for high availability</li>
+                    </ul>
+                </div>
+
+                <h4>Real-Time Scaling</h4>
+                <div class="app-section">
+                    <ul>
+                        <li><strong>Socket.io Scaling:</strong> Redis adapter enables Socket.io scaling across multiple servers</li>
+                        <li><strong>Room Management:</strong> Efficient room-based messaging for order updates</li>
+                        <li><strong>Connection Management:</strong> Automatic cleanup of disconnected clients</li>
+                    </ul>
+                </div>
+
+                <h4>Database Scaling</h4>
+                <div class="app-section">
+                    <ul>
+                        <li><strong>Read Replicas:</strong> Separate read replicas for analytics and reporting</li>
+                        <li><strong>Partitioning:</strong> Large tables (orders, tracking) can be partitioned by date</li>
+                        <li><strong>Archiving:</strong> Old orders and tracking data can be archived to separate tables</li>
+                        <li><strong>Connection Pooling:</strong> Efficient connection management prevents connection exhaustion</li>
+                    </ul>
+                </div>
+
+                <h3>Performance Metrics</h3>
+                <div class="app-section">
+                    <ul>
+                        <li><strong>API Response Time:</strong> Average response time &lt; 200ms for most endpoints</li>
+                        <li><strong>Database Query Time:</strong> Optimized queries execute in &lt; 50ms</li>
+                        <li><strong>Real-Time Latency:</strong> Socket.io events delivered in &lt; 100ms</li>
+                        <li><strong>Image Processing:</strong> Image optimization completes in &lt; 500ms</li>
+                        <li><strong>Concurrent Users:</strong> System tested for 1000+ concurrent users</li>
+                    </ul>
+                </div>
+
+                <h3>Monitoring & Optimization</h3>
+                <div class="app-section">
+                    <ul>
+                        <li><strong>Logging:</strong> Comprehensive logging for performance monitoring</li>
+                        <li><strong>Error Tracking:</strong> Error logging with stack traces for debugging</li>
+                        <li><strong>Query Monitoring:</strong> Slow query logging for database optimization</li>
+                        <li><strong>Resource Monitoring:</strong> CPU, memory, and network usage tracking</li>
+                    </ul>
+                </div>
+
+                <h3>Best Practices</h3>
+                <ul>
+                    <li><strong>Use Indexes:</strong> Ensure all frequently queried fields are indexed</li>
+                    <li><strong>Implement Caching:</strong> Cache frequently accessed, rarely changed data</li>
+                    <li><strong>Optimize Images:</strong> Compress and resize images before storage</li>
+                    <li><strong>Pagination:</strong> Always paginate large result sets</li>
+                    <li><strong>Connection Management:</strong> Use connection pooling and close unused connections</li>
+                    <li><strong>Async Operations:</strong> Use async/await for non-blocking operations</li>
+                    <li><strong>Error Handling:</strong> Implement proper error handling to prevent crashes</li>
+                </ul>
+            </section>
+
+            <!-- Screenshots Section -->
+            <section id="screenshots">
+                <h2 class="page-break-before" style="padding-top: 20px;">11. Application Screenshots</h2>
+
+                <h3>Customer Application</h3>
+                
+                <div class="screenshot-item">
+                    <h4>Login Screen</h4>
+                    <img src="screenshots_folder/customer_app screenshots/login_screen.png" alt="Customer Login Screen">
+                    <div class="screenshot-description">
+                        The customer login screen provides a clean interface for users to sign in with email and password. 
+                        Includes options for registration, password recovery, and secure authentication.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Home Screen</h4>
+                    <img src="screenshots_folder/customer_app screenshots/home_screen.png" alt="Customer Home Screen">
+                    <div class="screenshot-description">
+                        The main home screen displays featured restaurants and nearby shops. Users can browse available 
+                        restaurants, view ratings, and quickly access their favorite establishments.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Home Screen with Search</h4>
+                    <img src="screenshots_folder/customer_app screenshots/home_screen_search_fun.png" alt="Home Screen Search">
+                    <div class="screenshot-description">
+                        Search functionality allows customers to quickly find restaurants by name, cuisine type, or location. 
+                        Real-time search results help users discover new dining options.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>All Shops Page</h4>
+                    <img src="screenshots_folder/customer_app screenshots/all_shops_page.png" alt="All Shops Page">
+                    <div class="screenshot-description">
+                        Comprehensive listing of all available restaurants and shops. Users can filter by category, 
+                        view ratings, and see delivery information for each establishment.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Restaurant Details - Products Tab</h4>
+                    <img src="screenshots_folder/customer_app screenshots/restaurent_details_page_products_tab.png" alt="Restaurant Products">
+                    <div class="screenshot-description">
+                        Detailed view of restaurant menu items. Customers can browse products, view descriptions, prices, 
+                        and add items to their cart. Includes product images and availability status.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Restaurant Details - Info Tab</h4>
+                    <img src="screenshots_folder/customer_app screenshots/restaurent_details_page_info_tab.png" alt="Restaurant Info">
+                    <div class="screenshot-description">
+                        Complete restaurant information including operating hours, contact details, delivery zones, 
+                        pricing information, and customer reviews. Helps customers make informed decisions.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Shopping Cart - Empty</h4>
+                    <img src="screenshots_folder/customer_app screenshots/my_card_screen_empty.png" alt="Empty Cart">
+                    <div class="screenshot-description">
+                        Shopping cart interface when empty. Provides clear call-to-action to start adding items 
+                        from restaurants.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Shopping Cart - With Items</h4>
+                    <img src="screenshots_folder/customer_app screenshots/my_card_after_adding_product.png" alt="Cart with Items">
+                    <div class="screenshot-description">
+                        Shopping cart with added items. Customers can view selected products, adjust quantities, 
+                        see total price, and proceed to checkout.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Checkout Page</h4>
+                    <img src="screenshots_folder/customer_app screenshots/checkout_page.png" alt="Checkout Page">
+                    <div class="screenshot-description">
+                        Secure checkout process where customers review order details, select delivery address, 
+                        choose payment method, and place their order. Includes order summary and total calculation.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Order Details Page</h4>
+                    <img src="screenshots_folder/customer_app screenshots/order_details_page.png" alt="Order Details">
+                    <div class="screenshot-description">
+                        Comprehensive order details showing order status, items, delivery information, and real-time 
+                        tracking updates. Customers can track their order from placement to delivery.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Orders Page - Active Orders</h4>
+                    <img src="screenshots_folder/customer_app screenshots/orders_page_active_orders.png" alt="Active Orders">
+                    <div class="screenshot-description">
+                        List of active orders with current status. Customers can quickly see which orders are being 
+                        prepared, in transit, or ready for pickup.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Profile Page</h4>
+                    <img src="screenshots_folder/customer_app screenshots/profile_page.png" alt="Customer Profile">
+                    <div class="screenshot-description">
+                        User profile management page. Customers can view and edit personal information, manage 
+                        addresses, payment methods, and access account settings.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Delivery Addresses Page</h4>
+                    <img src="screenshots_folder/customer_app screenshots/delivery_addresses_page.png" alt="Delivery Addresses">
+                    <div class="screenshot-description">
+                        Management interface for delivery addresses. Customers can add, edit, delete, and set default 
+                        addresses for quick checkout.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Payment Methods Page</h4>
+                    <img src="screenshots_folder/customer_app screenshots/payment_methods_page_with_empty_method_added.png" alt="Payment Methods">
+                    <div class="screenshot-description">
+                        Payment method management. Customers can add credit cards, digital wallets, and other payment 
+                        options for faster checkout.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Add Payment Method</h4>
+                    <img src="screenshots_folder/customer_app screenshots/add_mayment_method_filled.png" alt="Add Payment Method">
+                    <div class="screenshot-description">
+                        Secure form for adding new payment methods. Includes validation and security features for 
+                        protecting payment information.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Language Settings</h4>
+                    <img src="screenshots_folder/customer_app screenshots/language_settings_page.png" alt="Language Settings">
+                    <div class="screenshot-description">
+                        Multi-language support interface. Customers can switch between available languages (English, 
+                        French) with instant UI updates.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Theme Settings</h4>
+                    <img src="screenshots_folder/customer_app screenshots/theme_settings_page.png" alt="Theme Settings">
+                    <div class="screenshot-description">
+                        Theme customization options. Users can switch between light and dark modes for personalized 
+                        viewing experience.
+                    </div>
+                </div>
+
+                <h3>Vendor Application</h3>
+
+                <div class="screenshot-item">
+                    <h4>Vendor Login Page</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/login_page.png" alt="Vendor Login">
+                    <div class="screenshot-description">
+                        Secure login interface for restaurant owners and staff. Provides access to vendor dashboard 
+                        and order management system.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Vendor Registration</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/vendor_registratiopage.png" alt="Vendor Registration">
+                    <div class="screenshot-description">
+                        Registration form for new vendors. Collects business information, contact details, and 
+                        credentials for shop account creation.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Vendor Dashboard</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/dashboard_page.png" alt="Vendor Dashboard">
+                    <div class="screenshot-description">
+                        Comprehensive vendor dashboard showing real-time statistics, order overview, quick actions, 
+                        and business information. Provides at-a-glance view of shop performance.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Orders Page - All Tab</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/orders_page_all_tab.png" alt="All Orders">
+                    <div class="screenshot-description">
+                        Complete list of all orders with filtering options. Vendors can view orders by status, 
+                        search by order number, and access detailed order information.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Orders Page - Pending Tab</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/orders_page_pending_tab.png" alt="Pending Orders">
+                    <div class="screenshot-description">
+                        New orders awaiting vendor response. Vendors can review order details, accept or reject orders, 
+                        and see customer information.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Order Details - Pending Status</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/order_details_page_pending_status.png" alt="Pending Order Details">
+                    <div class="screenshot-description">
+                        Detailed view of pending order with customer information, items, delivery address, and order 
+                        total. Vendors can accept or reject the order from this screen.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Order Details - Accepted Status</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/order_details_page_accepted_tab.png" alt="Accepted Order">
+                    <div class="screenshot-description">
+                        Accepted order details showing preparation workflow. Vendors can update order status to 
+                        "Preparing" and track order progress.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Order Details - Preparing Status</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/order_details_page_preparing_tab.png" alt="Preparing Order">
+                    <div class="screenshot-description">
+                        Order in preparation phase. Vendors can update status to "Ready for Pickup" when order 
+                        preparation is complete.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Orders Page - Ready Tab</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/orders_page_ready_tab.png" alt="Ready Orders">
+                    <div class="screenshot-description">
+                        Orders ready for pickup by delivery drivers. Shows orders that have been prepared and are 
+                        waiting for driver assignment.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Menu Management Page</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/menu_management_page.png" alt="Menu Management">
+                    <div class="screenshot-description">
+                        Complete menu management interface. Vendors can view all menu items, filter by category or 
+                        availability, and manage product listings.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Add Menu Item</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/add_menu_item_page.png" alt="Add Menu Item">
+                    <div class="screenshot-description">
+                        Form for adding new menu items. Includes fields for name, description, price, category, 
+                        image, and availability status.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Edit Menu Item</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/edit_menu_item_page.png" alt="Edit Menu Item">
+                    <div class="screenshot-description">
+                        Edit interface for existing menu items. Vendors can update product information, pricing, 
+                        images, and availability.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Analytics - Overview Tab</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/analytics_page_overview_tab.png" alt="Analytics Overview">
+                    <div class="screenshot-description">
+                        Comprehensive analytics dashboard showing key metrics, order status overview, and menu 
+                        statistics. Provides insights into business performance.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Analytics - Sales Tab</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/analytics_page_sales_tab.png" alt="Sales Analytics">
+                    <div class="screenshot-description">
+                        Sales analytics with revenue trends, sales summary by period, and top performing items. 
+                        Helps vendors understand sales patterns and optimize offerings.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Analytics - Performance Tab</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/analytics_page_performance_tab.png" alt="Performance Analytics">
+                    <div class="screenshot-description">
+                        Performance metrics including average preparation time, order accuracy, peak hours analysis, 
+                        and business insights for operational optimization.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Vendor Profile Page</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/profile_page.png" alt="Vendor Profile">
+                    <div class="screenshot-description">
+                        Vendor profile management showing business information, account settings, and profile 
+                        customization options.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Edit Profile Page</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/edit_profile_page.png" alt="Edit Profile">
+                    <div class="screenshot-description">
+                        Profile editing interface for updating vendor information, contact details, and account 
+                        preferences.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Payment Settings</h4>
+                    <img src="screenshots_folder/vendor_app screenshots/payment_settings_page.png" alt="Payment Settings">
+                    <div class="screenshot-description">
+                        Payment configuration for vendors including payout methods, payout frequency, tax information, 
+                        and payment history.
+                    </div>
+                </div>
+
+                <h3>Delivery Driver Application</h3>
+
+                <div class="screenshot-item">
+                    <h4>Driver Login Page</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/login_page.png" alt="Driver Login">
+                    <div class="screenshot-description">
+                        Login interface for delivery drivers. Secure authentication to access driver dashboard and 
+                        delivery management features.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Driver Registration</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/driver_registration_page.png" alt="Driver Registration">
+                    <div class="screenshot-description">
+                        Registration form for new delivery drivers. Collects personal information, vehicle details, 
+                        license information, and credentials for driver account creation.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Driver Dashboard - Offline</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/driver_dashboard_offline_page.png" alt="Driver Dashboard Offline">
+                    <div class="screenshot-description">
+                        Driver dashboard when offline. Shows today's summary, available deliveries, and provides 
+                        option to go online to start receiving delivery requests.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Driver Dashboard - Online</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/driver_dashboard_online_page.png" alt="Driver Dashboard Online">
+                    <div class="screenshot-description">
+                        Active driver dashboard showing real-time statistics, available deliveries, active orders, 
+                        and quick access to earnings and profile.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Deliveries Page - Available Tab</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/deliveries_page_available_tab.png" alt="Available Deliveries">
+                    <div class="screenshot-description">
+                        List of available delivery orders. Drivers can view order details, distance, estimated earnings, 
+                        and accept deliveries.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Deliveries Page - Active Tab</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/deliveries_page_active_tab.png" alt="Active Deliveries">
+                    <div class="screenshot-description">
+                        Currently active deliveries assigned to the driver. Shows orders in progress with status 
+                        updates and navigation options.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Deliveries Page - Completed Tab</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/deliveries_page_completed_tab.png" alt="Completed Deliveries">
+                    <div class="screenshot-description">
+                        History of completed deliveries. Drivers can review past deliveries, earnings, and delivery 
+                        statistics.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Earnings Page - Overview Tab</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/earnings_page_overview_tab.png" alt="Earnings Overview">
+                    <div class="screenshot-description">
+                        Comprehensive earnings overview showing total earnings, today's earnings, recent deliveries, 
+                        and earnings breakdown by category.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Earnings Page - History Tab</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/earnings_page_history_tab.png" alt="Earnings History">
+                    <div class="screenshot-description">
+                        Payment history showing all payouts, payment dates, and transaction details. Helps drivers 
+                        track their income over time.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Earnings Page - Analytics Tab</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/earnings_page_analytics_tab.png" alt="Earnings Analytics">
+                    <div class="screenshot-description">
+                        Earnings analytics with trends, weekly summary, performance metrics, and tips analysis. 
+                        Provides insights for optimizing delivery performance.
+                    </div>
+                </div>
+
+                <div class="screenshot-item">
+                    <h4>Driver Profile Page</h4>
+                    <img src="screenshots_folder/delivery_app screenshots/profile_page.png" alt="Driver Profile">
+                    <div class="screenshot-description">
+                        Driver profile management showing personal information, vehicle details, account settings, 
+                        and driver statistics.
+                    </div>
+                </div>
+
+                <h3>Admin Web Panel</h3>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Admin Login Page</h4>
+                    <img src="screenshots_folder/admin_web screenshots/login_page.png" alt="Admin Login">
+                    <div class="screenshot-description">
+                        Secure login interface for system administrators. Provides access to comprehensive admin 
+                        dashboard and management tools.
+                    </div>
+                </div>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Admin Dashboard</h4>
+                    <img src="screenshots_folder/admin_web screenshots/dashboard_page.png" alt="Admin Dashboard">
+                    <div class="screenshot-description">
+                        System-wide dashboard showing real-time statistics, key metrics, user counts, order statistics, 
+                        and revenue overview. Provides comprehensive system health monitoring.
+                    </div>
+                </div>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Users Management Page</h4>
+                    <img src="screenshots_folder/admin_web screenshots/users_page.png" alt="Users Management">
+                    <div class="screenshot-description">
+                        Complete user management interface. Admins can view, search, filter, edit, activate/deactivate, 
+                        and manage all users (customers, vendors, drivers, admins).
+                    </div>
+                </div>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Shops Management Page</h4>
+                    <img src="screenshots_folder/admin_web screenshots/shops_pages.png" alt="Shops Management">
+                    <div class="screenshot-description">
+                        Shop management interface for viewing, approving, and managing all restaurants and shops on 
+                        the platform. Includes filtering and search capabilities.
+                    </div>
+                </div>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Orders Management Page</h4>
+                    <img src="screenshots_folder/admin_web screenshots/orders_page.png" alt="Orders Management">
+                    <div class="screenshot-description">
+                        Comprehensive order management showing all orders across the platform. Admins can view order 
+                        details, update status, and handle order-related issues.
+                    </div>
+                </div>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Revenue Analytics</h4>
+                    <img src="screenshots_folder/admin_web screenshots/revenue_analytics_page.png" alt="Revenue Analytics">
+                    <div class="screenshot-description">
+                        System-wide revenue analytics with charts, trends, and financial insights. Helps administrators 
+                        understand platform performance and revenue patterns.
+                    </div>
+                </div>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Order Analytics</h4>
+                    <img src="screenshots_folder/admin_web screenshots/order_analytics_page.png" alt="Order Analytics">
+                    <div class="screenshot-description">
+                        Order analytics dashboard showing order trends, status distribution, and order-related metrics 
+                        for platform optimization.
+                    </div>
+                </div>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Customer Analytics</h4>
+                    <img src="screenshots_folder/admin_web screenshots/customer_analytics_page.png" alt="Customer Analytics">
+                    <div class="screenshot-description">
+                        Customer analytics providing insights into user behavior, growth metrics, and customer-related 
+                        statistics for business intelligence.
+                    </div>
+                </div>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Vendor Analytics</h4>
+                    <img src="screenshots_folder/admin_web screenshots/vendor_analytics_page.png" alt="Vendor Analytics">
+                    <div class="screenshot-description">
+                        Vendor performance analytics showing shop statistics, performance metrics, and vendor-related 
+                        insights for platform management.
+                    </div>
+                </div>
+
+                <div class="screenshot-item admin-screenshot">
+                    <h4>Delivery Analytics</h4>
+                    <img src="screenshots_folder/admin_web screenshots/delivery_analytics_page.png" alt="Delivery Analytics">
+                    <div class="screenshot-description">
+                        Delivery analytics dashboard with driver performance metrics, delivery statistics, and 
+                        delivery-related insights for operational optimization.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>&copy; 2024 Delivery Management System. All rights reserved.</p>
+            <p>Complete Multi-Platform Solution for Food Delivery Operations</p>
+        </footer>
+    </div>
+</body>
+</html>
+

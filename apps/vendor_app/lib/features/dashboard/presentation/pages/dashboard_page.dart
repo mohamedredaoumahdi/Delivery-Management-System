@@ -24,6 +24,42 @@ class _DashboardPageState extends State<DashboardPage> {
     context.read<DashboardBloc>().add(LoadDashboard());
   }
 
+  Widget _buildInfoTile(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color iconColor,
+    bool isClickable = false,
+    VoidCallback? onTap,
+  }) {
+    final row = _buildEnhancedInfoRow(
+      context,
+      icon,
+      label,
+      value,
+      iconColor,
+      isClickable: isClickable,
+      onTap: onTap,
+    );
+
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: row,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,71 +223,94 @@ class _DashboardPageState extends State<DashboardPage> {
             // Welcome Section with gradient background
             _buildWelcomeCard(context, shop),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             
-            // Shop Status Cards - Grid Layout
-            _buildStatusGrid(context, shop),
-            
-            const SizedBox(height: 24),
-            
-            // Quick Actions Section
+            // Status Overview Section
             Row(
-                  children: [
+              children: [
                 Icon(
-                  Icons.dashboard_customize,
+                  Icons.insights,
                   color: Theme.of(context).colorScheme.primary,
-                  size: 24,
-                    ),
+                  size: 22,
+                ),
                 const SizedBox(width: 8),
-                          Text(
-                  'Quick Actions',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                Text(
+                  'Status Overview',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: _buildStatusGrid(context, shop),
+            ),
             
-            // Quick Actions Grid
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1.1,
-              children: [
-                _buildEnhancedActionCard(
-                  context,
-                  'Manage Menu',
-                  Icons.restaurant_menu,
-                  Colors.orange,
-                  () => _navigateToTab?.call(1),
-                          ),
-                _buildEnhancedActionCard(
-                  context,
-                  'View Orders',
-                  Icons.receipt_long,
-                  Colors.blue,
-                  () => _navigateToTab?.call(2),
-                ),
-                _buildEnhancedActionCard(
-                  context,
-                  'Analytics',
-                  Icons.analytics,
-                  Colors.purple,
-                  () => _navigateToTab?.call(3),
-                ),
-                _buildEnhancedActionCard(
-                  context,
-                  'Settings',
-                  Icons.settings,
-                  Colors.grey,
-                  () => _showShopSettingsDialog(context, shop),
-                          ),
-                        ],
-                      ),
+            // Quick Actions section temporarily disabled
+            // (kept here for future use)
+            // const SizedBox(height: 32),
+            // Row(
+            //   children: [
+            //     Icon(
+            //       Icons.dashboard_customize,
+            //       color: Theme.of(context).colorScheme.primary,
+            //       size: 24,
+            //     ),
+            //     const SizedBox(width: 8),
+            //     Text(
+            //       'Quick Actions',
+            //       style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            //             fontWeight: FontWeight.bold,
+            //           ),
+            //     ),
+            //   ],
+            // ),
+            // const SizedBox(height: 16),
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: _buildQuickActionItem(
+            //         context,
+            //         title: 'Manage Menu',
+            //         icon: Icons.restaurant_menu,
+            //         color: Colors.orange,
+            //         onTap: () => _navigateToTab?.call(1),
+            //       ),
+            //     ),
+            //     const SizedBox(width: 12),
+            //     Expanded(
+            //       child: _buildQuickActionItem(
+            //         context,
+            //         title: 'View Orders',
+            //         icon: Icons.receipt_long,
+            //         color: Colors.blue,
+            //         onTap: () => _navigateToTab?.call(2),
+            //       ),
+            //     ),
+            //     const SizedBox(width: 12),
+            //     Expanded(
+            //       child: _buildQuickActionItem(
+            //         context,
+            //         title: 'Analytics',
+            //         icon: Icons.analytics,
+            //         color: Colors.purple,
+            //         onTap: () => _navigateToTab?.call(3),
+            //       ),
+            //     ),
+            //     const SizedBox(width: 12),
+            //     Expanded(
+            //       child: _buildQuickActionItem(
+            //         context,
+            //         title: 'Settings',
+            //         icon: Icons.settings,
+            //         color: Colors.grey,
+            //         onTap: () => _showShopSettingsDialog(context, shop),
+            //       ),
+            //     ),
+            //   ],
+            // ),
             
             const SizedBox(height: 24),
             
@@ -272,200 +331,145 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            
-            // Contact Information Card
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.business,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                    Text(
-                          'Contact Information',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    _buildEnhancedInfoRow(
-                      context,
-                      Icons.location_on,
-                      'Address',
-                      shop['address'] ?? 'Not set',
-                      Colors.red,
-                    ),
-                    const Divider(height: 24),
-                    _buildEnhancedInfoRow(
-                      context,
-                      Icons.phone,
-                      'Phone',
-                      shop['phone'] ?? 'Not set',
-                      Colors.green,
-                      isClickable: shop['phone'] != null,
-                      onTap: shop['phone'] != null ? () {
-                        // TODO: Implement phone call
-                      } : null,
-                    ),
-                    const Divider(height: 24),
-                    _buildEnhancedInfoRow(
-                      context,
-                      Icons.email,
-                      'Email',
-                      shop['email'] ?? 'Not set',
-                      Colors.blue,
-                      isClickable: shop['email'] != null,
-                      onTap: shop['email'] != null ? () {
-                        // TODO: Implement email
-                      } : null,
-                          ),
-                    const Divider(height: 24),
-                    _buildEnhancedInfoRow(
-                      context,
-                      Icons.language,
-                      'Website',
-                      shop['website'] ?? 'Not set',
-                      Colors.purple,
-                      isClickable: shop['website'] != null,
-                      onTap: shop['website'] != null ? () {
-                        // TODO: Implement website opening
-                      } : null,
-                        ),
-                      ],
-                    ),
-              ),
+            const SizedBox(height: 8),
+            _buildInfoTile(
+              context,
+              icon: Icons.location_on,
+              label: 'Address',
+              value: shop['address'] ?? 'Not set',
+              iconColor: Colors.red,
+            ),
+            _buildInfoTile(
+              context,
+              icon: Icons.phone,
+              label: 'Phone',
+              value: shop['phone'] ?? 'Not set',
+              iconColor: Colors.green,
+              isClickable: shop['phone'] != null,
+              onTap: shop['phone'] != null
+                  ? () {
+                      // TODO: Implement phone call
+                    }
+                  : null,
+            ),
+            _buildInfoTile(
+              context,
+              icon: Icons.email,
+              label: 'Email',
+              value: shop['email'] ?? 'Not set',
+              iconColor: Colors.blue,
+              isClickable: shop['email'] != null,
+              onTap: shop['email'] != null
+                  ? () {
+                      // TODO: Implement email
+                    }
+                  : null,
+            ),
+            _buildInfoTile(
+              context,
+              icon: Icons.language,
+              label: 'Website',
+              value: shop['website'] ?? 'Not set',
+              iconColor: Colors.purple,
+              isClickable: shop['website'] != null,
+              onTap: shop['website'] != null
+                  ? () {
+                      // TODO: Implement website opening
+                    }
+                  : null,
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             
-            // Operating Hours Card
+            // Operating Hours Section
+            Row(
+              children: [
+                Icon(
+                  Icons.schedule,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Operating Hours',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Card(
-              elevation: 2,
+              elevation: 0,
+              color: Theme.of(context).colorScheme.surface,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: Colors.grey.withValues(alpha: 0.15),
+                  width: 1,
+                ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.schedule,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Operating Hours',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
                     _buildOperatingHoursContent(shop['openingHours']),
                   ],
                 ),
               ),
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             
-            // Pricing Information Card
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            // Pricing Information Section
             Row(
               children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.attach_money,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 20,
-                  ),
+                Icon(
+                  Icons.attach_money,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
                 ),
-                const SizedBox(width: 12),
-                        Text(
-                          'Pricing Information',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                  ),
+                const SizedBox(width: 8),
+                Text(
+                  'Pricing Information',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
-                    const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                          child: _buildPricingItem(
-                    context,
-                            Icons.shopping_cart,
-                            'Min Order',
-                            shop['minimumOrderAmount'] != null 
-                              ? '\$${shop['minimumOrderAmount'].toStringAsFixed(2)}'
-                              : 'Not set',
-                            Colors.orange,
+            const SizedBox(height: 12),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildPricingItem(
+                      context,
+                      Icons.shopping_cart,
+                      'Min Order',
+                      shop['minimumOrderAmount'] != null
+                          ? '\$${shop['minimumOrderAmount'].toStringAsFixed(2)}'
+                          : 'Not set',
+                      Colors.orange,
+                    ),
                   ),
-                ),
-                        const SizedBox(width: 16),
-                Expanded(
-                          child: _buildPricingItem(
-                    context,
-                            Icons.delivery_dining,
-                            'Delivery Fee',
-                            shop['deliveryFee'] != null 
-                              ? '\$${shop['deliveryFee'].toStringAsFixed(2)}'
-                              : 'Not set',
-                            Colors.teal,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildPricingItem(
+                      context,
+                      Icons.delivery_dining,
+                      'Delivery Fee',
+                      shop['deliveryFee'] != null
+                          ? '\$${shop['deliveryFee'].toStringAsFixed(2)}'
+                          : 'Not set',
+                      Colors.teal,
+                    ),
                   ),
-                ),
-              ],
-            ),
-                  ],
-                ),
+                ],
               ),
             ),
             const SizedBox(height: 20), // Bottom padding for scroll
@@ -579,37 +583,33 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildStatusGrid(BuildContext context, Map<String, dynamic> shop) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.4,
+    return Wrap(
+      alignment: WrapAlignment.start,
+      spacing: 20,
+      runSpacing: 20,
       children: [
-        _buildStatusCard(
+        _buildStatusItem(
           context,
           'Shop Status',
           shop['isActive'] == true ? 'Active' : 'Inactive',
           shop['isActive'] == true ? Colors.green : Colors.orange,
           shop['isActive'] == true ? Icons.check_circle : Icons.warning,
         ),
-        _buildStatusCard(
+        _buildStatusItem(
           context,
           'Rating',
           '${shop['rating']?.toStringAsFixed(1) ?? '0.0'}',
           Colors.amber,
           Icons.star,
-          subtitle: '${shop['ratingCount'] ?? 0} reviews',
         ),
-        _buildStatusCard(
+        _buildStatusItem(
           context,
           'Delivery',
           shop['hasDelivery'] == true ? 'Available' : 'Unavailable',
           shop['hasDelivery'] == true ? Colors.blue : Colors.grey,
           Icons.delivery_dining,
         ),
-        _buildStatusCard(
+        _buildStatusItem(
           context,
           'Pickup',
           shop['hasPickup'] == true ? 'Available' : 'Unavailable',
@@ -620,7 +620,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildStatusCard(
+  Widget _buildStatusItem(
     BuildContext context,
     String label,
     String value,
@@ -628,76 +628,66 @@ class _DashboardPageState extends State<DashboardPage> {
     IconData icon, {
     String? subtitle,
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 20,
-                ),
-              ),
+    return SizedBox(
+      width: 150,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 8),
-            Flexible(
-              child: Text(
-          value,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: color,
-                  fontSize: 16,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            child: Icon(
+              icon,
+              color: color,
+              size: 22,
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-            Flexible(
-              child: Text(
-          label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                  fontSize: 11,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 2),
-              Flexible(
-                child: Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[500],
-                    fontSize: 9,
-                  ),
-                  textAlign: TextAlign.center,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                        fontSize: 16,
+                      ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                        fontSize: 11,
+                      ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[500],
+                          fontSize: 10,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
-      ],
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -713,7 +703,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }) {
     final widget = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -727,39 +717,33 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
-                  ),
-                ),
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                    ),
+              ),
               const SizedBox(height: 6),
-                Text(
-                  value,
+              Text(
+                value,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: isClickable 
-                    ? Theme.of(context).colorScheme.primary 
-                    : Colors.black87,
-                ),
+                      fontWeight: FontWeight.w600,
+                      color: isClickable
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.black87,
+                    ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
         ),
-        if (isClickable)
-          Icon(
-            Icons.chevron_right,
-            color: Colors.grey[400],
-            size: 20,
-          ),
       ],
     );
 
@@ -836,64 +820,46 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildEnhancedActionCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color.withValues(alpha: 0.1),
-                color.withValues(alpha: 0.05),
-              ],
-            ),
-          ),
-        child: Padding(
-            padding: const EdgeInsets.all(20.0),
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
+  Widget _buildQuickActionItem(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
                 icon,
-                    size: 28,
-                    color: color,
+                size: 22,
+                color: color,
               ),
-                ),
-                const SizedBox(height: 12),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-              ),
-            ],
             ),
-          ),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
@@ -960,9 +926,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildOperatingHoursContent(dynamic openingHours) {
     if (openingHours == null) {
-      return Text(
+      return const Text(
         'Not set',
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -1013,9 +979,9 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     if (hoursMap == null || hoursMap.isEmpty) {
-      return Text(
+      return const Text(
         'Not set',
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -1100,7 +1066,7 @@ class _DashboardPageState extends State<DashboardPage> {
     };
 
     for (final day in dayOrder) {
-      if (hoursMap.containsKey(day)) {
+        if (hoursMap.containsKey(day)) {
         final dayData = hoursMap[day];
         String openTime = '';
         String closeTime = '';
@@ -1119,8 +1085,16 @@ class _DashboardPageState extends State<DashboardPage> {
         
         if (openTime.isNotEmpty && closeTime.isNotEmpty) {
           widgets.add(
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Color(0xFFE5E5E5),
+                    width: 0.6,
+                  ),
+                ),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -1136,7 +1110,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     '$openTime - $closeTime',
                     style: const TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -1145,8 +1119,16 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         } else {
           widgets.add(
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Color(0xFFE5E5E5),
+                    width: 0.6,
+                  ),
+                ),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -1177,9 +1159,9 @@ class _DashboardPageState extends State<DashboardPage> {
     
     if (widgets.isEmpty) {
       widgets.add(
-        Text(
+        const Text(
           'Not set',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),

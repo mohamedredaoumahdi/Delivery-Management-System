@@ -63,7 +63,7 @@ class ProductGridItem extends StatelessWidget {
                         topLeft: Radius.circular(20),
                         topRight: Radius.circular(20),
                       ),
-                      child: Container(
+                      child: SizedBox(
                         width: double.infinity,
                 child: product.imageUrl != null
                     ? Image.network(

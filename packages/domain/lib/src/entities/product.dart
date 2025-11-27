@@ -143,6 +143,14 @@ class Product extends Equatable {
   
   /// Creates a product from JSON
   factory Product.fromJson(Map<String, dynamic> json) {
+    // Helper function to convert relative URLs to absolute URLs
+    String? toAbsoluteUrl(String? url) {
+      if (url == null || url.isEmpty) return null;
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      const baseUrl = 'http://localhost:3000';
+      return url.startsWith('/') ? '$baseUrl$url' : '$baseUrl/$url';
+    }
+
     return Product(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -151,7 +159,7 @@ class Product extends Equatable {
       discountedPrice: json['discountedPrice'] != null 
           ? (json['discountedPrice'] as num).toDouble() 
           : null,
-      imageUrl: json['imageUrl'] as String?,
+      imageUrl: toAbsoluteUrl(json['imageUrl'] as String?),
       category: json['categoryName'] as String,
       tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
       nutritionalInfo: json['nutritionalInfo'] as Map<String, dynamic>?,

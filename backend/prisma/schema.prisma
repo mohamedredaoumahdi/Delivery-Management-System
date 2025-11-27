@@ -57,33 +57,35 @@ enum PaymentMethodType {
 
 // Users table - handles all user types
 model User {
-  id                String   @id @default(uuid())
-  email             String   @unique
-  name              String
-  phone             String?
-  profilePicture    String?  @map("profile_picture")
-  role              UserRole @default(CUSTOMER)
-  isEmailVerified   Boolean  @default(false) @map("is_email_verified")
-  isPhoneVerified   Boolean  @default(false) @map("is_phone_verified")
-  isActive          Boolean  @default(true) @map("is_active")
-  passwordHash      String   @map("password_hash")
-  lastLoginAt       DateTime? @map("last_login_at")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id              String    @id @default(uuid())
+  email           String    @unique
+  name            String
+  phone           String?
+  profilePicture  String?   @map("profile_picture")
+  role            UserRole  @default(CUSTOMER)
+  vehicleType     String?   @map("vehicle_type") // For delivery drivers
+  licenseNumber   String?   @map("license_number") // For delivery drivers
+  isEmailVerified Boolean   @default(false) @map("is_email_verified")
+  isPhoneVerified Boolean   @default(false) @map("is_phone_verified")
+  isActive        Boolean   @default(true) @map("is_active")
+  passwordHash    String    @map("password_hash")
+  lastLoginAt     DateTime? @map("last_login_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   // Relationships
-  shops             Shop[]   @relation("ShopOwner")
-  orders            Order[]  @relation("CustomerOrders")
-  deliveryOrders    Order[]  @relation("DeliveryPersonOrders")
-  addresses         Address[]
-  reviews           Review[]
-  refreshTokens     RefreshToken[]
-  passwordResetTokens PasswordResetToken[]
+  shops                   Shop[]                   @relation("ShopOwner")
+  orders                  Order[]                  @relation("CustomerOrders")
+  deliveryOrders          Order[]                  @relation("DeliveryPersonOrders")
+  addresses               Address[]
+  reviews                 Review[]
+  refreshTokens           RefreshToken[]
+  passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
-  deliveryLocations DeliveryLocation[]
-  favorites         UserFavorite[]
-  paymentMethods    UserPaymentMethod[]
-  deviceTokens      DeviceToken[]
+  deliveryLocations       DeliveryLocation[]
+  favorites               UserFavorite[]
+  paymentMethods          UserPaymentMethod[]
+  deviceTokens            DeviceToken[]
 
   @@map("users")
 }
@@ -97,7 +99,7 @@ model RefreshToken {
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relationships
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
 }
@@ -124,6 +126,7 @@ model Shop {
   hasPickup             Boolean      @default(true) @map("has_pickup")
   minimumOrderAmount    Float        @default(0) @map("minimum_order_amount")
   deliveryFee           Float        @default(0) @map("delivery_fee")
+  deliveryRadius        Float        @default(10) @map("delivery_radius") // Delivery radius in kilometers
   estimatedDeliveryTime Int          @map("estimated_delivery_time") // in minutes
   isActive              Boolean      @default(true) @map("is_active")
   isFeatured            Boolean      @default(false) @map("is_featured")
@@ -132,202 +135,202 @@ model Shop {
   updatedAt             DateTime     @updatedAt @map("updated_at")
 
   // Relationships
-  owner                 User         @relation("ShopOwner", fields: [ownerId], references: [id])
-  products              Product[]
-  orders                Order[]
-  reviews               Review[]
-  categories            Category[]
-  favorites             UserFavorite[]
+  owner      User           @relation("ShopOwner", fields: [ownerId], references: [id])
+  products   Product[]
+  orders     Order[]
+  reviews    Review[]
+  categories Category[]
+  favorites  UserFavorite[]
 
   @@map("shops")
 }
 
 // Products table
 model Product {
-  id               String    @id @default(uuid())
-  name             String
-  description      String
-  price            Float
-  discountedPrice  Float?    @map("discounted_price")
-  imageUrl         String?   @map("image_url")
-  images           String[]  // Array of image URLs
-  categoryName     String    @map("category_name")
-  categoryId       String?   @map("category_id")
-  tags             String[]  // Array of tags for searching
-  nutritionalInfo  Json?     @map("nutritional_info") // JSON object
-  inStock          Boolean   @default(true) @map("in_stock")
-  stockQuantity    Int?      @map("stock_quantity")
-  isFeatured       Boolean   @default(false) @map("is_featured")
-  isActive         Boolean   @default(true) @map("is_active")
-  rating           Float     @default(0)
-  ratingCount      Int       @default(0) @map("rating_count")
-  shopId           String    @map("shop_id")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  name            String
+  description     String
+  price           Float
+  discountedPrice Float?   @map("discounted_price")
+  imageUrl        String?  @map("image_url")
+  images          String[] // Array of image URLs
+  categoryName    String   @map("category_name")
+  categoryId      String?  @map("category_id")
+  tags            String[] // Array of tags for searching
+  nutritionalInfo Json?    @map("nutritional_info") // JSON object
+  inStock         Boolean  @default(true) @map("in_stock")
+  stockQuantity   Int?     @map("stock_quantity")
+  isFeatured      Boolean  @default(false) @map("is_featured")
+  isActive        Boolean  @default(true) @map("is_active")
+  rating          Float    @default(0)
+  ratingCount     Int      @default(0) @map("rating_count")
+  shopId          String   @map("shop_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relationships
-  shop             Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  category         Category? @relation(fields: [categoryId], references: [id])
-  orderItems       OrderItem[]
-  reviews          Review[]
+  shop       Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  category   Category?   @relation(fields: [categoryId], references: [id])
+  orderItems OrderItem[]
+  reviews    Review[]
 
   @@map("products")
 }
 
 // User addresses
 model Address {
-  id              String   @id @default(uuid())
-  label           String   // e.g., "Home", "Work"
-  fullAddress     String   @map("full_address")
-  latitude        Float
-  longitude       Float
-  instructions    String?
-  isDefault       Boolean  @default(false) @map("is_default")
-  userId          String   @map("user_id")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(uuid())
+  label        String // e.g., "Home", "Work"
+  fullAddress  String   @map("full_address")
+  latitude     Float
+  longitude    Float
+  instructions String?
+  isDefault    Boolean  @default(false) @map("is_default")
+  userId       String   @map("user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relationships
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders          Order[]
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
 
   @@map("addresses")
 }
 
 // User payment methods
 model UserPaymentMethod {
-  id              String            @id @default(uuid())
-  type            PaymentMethodType
-  label           String           // e.g., "Personal Card", "Business PayPal"
+  id               String            @id @default(uuid())
+  type             PaymentMethodType
+  label            String // e.g., "Personal Card", "Business PayPal"
   // Card details (for CREDIT_CARD, DEBIT_CARD)
-  cardLast4       String?          @map("card_last4")
-  cardBrand       String?          @map("card_brand") // visa, mastercard, amex, etc.
-  cardExpiryMonth Int?             @map("card_expiry_month")
-  cardExpiryYear  Int?             @map("card_expiry_year")
-  cardHolderName  String?          @map("card_holder_name")
+  cardLast4        String?           @map("card_last4")
+  cardBrand        String?           @map("card_brand") // visa, mastercard, amex, etc.
+  cardExpiryMonth  Int?              @map("card_expiry_month")
+  cardExpiryYear   Int?              @map("card_expiry_year")
+  cardHolderName   String?           @map("card_holder_name")
   // Digital wallet details
-  walletEmail     String?          @map("wallet_email") // for PayPal, etc.
-  walletProvider  String?          @map("wallet_provider") // "paypal", "apple_pay", etc.
+  walletEmail      String?           @map("wallet_email") // for PayPal, etc.
+  walletProvider   String?           @map("wallet_provider") // "paypal", "apple_pay", etc.
   // Bank account details
-  bankName        String?          @map("bank_name")
-  bankAccountLast4 String?         @map("bank_account_last4")
+  bankName         String?           @map("bank_name")
+  bankAccountLast4 String?           @map("bank_account_last4")
   // Common fields
-  isDefault       Boolean          @default(false) @map("is_default")
-  isActive        Boolean          @default(true) @map("is_active")
-  userId          String           @map("user_id")
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
+  isDefault        Boolean           @default(false) @map("is_default")
+  isActive         Boolean           @default(true) @map("is_active")
+  userId           String            @map("user_id")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
 
   // Relationships
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_payment_methods")
 }
 
 // Orders table
 model Order {
-  id                      String        @id @default(uuid())
-  orderNumber             String        @unique @map("order_number") // Human-readable order number
-  userId                  String        @map("user_id")
-  shopId                  String        @map("shop_id")
-  shopName                String        @map("shop_name") // Stored for history
-  addressId               String?       @map("address_id")
-  deliveryAddress         String        @map("delivery_address")
-  deliveryLatitude        Float         @map("delivery_latitude")
-  deliveryLongitude       Float         @map("delivery_longitude")
-  deliveryInstructions    String?       @map("delivery_instructions")
-  subtotal                Float
-  deliveryFee             Float         @map("delivery_fee")
-  serviceFee              Float         @map("service_fee")
-  tax                     Float
-  tip                     Float         @default(0)
-  discount                Float         @default(0)
-  total                   Float
-  paymentMethod           PaymentMethod @map("payment_method")
-  paymentId               String?       @map("payment_id")
-  status                  OrderStatus   @default(PENDING)
-  estimatedDeliveryTime   DateTime?     @map("estimated_delivery_time")
-  deliveredAt             DateTime?     @map("delivered_at")
-  deliveryPersonId        String?       @map("delivery_person_id")
-  rejectionReason         String?       @map("rejection_reason")
-  cancellationReason      String?       @map("cancellation_reason")
-  createdAt               DateTime      @default(now()) @map("created_at")
-  updatedAt               DateTime      @updatedAt @map("updated_at")
+  id                    String        @id @default(uuid())
+  orderNumber           String        @unique @map("order_number") // Human-readable order number
+  userId                String        @map("user_id")
+  shopId                String        @map("shop_id")
+  shopName              String        @map("shop_name") // Stored for history
+  addressId             String?       @map("address_id")
+  deliveryAddress       String        @map("delivery_address")
+  deliveryLatitude      Float         @map("delivery_latitude")
+  deliveryLongitude     Float         @map("delivery_longitude")
+  deliveryInstructions  String?       @map("delivery_instructions")
+  subtotal              Float
+  deliveryFee           Float         @map("delivery_fee")
+  serviceFee            Float         @map("service_fee")
+  tax                   Float
+  tip                   Float         @default(0)
+  discount              Float         @default(0)
+  total                 Float
+  paymentMethod         PaymentMethod @map("payment_method")
+  paymentId             String?       @map("payment_id")
+  status                OrderStatus   @default(PENDING)
+  estimatedDeliveryTime DateTime?     @map("estimated_delivery_time")
+  deliveredAt           DateTime?     @map("delivered_at")
+  deliveryPersonId      String?       @map("delivery_person_id")
+  rejectionReason       String?       @map("rejection_reason")
+  cancellationReason    String?       @map("cancellation_reason")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
 
   // Relationships
-  user                    User          @relation("CustomerOrders", fields: [userId], references: [id])
-  shop                    Shop          @relation(fields: [shopId], references: [id])
-  address                 Address?      @relation(fields: [addressId], references: [id])
-  deliveryPerson          User?         @relation("DeliveryPersonOrders", fields: [deliveryPersonId], references: [id])
-  items                   OrderItem[]
-  statusHistory           OrderStatusHistory[]
-  trackingUpdates         OrderTracking[]
+  user            User                 @relation("CustomerOrders", fields: [userId], references: [id])
+  shop            Shop                 @relation(fields: [shopId], references: [id])
+  address         Address?             @relation(fields: [addressId], references: [id])
+  deliveryPerson  User?                @relation("DeliveryPersonOrders", fields: [deliveryPersonId], references: [id])
+  items           OrderItem[]
+  statusHistory   OrderStatusHistory[]
+  trackingUpdates OrderTracking[]
 
   @@map("orders")
 }
 
 // Order items table
 model OrderItem {
-  id               String  @id @default(uuid())
-  orderId          String  @map("order_id")
-  productId        String  @map("product_id")
-  productName      String  @map("product_name") // Stored for history
-  productPrice     Float   @map("product_price") // Price at time of order
-  quantity         Int
-  totalPrice       Float   @map("total_price")
-  instructions     String?
-  createdAt        DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid())
+  orderId      String   @map("order_id")
+  productId    String   @map("product_id")
+  productName  String   @map("product_name") // Stored for history
+  productPrice Float    @map("product_price") // Price at time of order
+  quantity     Int
+  totalPrice   Float    @map("total_price")
+  instructions String?
+  createdAt    DateTime @default(now()) @map("created_at")
 
   // Relationships
-  order            Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product          Product @relation(fields: [productId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
 
   @@map("order_items")
 }
 
 // Order status history for tracking
 model OrderStatusHistory {
-  id          String      @id @default(uuid())
-  orderId     String      @map("order_id")
-  status      OrderStatus
-  notes       String?
-  timestamp   DateTime    @default(now())
+  id        String      @id @default(uuid())
+  orderId   String      @map("order_id")
+  status    OrderStatus
+  notes     String?
+  timestamp DateTime    @default(now())
 
   // Relationships
-  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_status_history")
 }
 
 // Real-time order tracking
 model OrderTracking {
-  id          String   @id @default(uuid())
-  orderId     String   @map("order_id")
-  latitude    Float
-  longitude   Float
-  timestamp   DateTime @default(now())
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  latitude  Float
+  longitude Float
+  timestamp DateTime @default(now())
 
   // Relationships
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_tracking")
 }
 
 // Reviews and ratings
 model Review {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  shopId      String?   @map("shop_id")
-  productId   String?   @map("product_id")
-  rating      Float
-  comment     String?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  shopId    String?  @map("shop_id")
+  productId String?  @map("product_id")
+  rating    Float
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relationships
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  shop        Shop?     @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  product     Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop    Shop?    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("reviews")
 }
@@ -350,7 +353,7 @@ model PasswordResetToken {
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relationships
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_reset_tokens")
 }
@@ -364,7 +367,7 @@ model EmailVerificationToken {
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relationships
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("email_verification_tokens")
 }
@@ -381,22 +384,22 @@ model Category {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relationships
-  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  products    Product[]
+  shop     Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  products Product[]
 
   @@map("categories")
 }
 
 // Real-time delivery person location tracking
 model DeliveryLocation {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  latitude    Float
-  longitude   Float
-  timestamp   DateTime @default(now())
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  latitude  Float
+  longitude Float
+  timestamp DateTime @default(now())
 
   // Relationships
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("delivery_locations")
 }
@@ -409,8 +412,8 @@ model UserFavorite {
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relationships
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   @@unique([userId, shopId])
   @@map("user_favorites")
@@ -426,7 +429,7 @@ model DeviceToken {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("device_tokens")
 }

@@ -16,8 +16,11 @@ export class UserController {
         phone: true,
         profilePicture: true,
         role: true,
+        vehicleType: true,
+        licenseNumber: true,
         isEmailVerified: true,
         isPhoneVerified: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -27,11 +30,18 @@ export class UserController {
   });
 
   updateProfile = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
-    const { name, phone } = req.body;
+    const { name, phone, vehicleType, licenseNumber } = req.body;
+
+    const updateData: any = { name };
+    if (phone !== undefined) updateData.phone = phone;
+    if (req.user!.role === 'DELIVERY') {
+      if (vehicleType !== undefined) updateData.vehicleType = vehicleType;
+      if (licenseNumber !== undefined) updateData.licenseNumber = licenseNumber;
+    }
 
     const user = await prisma.user.update({
       where: { id: req.user!.id },
-      data: { name, phone },
+      data: updateData,
       select: {
         id: true,
         name: true,
@@ -39,8 +49,11 @@ export class UserController {
         phone: true,
         profilePicture: true,
         role: true,
+        vehicleType: true,
+        licenseNumber: true,
         isEmailVerified: true,
         isPhoneVerified: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -64,7 +77,8 @@ export class UserController {
       throw new AppError('Current password is incorrect', 401);
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // Use 12 rounds for password hashing (consistent with registration)
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     await prisma.user.update({
       where: { id: req.user!.id },

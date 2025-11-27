@@ -8,7 +8,7 @@ class CategorySlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 130,
+      height: 90,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -67,40 +67,40 @@ class CategorySlider extends StatelessWidget {
         context.push('/shops', extra: {'category': category});
       },
       child: Container(
-        width: 100,
-        margin: const EdgeInsets.only(right: 16),
+        width: 80,
+        margin: const EdgeInsets.only(right: 12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    color.withValues(alpha:0.15),
-                    color.withValues(alpha:0.08),
+                    color.withValues(alpha: 0.15),
+                    color.withValues(alpha: 0.08),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withValues(alpha:0.15),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                    spreadRadius: 0,
-              ),
-                  BoxShadow(
-                    color: theme.colorScheme.shadow.withValues(alpha:0.05),
+                    color: color.withValues(alpha: 0.12),
                     blurRadius: 8,
+                    offset: const Offset(0, 4),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: theme.colorScheme.shadow.withValues(alpha: 0.05),
+                    blurRadius: 4,
                     offset: const Offset(0, 2),
                     spreadRadius: 0,
                   ),
                 ],
                 border: Border.all(
-                  color: color.withValues(alpha:0.2),
+                  color: color.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -110,12 +110,12 @@ class CategorySlider extends StatelessWidget {
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(19),
+                        borderRadius: BorderRadius.circular(15),
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.white.withValues(alpha:0.1),
+                            Colors.white.withValues(alpha: 0.1),
                             Colors.transparent,
                           ],
                         ),
@@ -124,21 +124,22 @@ class CategorySlider extends StatelessWidget {
                   ),
                   // Icon
                   Center(
-              child: Icon(
-                icon,
-                color: color,
-                size: 32,
-              ),
-            ),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: 24,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
               title,
-              style: theme.textTheme.bodyMedium?.copyWith(
+              style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: theme.colorScheme.onSurface,
+                fontSize: 12,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,

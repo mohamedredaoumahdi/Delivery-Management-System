@@ -17,26 +17,20 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     on<DeliveryMarkDeliveredEvent>(_onMarkDelivered);
   }
 
+  /// Loads available delivery orders from the API
+  /// Converts backend order data to DeliveryOrder models
   Future<void> _onLoadAvailable(
     DeliveryLoadAvailableEvent event,
     Emitter<DeliveryState> emit,
   ) async {
-    print('🚀 DeliveryBloc: LoadAvailableEvent received');
-    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
-    
     // Only emit loading if not already in a loading state
     if (state is! DeliveryLoading) {
       emit(const DeliveryLoading());
-      print('📊 DeliveryBloc: State updated to DeliveryLoading');
     }
 
     try {
-      print('🔄 DeliveryBloc: Calling deliveryService.getAvailableOrders()');
       // Call real API to get available orders
       final ordersData = await _deliveryService.getAvailableOrders();
-      
-      print('✅ DeliveryBloc: Successfully received ${ordersData.length} orders from service');
-      print('📦 DeliveryBloc: Raw orders data: $ordersData');
       
       // Convert API response to DeliveryOrder objects
       final deliveries = ordersData.map((orderData) {
@@ -46,16 +40,8 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
         final deliveryAddress = orderData['deliveryAddress'] ?? orderData['delivery_address'] ?? '';
         final backendStatus = orderData['status'] ?? 'PENDING';
         
-        print('🔄 DeliveryBloc: Converting order data: ${orderData['id']}');
-        print('   Customer: $customerName');
-        print('   Shop: $shopName');
-        print('   Order: $orderNumber');
-        print('   Address: $deliveryAddress');
-        print('   Backend Status: $backendStatus');
-        
         // Map backend status to delivery status
         final deliveryStatus = _mapBackendStatusToDeliveryStatus(backendStatus);
-        print('   Mapped to Delivery Status: $deliveryStatus');
         
         // Parse order items
         final itemsData = orderData['items'] as List<dynamic>? ?? [];
@@ -68,12 +54,7 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
           );
         }).toList();
         
-        print('   Order Items: ${orderItems.length} items');
-        for (final item in orderItems) {
-          print('     - ${item.quantity}x ${item.name} @ \$${item.price} = \$${item.totalPrice}');
-        }
-        
-        final deliveryOrder = DeliveryOrder(
+        return DeliveryOrder(
           id: orderData['id'] ?? '',
           orderNumber: orderNumber,
           customerName: customerName,
@@ -87,49 +68,32 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
           tip: (orderData['tip'] ?? 0).toDouble(),
           discount: (orderData['discount'] ?? 0).toDouble(),
           paymentMethod: orderData['paymentMethod'],
-          distance: 2.0, // TODO: Calculate actual distance
+          distance: 2.0, // TODO: Calculate actual distance using geolocation
           status: deliveryStatus,
           items: orderItems,
           shopName: shopName,
           pickupAddress: orderData['shop']?['address'] ?? 'Unknown Address',
         );
-        
-        print('✅ DeliveryBloc: Converted to DeliveryOrder: Customer=$customerName, Address=$deliveryAddress, Total=\$${deliveryOrder.total}, Status=$deliveryStatus, Items=${orderItems.length}');
-        return deliveryOrder;
       }).toList();
       
-      print('📦 DeliveryBloc: Final deliveries list: ${deliveries.length} items');
-      print('📊 DeliveryBloc: Emitting DeliveryLoaded state');
-      
       emit(DeliveryLoaded(deliveries));
-      
-      print('✅ DeliveryBloc: Successfully emitted DeliveryLoaded with ${deliveries.length} deliveries');
 
     } catch (error) {
-      print('❌ DeliveryBloc: Error loading available orders: $error');
-      print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
       emit(DeliveryError(error.toString()));
-      print('📊 DeliveryBloc: Emitted DeliveryError state: $error');
     }
   }
 
+  /// Loads assigned delivery orders for the current driver
   Future<void> _onLoadAssigned(
     DeliveryLoadAssignedEvent event,
     Emitter<DeliveryState> emit,
   ) async {
-    print('🚀 DeliveryBloc: LoadAssignedEvent received');
-    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
-    
     if (state is! DeliveryLoading) {
       emit(const DeliveryLoading());
-      print('📊 DeliveryBloc: State updated to DeliveryLoading');
     }
 
     try {
-      print('🔄 DeliveryBloc: Calling deliveryService.getAssignedOrders()');
       final ordersData = await _deliveryService.getAssignedOrders();
-      
-      print('✅ DeliveryBloc: Successfully received ${ordersData.length} assigned orders from service');
       
       // Convert API response to DeliveryOrder objects
       final deliveries = ordersData.map((orderData) {
@@ -175,31 +139,22 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
         );
       }).toList();
       
-      print('📦 DeliveryBloc: Final assigned deliveries list: ${deliveries.length} items');
       emit(DeliveryLoaded(deliveries));
-      print('✅ DeliveryBloc: Successfully emitted DeliveryLoaded with ${deliveries.length} deliveries');
 
     } catch (error) {
-      print('❌ DeliveryBloc: Error loading assigned orders: $error');
       emit(DeliveryError(error.toString()));
     }
   }
 
+  /// Loads detailed information for a specific delivery order
   Future<void> _onLoadDetails(
     DeliveryLoadDetailsEvent event,
     Emitter<DeliveryState> emit,
   ) async {
-    print('🚀 DeliveryBloc: LoadDetailsEvent received for delivery: ${event.deliveryId}');
-    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
-    
     emit(const DeliveryLoading());
-    print('📊 DeliveryBloc: State updated to DeliveryLoading');
 
     try {
-      print('🔄 DeliveryBloc: Calling deliveryService.getOrderDetails()');
       final orderData = await _deliveryService.getOrderDetails(event.deliveryId);
-      print('✅ DeliveryBloc: Successfully received order details');
-      print('📦 DeliveryBloc: Order data: $orderData');
       
       // Convert API response to DeliveryOrder
       final customerName = orderData['user']?['name'] ?? orderData['shop']?['name'] ?? 'Unknown Customer';
@@ -208,16 +163,8 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
       final total = (orderData['total'] ?? 0).toDouble();
       final backendStatus = orderData['status'] ?? 'PENDING';
       
-      print('🔄 DeliveryBloc: Converting order details:');
-      print('   Customer: $customerName');
-      print('   Order: $orderNumber');
-      print('   Address: $deliveryAddress');
-      print('   Total: \$${total}');
-      print('   Backend Status: $backendStatus');
-      
       // Map backend status to delivery status
       final deliveryStatus = _mapBackendStatusToDeliveryStatus(backendStatus);
-      print('   Mapped to Delivery Status: $deliveryStatus');
       
       // Parse order items from the detailed response
       final itemsData = orderData['items'] as List<dynamic>? ?? [];
@@ -229,11 +176,6 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
           totalPrice: (itemData['totalPrice'] ?? 0).toDouble(),
         );
       }).toList();
-      
-      print('   Order Items: ${orderItems.length} items');
-      for (final item in orderItems) {
-        print('     - ${item.quantity}x ${item.name} @ \$${item.price} = \$${item.totalPrice}');
-      }
       
       final delivery = DeliveryOrder(
         id: event.deliveryId,
@@ -249,55 +191,41 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
         tip: (orderData['tip'] ?? 0).toDouble(),
         discount: (orderData['discount'] ?? 0).toDouble(),
         paymentMethod: orderData['paymentMethod'],
-        distance: 2.0, // TODO: Calculate actual distance
+        distance: 2.0, // TODO: Calculate actual distance using geolocation
         status: deliveryStatus,
         items: orderItems,
         shopName: orderData['shopName'] ?? orderData['shop']?['name'] ?? 'Unknown Restaurant',
         pickupAddress: orderData['shop']?['address'] ?? 'Unknown Address',
       );
       
-      print('✅ DeliveryBloc: Converted to DeliveryOrder successfully');
       emit(DeliveryDetailsLoaded(delivery));
-      print('📊 DeliveryBloc: Emitted DeliveryDetailsLoaded state');
     } catch (error) {
-      print('❌ DeliveryBloc: Error loading order details: $error');
-      print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
       emit(DeliveryError(error.toString()));
-      print('📊 DeliveryBloc: Emitted DeliveryError state: $error');
     }
   }
 
+  /// Accepts a delivery order assignment
+  /// Refreshes available orders after successful acceptance
   Future<void> _onAccept(
     DeliveryAcceptEvent event,
     Emitter<DeliveryState> emit,
   ) async {
-    print('🚀 DeliveryBloc: AcceptEvent received for delivery: ${event.deliveryId}');
-    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
-    
     emit(const DeliveryLoading());
-    print('📊 DeliveryBloc: State updated to DeliveryLoading');
     
     try {
-      print('🔄 DeliveryBloc: Calling deliveryService.acceptOrder()');
       await _deliveryService.acceptOrder(event.deliveryId);
-      print('✅ DeliveryBloc: Order accepted successfully');
       
       // Update delivery status
       emit(const DeliveryAccepted());
-      print('📊 DeliveryBloc: Emitted DeliveryAccepted state');
       
       // Wait a moment before refreshing to allow backend to update
       await Future.delayed(const Duration(milliseconds: 500));
       
       // Refresh available orders list
-      print('🔄 DeliveryBloc: Refreshing available orders after acceptance');
       add(const DeliveryLoadAvailableEvent());
       
     } catch (error) {
-      print('❌ DeliveryBloc: Error accepting order: $error');
-      print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
       emit(DeliveryError(error.toString()));
-      print('📊 DeliveryBloc: Emitted DeliveryError state: $error');
     }
   }
 
@@ -315,38 +243,30 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     }
   }
 
+  /// Marks a delivery order as delivered
+  /// Reloads order details to reflect the updated status
   Future<void> _onMarkDelivered(
     DeliveryMarkDeliveredEvent event,
     Emitter<DeliveryState> emit,
   ) async {
-    print('🚀 DeliveryBloc: MarkDeliveredEvent received for delivery: ${event.deliveryId}');
-    print('📊 DeliveryBloc: Current state: ${state.runtimeType}');
-    
     emit(const DeliveryLoading());
-    print('📊 DeliveryBloc: State updated to DeliveryLoading');
     
     try {
-      print('🔄 DeliveryBloc: Calling deliveryService.markDelivered()');
       await _deliveryService.markDelivered(event.deliveryId);
-      print('✅ DeliveryBloc: Order marked as delivered successfully');
       
       // Emit success state first
       emit(DeliveryMarkedAsDelivered(event.deliveryId));
-      print('📊 DeliveryBloc: Emitted DeliveryMarkedAsDelivered state');
       
       // Reload the order details to get updated status
-      print('🔄 DeliveryBloc: Reloading order details after marking as delivered');
       add(DeliveryLoadDetailsEvent(event.deliveryId));
       
     } catch (error) {
-      print('❌ DeliveryBloc: Error marking order as delivered: $error');
-      print('❌ DeliveryBloc: Error type: ${error.runtimeType}');
       emit(DeliveryError(error.toString()));
-      print('📊 DeliveryBloc: Emitted DeliveryError state: $error');
     }
   }
 
   /// Maps backend order status to delivery app status
+  /// Handles various backend status formats and converts them to app-specific statuses
   DeliveryStatus _mapBackendStatusToDeliveryStatus(String backendStatus) {
     switch (backendStatus.toUpperCase()) {
       case 'READY_FOR_PICKUP':
@@ -361,7 +281,7 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
       case 'ACCEPTED':
         return DeliveryStatus.accepted; // Driver accepted the order
       default:
-        print('⚠️ DeliveryBloc: Unknown backend status: $backendStatus, defaulting to pending');
+        // Unknown status - default to pending
         return DeliveryStatus.pending;
     }
   }

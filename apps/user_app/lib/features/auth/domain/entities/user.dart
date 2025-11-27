@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:user_app/core/utils/image_url_helper.dart';
 
 class User extends Equatable {
   final String id;
@@ -33,7 +34,7 @@ class User extends Equatable {
       email: json['email'],
       name: json['name'],
       phone: json['phone'],
-      profilePicture: json['profilePicture'],
+      profilePicture: ImageUrlHelper.toAbsoluteUrl(json['profilePicture']),
       role: json['role'],
       isEmailVerified: json['isEmailVerified'],
       isPhoneVerified: json['isPhoneVerified'],

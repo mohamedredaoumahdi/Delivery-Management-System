@@ -471,7 +471,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         trailing: Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: theme.colorScheme.primary,
+          activeThumbColor: theme.colorScheme.primary,
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),

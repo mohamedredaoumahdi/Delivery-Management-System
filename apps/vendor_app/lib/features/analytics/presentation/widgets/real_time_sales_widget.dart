@@ -14,155 +14,155 @@ class RealTimeSalesWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              'Sales Summary',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Spacer(),
-            if (isUpdating)
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else
-              IconButton(
-                onPressed: onRefresh,
-                icon: const Icon(Icons.refresh, size: 18),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: 24,
-                  minHeight: 24,
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 300),
-              opacity: isUpdating ? 0.6 : 1.0,
-              child: _buildSalesContent(context),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSalesContent(BuildContext context) {
     final hasData = data.isNotEmpty && 
         (data['todayRevenue'] != null || data['totalRevenue'] != null);
     
     if (!hasData) {
-      return Column(
-        children: [
-          Icon(
-            Icons.analytics_outlined,
-            size: 48,
-            color: Colors.grey[400],
+      return Card(
+        elevation: 0,
+        color: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: Colors.grey.withValues(alpha: 0.15),
+            width: 1,
           ),
-          const SizedBox(height: 16),
-          Text(
-            'No sales data available yet',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Icon(
+                Icons.analytics_outlined,
+                size: 48,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No sales data available yet',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Sales data will appear here once you start receiving orders.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[500],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Sales data will appear here once you start receiving orders.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[500],
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       );
     }
 
     return Column(
       children: [
-        _buildSalesRow(
-          'Today', 
-          (data['todayRevenue'] ?? 0.0).toDouble(), 
-          data['todayOrders'] ?? 0,
+        _buildSalesCard(
+          context,
+          icon: Icons.today,
+          title: 'Today',
+          revenue: (data['todayRevenue'] ?? 0.0).toDouble(),
+          orders: data['todayOrders'] ?? 0,
+          color: Colors.blue,
         ),
-        const Divider(),
-        _buildSalesRow(
-          'This Week', 
-          (data['weekRevenue'] ?? 0.0).toDouble(), 
-          data['weekOrders'] ?? 0,
+        const SizedBox(height: 4),
+        _buildSalesCard(
+          context,
+          icon: Icons.calendar_view_week,
+          title: 'This Week',
+          revenue: (data['weekRevenue'] ?? 0.0).toDouble(),
+          orders: data['weekOrders'] ?? 0,
+          color: Colors.green,
         ),
-        const Divider(),
-        _buildSalesRow(
-          'This Month', 
-          (data['monthRevenue'] ?? 0.0).toDouble(), 
-          data['monthOrders'] ?? 0,
+        const SizedBox(height: 4),
+        _buildSalesCard(
+          context,
+          icon: Icons.calendar_month,
+          title: 'This Month',
+          revenue: (data['monthRevenue'] ?? 0.0).toDouble(),
+          orders: data['monthOrders'] ?? 0,
+          color: Colors.purple,
         ),
-        const Divider(),
-        _buildSalesRow(
-          'All Time', 
-          (data['totalRevenue'] ?? 0.0).toDouble(), 
-          data['totalOrders'] ?? 0,
+        const SizedBox(height: 4),
+        _buildSalesCard(
+          context,
+          icon: Icons.all_inclusive,
+          title: 'All Time',
+          revenue: (data['totalRevenue'] ?? 0.0).toDouble(),
+          orders: data['totalOrders'] ?? 0,
+          color: Colors.orange,
         ),
       ],
     );
   }
 
-  Widget _buildSalesRow(String period, double revenue, int orders) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              period,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+  Widget _buildSalesCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required double revenue,
+    required int orders,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
+              child: Icon(icon, color: color, size: 20),
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(
-                  '\$${revenue.toStringAsFixed(2)}',
-                  key: ValueKey('$period-revenue-$revenue'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
                 ),
               ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '\$${revenue.toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
                   '$orders orders',
-                  key: ValueKey('$period-orders-$orders'),
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontSize: 12,
                     color: Colors.grey[600],
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
-} 
+}

@@ -164,20 +164,19 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
         context.read<EarningsBloc>().add(const EarningsRefreshEvent());
       },
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Payment History Header
-            Row(
+            Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Row(
               children: [
-                Container(
-                  width: 4,
-                  height: 20,
-                  decoration: BoxDecoration(
+                  Icon(
+                    Icons.payment_outlined,
+                    size: 20,
                     color: theme.colorScheme.primary,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -187,6 +186,7 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
                   ),
                 ),
               ],
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -208,7 +208,7 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
         context.read<EarningsBloc>().add(const EarningsRefreshEvent());
       },
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.only(left: 20, top: 20, bottom: 20, right: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -236,9 +236,13 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
     final theme = Theme.of(context);
 
     return Card(
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -440,15 +444,15 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.analytics_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -459,11 +463,19 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        Row(
+        ),
+        const SizedBox(height: 12),
+        // Stats in two rows
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Wrap(
+            alignment: WrapAlignment.start,
+            spacing: 20,
+            runSpacing: 12,
           children: [
-            Expanded(
-              child: _buildStatCard(
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
                 context,
                 'Deliveries',
                 '${data.deliveryCount}',
@@ -471,9 +483,9 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
                 Colors.blue,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
                 context,
                 'Avg/Order',
                 '\$${data.averagePerOrder.toStringAsFixed(2)}',
@@ -481,9 +493,9 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
                 Colors.green,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
                 context,
                 'Online Time',
                 '${data.onlineHours}h ${data.onlineMinutes}m',
@@ -492,49 +504,37 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
               ),
             ),
           ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon, Color color) {
+  Widget _buildStatItem(BuildContext context, String title, String value, IconData icon, Color color) {
     final theme = Theme.of(context);
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+          width: 48,
+          height: 48,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
+            color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
                 color: color,
-                size: 22,
+            size: 24,
               ),
             ),
-            const SizedBox(height: 12),
+        const SizedBox(width: 12),
+        Flexible(
+          fit: FlexFit.loose,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
             Text(
               value,
               style: TextStyle(
@@ -542,25 +542,24 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
-              textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+              const SizedBox(height: 2),
             Text(
               title,
               style: TextStyle(
-                fontSize: 11,
+                  fontSize: 12,
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w500,
               ),
-              textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
       ),
+      ],
     );
   }
 
@@ -570,15 +569,15 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.local_shipping_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -588,6 +587,7 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
               ),
             ),
           ],
+          ),
         ),
         const SizedBox(height: 16),
         if (data.recentDeliveries.isEmpty)
@@ -621,8 +621,16 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
             ),
           )
         else
-          ...data.recentDeliveries.take(5).map((delivery) => 
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: data.recentDeliveries.take(5).map((delivery) => 
             _buildDeliveryItem(context, delivery)
+                ).toList(),
+              ),
+            ),
           ),
       ],
     );
@@ -631,51 +639,24 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
   Widget _buildDeliveryItem(BuildContext context, DeliveryEarning delivery) {
     final theme = Theme.of(context);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.green.withValues(alpha: 0.2),
-                    Colors.green.withValues(alpha: 0.1),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Order #${delivery.orderNumber.length > 20 ? delivery.orderNumber.substring(0, 20) + '...' : delivery.orderNumber}',
-                    style: TextStyle(
-                      fontSize: 16,
+                    'Order #${delivery.orderNumber.length > 20 ? '${delivery.orderNumber.substring(0, 20)}...' : delivery.orderNumber}',
+                  style: TextStyle(
+                    fontSize: theme.textTheme.titleMedium?.fontSize ?? 16,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                const SizedBox(height: 6),
                   Row(
                     children: [
                       Icon(
@@ -696,21 +677,22 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
                 ],
               ),
             ),
+          const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '+\$${delivery.earnings.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green.shade700,
+                    color: theme.colorScheme.primary,
                     ),
                   ),
                 ),
@@ -736,7 +718,6 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
               ],
             ),
           ],
-        ),
       ),
     );
   }
@@ -747,15 +728,15 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.pie_chart,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -766,23 +747,32 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        ),
+        const SizedBox(height: 12),
         Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Colors.grey.withValues(alpha: 0.15),
+              width: 1,
+            ),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildBreakdownItem('Base Pay', data.basePay, Colors.blue),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildBreakdownItem('Tips', data.tips, Colors.green),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildBreakdownItem('Bonuses', data.bonuses, Colors.purple),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildBreakdownItem('Distance Bonus', data.distanceBonus, Colors.orange),
-                const SizedBox(height: 16),
-                const Divider(),
                 const SizedBox(height: 12),
+                const Divider(),
+                const SizedBox(height: 8),
                 _buildBreakdownItem('Total', data.totalEarnings, theme.colorScheme.primary, isTotal: true),
               ],
             ),
@@ -835,44 +825,18 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
   Widget _buildPaymentHistory(BuildContext context, EarningsData data) {
     final theme = Theme.of(context);
 
+    if (data.paymentHistory.isEmpty) {
     return Card(
-      elevation: 2,
+        elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: Colors.grey.withValues(alpha: 0.15),
+            width: 1,
+          ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.payment,
-                    color: theme.colorScheme.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Recent Payments',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            if (data.paymentHistory.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
+          padding: const EdgeInsets.all(32),
                 child: Column(
                   children: [
                     Icon(
@@ -897,10 +861,24 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
                     ),
                   ],
                 ),
-              )
-            else
-              ...data.paymentHistory.map((payment) => _buildPaymentItem(context, payment)),
-          ],
+        ),
+      );
+    }
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: data.paymentHistory.map((payment) => _buildPaymentItem(context, payment)).toList(),
         ),
       ),
     );
@@ -910,51 +888,52 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
     final theme = Theme.of(context);
     final isPaid = payment.status.toUpperCase() == 'PAID';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    isPaid ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
-                    isPaid ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                isPaid ? Icons.check_circle : Icons.pending,
-                color: isPaid ? Colors.green : Colors.orange,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
                     payment.description,
-                    style: TextStyle(
-                      fontSize: 16,
+                        style: TextStyle(
+                          fontSize: theme.textTheme.titleMedium?.fontSize ?? 16,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isPaid 
+                            ? Colors.green.withValues(alpha: 0.1) 
+                            : Colors.orange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: (isPaid ? Colors.green : Colors.orange).withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        payment.status,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isPaid ? Colors.green.shade700 : Colors.orange.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
                   Row(
                     children: [
                       Icon(
@@ -975,46 +954,23 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
+          const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isPaid ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '\$${payment.amount.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isPaid ? Colors.green.shade700 : Colors.orange.shade700,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isPaid 
-                        ? Colors.green.withValues(alpha: 0.15) 
-                        : Colors.orange.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    payment.status,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: isPaid ? Colors.green.shade700 : Colors.orange.shade700,
+                color: theme.colorScheme.primary,
                     ),
                   ),
                 ),
               ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1025,15 +981,15 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.calendar_view_week_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -1044,100 +1000,52 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                colors: [
-                  theme.colorScheme.primary.withValues(alpha: 0.05),
-                  theme.colorScheme.secondary.withValues(alpha: 0.05),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryItem('Deliveries', '${data.weeklyDeliveries}', Icons.local_shipping, Colors.blue),
-                ),
-                Container(
-                  width: 1,
-                  height: 60,
-                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                ),
-                Expanded(
-                  child: _buildSummaryItem('Earnings', '\$${data.weeklyEarnings.toStringAsFixed(2)}', Icons.attach_money, Colors.green),
-                ),
-                Container(
-                  width: 1,
-                  height: 60,
-                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                ),
-                Expanded(
-                  child: _buildSummaryItem('Hours', '${data.weeklyHours}h', Icons.access_time, Colors.orange),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSummaryItem(String label, String value, IconData icon, Color color) {
-    final theme = Theme.of(context);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 24,
-          ),
         ),
         const SizedBox(height: 12),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Wrap(
+            alignment: WrapAlignment.start,
+            spacing: 20,
+            runSpacing: 12,
+              children: [
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
+                  context,
+                  'Deliveries',
+                  '${data.weeklyDeliveries}',
+                  Icons.local_shipping,
+                  Colors.blue,
+                ),
+                ),
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
+                  context,
+                  'Earnings',
+                  '\$${data.weeklyEarnings.toStringAsFixed(2)}',
+                  Icons.attach_money,
+                  Colors.green,
+                ),
+                ),
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
+                  context,
+                  'Hours',
+                  '${data.weeklyHours}h',
+                  Icons.access_time,
+                  Colors.orange,
           ),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-            fontWeight: FontWeight.w500,
+      ],
           ),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
   }
+
 
   Widget _buildPerformanceMetrics(BuildContext context, EarningsData data) {
     final theme = Theme.of(context);
@@ -1145,15 +1053,15 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.trending_up_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -1164,130 +1072,150 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        Row(
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Wrap(
+            alignment: WrapAlignment.start,
+            spacing: 20,
+            runSpacing: 12,
           children: [
-            Expanded(
-              child: _buildMetricItem(
-                'Acceptance\nRate',
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
+                  context,
+                  'Acceptance Rate',
                 '${data.acceptanceRate.toStringAsFixed(0)}%',
+                  Icons.check_circle,
                 Colors.green,
-                data.acceptanceRate / 100,
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _buildMetricItem(
-                'Customer\nRating',
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
+                  context,
+                  'Customer Rating',
                 '${data.customerRating.toStringAsFixed(1)}/5',
+                  Icons.star,
                 Colors.amber,
-                data.customerRating / 5,
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _buildMetricItem(
-                'On-Time\nRate',
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
+                  context,
+                  'On-Time Rate',
                 '${data.onTimeRate.toStringAsFixed(0)}%',
+                  Icons.access_time,
                 Colors.blue,
-                data.onTimeRate / 100,
               ),
             ),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetricItem(String label, String value, Color color, double progress) {
-    final theme = Theme.of(context);
-    final clampedProgress = progress.clamp(0.0, 1.0);
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 65,
-              height: 65,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 65,
-                    height: 65,
-                    child: CircularProgressIndicator(
-                      value: clampedProgress,
-                      strokeWidth: 6,
-                      backgroundColor: color.withValues(alpha: 0.2),
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
-                    ),
-                  ),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                fontWeight: FontWeight.w600,
-                height: 1.1,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
   Widget _buildHourlyEarningsChart(BuildContext context, EarningsData data) {
     final theme = Theme.of(context);
 
+    // Group recent deliveries by day
+    final Map<String, double> dailyEarnings = {};
+    for (var delivery in data.recentDeliveries) {
+      final dayKey = DateFormat('MMM dd').format(delivery.completedAt);
+      dailyEarnings[dayKey] = (dailyEarnings[dayKey] ?? 0) + delivery.earnings;
+    }
+
+    // Get last 7 days including today
+    final now = DateTime.now();
+    final last7Days = List.generate(7, (index) {
+      final date = now.subtract(Duration(days: 6 - index));
+      return DateFormat('MMM dd').format(date);
+    });
+
+    // Fill in earnings for each day
+    final chartData = last7Days.map((day) {
+      return {
+        'day': day,
+        'earnings': dailyEarnings[day] ?? 0.0,
+      };
+    }).toList();
+
+    final maxEarnings = chartData.map((d) => d['earnings'] as double).reduce((a, b) => a > b ? a : b);
+    final maxHeight = 120.0;
+
+    if (maxEarnings == 0) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Header
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.show_chart_outlined,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Earnings Trend',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+                  Icon(
+                    Icons.show_chart,
+                    size: 64,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No Earnings Data',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+                    'Your earnings trends will appear here',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+          ),
+        ],
+    );
+  }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.show_chart_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -1298,54 +1226,82 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        ),
+        const SizedBox(height: 12),
         Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                colors: [
-                  theme.colorScheme.primary.withValues(alpha: 0.05),
-                  theme.colorScheme.secondary.withValues(alpha: 0.05),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            padding: const EdgeInsets.all(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Chart bars
+                SizedBox(
+                  height: maxHeight + 50,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: chartData.map((data) {
+                      final day = data['day'] as String;
+                      final earnings = data['earnings'] as double;
+                      final barHeight = maxEarnings > 0 
+                          ? (earnings / maxEarnings) * maxHeight 
+                          : 0.0;
+                      
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              // Earnings amount above bar (if > 0)
+                              if (earnings > 0)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: Text(
+                                    '\$${earnings.toStringAsFixed(0)}',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              // Bar
                 Container(
-                  width: 80,
-                  height: 80,
+                                width: double.infinity,
+                                height: barHeight > 0 ? barHeight : 2,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.show_chart,
-                    size: 40,
                     color: theme.colorScheme.primary,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(4),
+                                    topRight: Radius.circular(4),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Chart Coming Soon',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                const SizedBox(height: 8),
+                              const SizedBox(height: 6),
+                              // Day label
                 Text(
-                  'Visual earnings trends will be displayed here',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                day,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w500,
                   ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ],
             ),
@@ -1361,15 +1317,15 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.attach_money_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -1380,92 +1336,52 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        Row(
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Wrap(
+            alignment: WrapAlignment.start,
+            spacing: 20,
+            runSpacing: 12,
           children: [
-            Expanded(
-              child: _buildTipMetric('Average Tip', '\$${data.averageTip.toStringAsFixed(2)}', Icons.trending_up, Colors.green),
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
+                  context,
+                  'Average Tip',
+                  '\$${data.averageTip.toStringAsFixed(2)}',
+                  Icons.trending_up,
+                  Colors.green,
+              ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildTipMetric('Best Tip', '\$${data.bestTip.toStringAsFixed(2)}', Icons.star, Colors.amber),
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
+                  context,
+                  'Best Tip',
+                  '\$${data.bestTip.toStringAsFixed(2)}',
+                  Icons.star,
+                  Colors.amber,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildTipMetric('Tip Rate', '${data.tipRate.toStringAsFixed(0)}%', Icons.percent, Colors.blue),
+              ),
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
+                  context,
+                  'Tip Rate',
+                  '${data.tipRate.toStringAsFixed(0)}%',
+                  Icons.percent,
+                  Colors.blue,
+                ),
             ),
           ],
         ),
+      ),
       ],
     );
   }
 
-  Widget _buildTipMetric(String label, String value, IconData icon, Color color) {
-    final theme = Theme.of(context);
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 20,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildGoalsSection(BuildContext context, EarningsData data) {
     final theme = Theme.of(context);
@@ -1477,15 +1393,15 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.flag_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -1496,11 +1412,16 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        ),
+        const SizedBox(height: 12),
         Card(
-          elevation: 2,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Colors.grey.withValues(alpha: 0.15),
+              width: 1,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -1508,12 +1429,12 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildGoalItem('Daily Goal', data.dailyGoal, data.todayEarnings, dailyProgress, dailyCompleted),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 _buildGoalItem('Weekly Goal', data.weeklyGoal, data.weeklyEarnings, weeklyProgress, weeklyCompleted),
                 if (dailyCompleted || weeklyCompleted) ...[
-                  const SizedBox(height: 20),
-                  const Divider(),
                   const SizedBox(height: 16),
+                  const Divider(),
+                  const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -1606,7 +1527,7 @@ class _EarningsPageState extends State<EarningsPage> with TickerProviderStateMix
                 const SizedBox(width: 8),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

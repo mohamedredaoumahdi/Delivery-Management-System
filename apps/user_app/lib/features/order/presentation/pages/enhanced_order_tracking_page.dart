@@ -24,7 +24,7 @@ class EnhancedOrderTrackingPage extends StatefulWidget {
 class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage> {
   GoogleMapController? _mapController;
   Set<Marker> _markers = {};
-  Set<Polyline> _polylines = {};
+  final Set<Polyline> _polylines = {};
 
   @override
   void initState() {
@@ -39,7 +39,7 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage> {
 
   void _connectToRealtimeUpdates() {
     // This would get the current user ID from auth state
-    final userId = "current-user-id"; // Replace with actual user ID
+    const userId = "current-user-id"; // Replace with actual user ID
     context.read<RealtimeOrderBloc>().add(RealtimeOrderConnect(userId: userId));
     
     // Subscribe to this specific order
@@ -162,7 +162,7 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '${order.shopName}',
+              order.shopName,
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 4),
@@ -321,7 +321,7 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage> {
     markers.add(
       Marker(
         markerId: const MarkerId('shop'),
-        position: LatLng(
+        position: const LatLng(
           0, // TODO: Get shop coordinates from shopId
           0,
         ),

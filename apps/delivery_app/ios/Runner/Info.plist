@@ -63,5 +63,34 @@
 	<!-- Microphone permissions for potential voice features -->
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app may use microphone for voice features.</string>
+	
+	<!-- Network permissions -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+	
+	<!-- Background modes for location tracking -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+	</array>
+	
+	<!-- Required for iOS 14+ location accuracy -->
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>LocationAccuracyAuthorizationDescription</key>
+		<string>This app needs precise location for accurate delivery tracking.</string>
+	</dict>
 </dict>
 </plist>

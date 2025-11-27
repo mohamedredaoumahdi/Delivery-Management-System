@@ -46,7 +46,9 @@ class ShopInfoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header row: logo, name/details (expanded), and status aligned to the right
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Enhanced shop logo
                 Container(
@@ -79,7 +81,7 @@ class ShopInfoCard extends StatelessWidget {
                                 _buildLogoPlaceholder(theme),
                           )
                         : _buildLogoPlaceholder(theme),
-                ),
+                  ),
                 ),
                 
                 const SizedBox(width: 20),
@@ -100,8 +102,10 @@ class ShopInfoCard extends StatelessWidget {
                       
                       const SizedBox(height: 8),
                       
-                      // Rating and reviews
-                      Row(
+                      // Rating and reviews (Wrap avoids overflow on small widths)
+                      Wrap(
+                        spacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -120,25 +124,24 @@ class ShopInfoCard extends StatelessWidget {
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.star,
+                              children: [
+                                const Icon(
+                                  Icons.star,
                                   size: 14,
                                   color: Colors.white,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            shop.rating.toStringAsFixed(1),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  shop.rating.toStringAsFixed(1),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
                           Text(
                             '(${shop.ratingCount} reviews)',
                             style: theme.textTheme.bodyMedium?.copyWith(
@@ -151,6 +154,8 @@ class ShopInfoCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                
+                const SizedBox(width: 12),
                 
                 // Status indicator
                 Container(
@@ -198,8 +203,10 @@ class ShopInfoCard extends StatelessWidget {
             
             const SizedBox(height: 20),
             
-            // Delivery information row
-            Row(
+            // Delivery information row (Wrap to avoid overflow on small widths)
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 // Delivery time
                 _buildInfoChip(
@@ -208,8 +215,6 @@ class ShopInfoCard extends StatelessWidget {
                   '${shop.estimatedDeliveryTime} min',
                   theme.colorScheme.primary,
                 ),
-                
-                const SizedBox(width: 12),
                 
                 // Delivery fee
                 _buildInfoChip(
@@ -222,8 +227,6 @@ class ShopInfoCard extends StatelessWidget {
                       ? theme.colorScheme.tertiary 
                       : Colors.green,
                 ),
-                
-                const SizedBox(width: 12),
                 
                 // Minimum order
                 _buildInfoChip(

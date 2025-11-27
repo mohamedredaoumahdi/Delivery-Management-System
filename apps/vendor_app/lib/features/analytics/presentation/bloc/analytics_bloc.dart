@@ -214,16 +214,33 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
       vendorService.getDashboardData(),
       _getOrderStats(),
       _getMenuStats(),
+      vendorService.getAnalytics(),
+      vendorService.getProductAnalytics(),
+      vendorService.getPerformanceAnalytics(),
     ]);
     
     final dashboardData = futures[0] as Map<String, dynamic>;
     final orderStats = futures[1] as Map<String, dynamic>;
     final menuStats = futures[2] as Map<String, dynamic>;
+    final salesAnalytics = futures[3] as Map<String, dynamic>;
+    final productAnalytics = futures[4] as List<Map<String, dynamic>>;
+    final performanceAnalytics = futures[5] as Map<String, dynamic>;
     
     // Merge all data
     final combinedData = Map<String, dynamic>.from(dashboardData);
     combinedData.addAll(orderStats);
     combinedData.addAll(menuStats);
+    
+    // Add sales analytics
+    if (salesAnalytics['revenueTrend'] != null) {
+      combinedData['revenueTrend'] = salesAnalytics['revenueTrend'];
+    }
+    
+    // Add top products
+    combinedData['topProducts'] = productAnalytics;
+    
+    // Add performance analytics
+    combinedData.addAll(performanceAnalytics);
     
     return combinedData;
   }
@@ -322,15 +339,15 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
 
   void _refreshCriticalMetrics() {
     // Refresh the most important metrics that change frequently
-    add(RefreshMetric('orders'));
+    add(const RefreshMetric('orders'));
     
     // Stagger the updates to avoid overwhelming the backend
-    Future.delayed(Duration(seconds: 5), () {
-      add(RefreshMetric('menu'));
+    Future.delayed(const Duration(seconds: 5), () {
+      add(const RefreshMetric('menu'));
     });
     
-    Future.delayed(Duration(seconds: 10), () {
-      add(RefreshMetric('revenue'));
+    Future.delayed(const Duration(seconds: 10), () {
+      add(const RefreshMetric('revenue'));
     });
   }
 } 

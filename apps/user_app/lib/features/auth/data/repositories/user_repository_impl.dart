@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/api/api_client.dart';
+import '../../../../core/utils/image_url_helper.dart';
 import 'package:domain/domain.dart';
 
 class UserRepositoryImpl implements AuthRepository {
@@ -10,16 +11,17 @@ class UserRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User?>> getCurrentUser() async {
     try {
-      final response = await _apiClient.get('/users/me');
+      final response = await _apiClient.get('/users/profile');
       if (response.data != null) {
         try {
           final userData = response.data['data'] as Map<String, dynamic>;
+          final profilePictureUrl = ImageUrlHelper.toAbsoluteUrl(userData['profilePicture'] as String?);
           final user = User(
             id: userData['id'] as String,
             email: userData['email'] as String,
             name: userData['name'] as String,
             phone: userData['phone'] as String?,
-            profilePicture: userData['profilePicture'] as String?,
+            profilePicture: profilePictureUrl,
             role: UserRole.values.firstWhere((e) => e.toString().split('.').last == userData['role']),
             isEmailVerified: userData['isEmailVerified'] as bool,
             isPhoneVerified: userData['isPhoneVerified'] as bool,
@@ -57,12 +59,13 @@ class UserRepositoryImpl implements AuthRepository {
         // Store the access token
         await _apiClient.setAuthToken(accessToken);
         
+        final profilePictureUrl = ImageUrlHelper.toAbsoluteUrl(userData['profilePicture'] as String?);
         final user = User(
           id: userData['id'] as String,
           email: userData['email'] as String,
           name: userData['name'] as String,
           phone: userData['phone'] as String?,
-          profilePicture: userData['profilePicture'] as String?,
+          profilePicture: profilePictureUrl,
           role: UserRole.values.firstWhere((e) => e.toString().split('.').last == userData['role']),
           isEmailVerified: userData['isEmailVerified'] as bool,
           isPhoneVerified: userData['isPhoneVerified'] as bool,
@@ -108,12 +111,13 @@ class UserRepositoryImpl implements AuthRepository {
         // Store the access token
         await _apiClient.setAuthToken(accessToken);
         
+        final profilePictureUrl = ImageUrlHelper.toAbsoluteUrl(userData['profilePicture'] as String?);
         final user = User(
           id: userData['id'] as String,
           email: userData['email'] as String,
           name: userData['name'] as String,
           phone: userData['phone'] as String?,
-          profilePicture: userData['profilePicture'] as String?,
+          profilePicture: profilePictureUrl,
           role: UserRole.values.firstWhere((e) => e.toString().split('.').last == userData['role']),
           isEmailVerified: userData['isEmailVerified'] as bool,
           isPhoneVerified: userData['isPhoneVerified'] as bool,
@@ -183,12 +187,13 @@ class UserRepositoryImpl implements AuthRepository {
       });
       try {
         final userData = response.data['data'] as Map<String, dynamic>;
+        final profilePictureUrl = ImageUrlHelper.toAbsoluteUrl(userData['profilePicture'] as String?);
         final user = User(
           id: userData['id'] as String,
           email: userData['email'] as String,
           name: userData['name'] as String,
           phone: userData['phone'] as String?,
-          profilePicture: userData['profilePicture'] as String?,
+          profilePicture: profilePictureUrl,
           role: UserRole.values.firstWhere((e) => e.toString().split('.').last == userData['role']),
           isEmailVerified: userData['isEmailVerified'] as bool,
           isPhoneVerified: userData['isPhoneVerified'] as bool,

@@ -285,7 +285,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     try {
       // Get the analytics bloc if it exists and trigger menu metric update
       final analyticsBloc = sl<AnalyticsBloc>();
-      analyticsBloc.add(RefreshMetric('menu'));
+      analyticsBloc.add(const RefreshMetric('menu'));
     } catch (e) {
       // Analytics bloc might not be available, ignore
       print('Analytics update skipped: $e');

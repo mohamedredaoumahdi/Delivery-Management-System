@@ -86,4 +86,78 @@ class AuthService {
     final accessToken = _prefs.getString('accessToken');
     return accessToken != null && accessToken.isNotEmpty;
   }
+
+  Future<bool> register({
+    required String name,
+    required String email,
+    required String password,
+    String? phone,
+  }) async {
+    print('🚀 AuthService: Starting registration for: $email');
+    
+    try {
+      print('📡 AuthService: Making POST request to /auth/register');
+      final response = await _dio.post('/auth/register', data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'confirmPassword': password,
+        'role': 'DELIVERY',
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+      });
+
+      print('📥 AuthService: Response status: ${response.statusCode}');
+      print('📥 AuthService: Response data: ${response.data}');
+
+      if (response.data['status'] == 'success') {
+        final data = response.data['data'];
+        final accessToken = data['accessToken'];
+        final refreshToken = data['refreshToken'];
+        final user = data['user'];
+
+        print('👤 AuthService: User data received: $user');
+
+        // Check if user has DELIVERY role
+        if (user['role'] != 'DELIVERY') {
+          print('❌ AuthService: Access denied - user role is ${user['role']}, expected DELIVERY');
+          throw Exception('Access denied. Delivery role required.');
+        }
+
+        print('✅ AuthService: Role validation passed - user has DELIVERY role');
+
+        // Store tokens with correct keys for AuthInterceptor
+        await _prefs.setString('accessToken', accessToken);
+        await _prefs.setString('refreshToken', refreshToken);
+        await _prefs.setString('userId', user['id']);
+        await _prefs.setString('userRole', user['role']);
+        await _prefs.setString('userName', user['name'] ?? 'Delivery Driver');
+        
+        print('✅ AuthService: Registration successful for ${user['name']} (${user['role']})');
+        print('🔐 AuthService: Stored access token: ${accessToken.substring(0, 20)}...');
+        print('💾 AuthService: All tokens and user data stored successfully');
+
+        return true;
+      } else {
+        print('❌ AuthService: Registration failed - response status is not success');
+        throw Exception('Registration failed');
+      }
+    } on DioException catch (e) {
+      print('❌ AuthService: DioException occurred');
+      print('❌ AuthService: Status code: ${e.response?.statusCode}');
+      print('❌ AuthService: Response data: ${e.response?.data}');
+      print('❌ AuthService: Error message: ${e.message}');
+      
+      if (e.response?.statusCode == 400) {
+        final errorMessage = e.response?.data['message'] ?? 'Registration failed';
+        throw Exception(errorMessage);
+      } else if (e.response?.statusCode == 409) {
+        throw Exception('User with this email already exists');
+      } else {
+        throw Exception('Registration failed: ${e.message}');
+      }
+    } catch (e) {
+      print('❌ AuthService: Unexpected error: $e');
+      rethrow;
+    }
+  }
 } 

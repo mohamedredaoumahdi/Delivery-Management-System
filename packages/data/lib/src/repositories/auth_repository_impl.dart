@@ -50,19 +50,27 @@ class AuthRepositoryImpl implements AuthRepository {
   }
   
   /// Initialize repository
+  /// Note: This method does NOT validate the token immediately to avoid
+  /// clearing valid tokens during app initialization/hot restart.
+  /// Token validation is handled by AuthBloc via AuthCheckStatusEvent.
   Future<void> _init() async {
     try {
       final token = await localDataSource.getAuthToken();
       
       if (token != null) {
-        final userModel = await remoteDataSource.getCurrentUser();
-        _currentUser = userModel.toDomain();
-        _authStateController.add(_currentUser);
+        // Token exists, but don't validate it immediately
+        // Let the AuthBloc handle validation via AuthCheckStatusEvent
+        // This prevents clearing valid tokens during hot restart
+        logger.d('Auth token found during initialization, validation will be handled by AuthBloc');
+        _currentUser = null; // Will be set when AuthBloc validates
+        _authStateController.add(null);
+      } else {
+        _currentUser = null;
+        _authStateController.add(null);
       }
     } catch (e) {
       logger.e('Error initializing auth repository', e);
-      // Clear token if it's invalid
-      await localDataSource.clearAuthToken();
+      // Don't clear token on initialization errors - let normal flow handle it
       _currentUser = null;
       _authStateController.add(null);
     }
@@ -142,10 +150,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, User?>> getCurrentUser() async {
-    if (_currentUser != null) {
-      return Right(_currentUser);
-    }
-    
     try {
       final token = await localDataSource.getAuthToken();
       
@@ -161,10 +165,18 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       logger.e('Error getting current user', e);
       
-      // Clear token if it's invalid
-      await localDataSource.clearAuthToken();
-      _currentUser = null;
-      _authStateController.add(null);
+      // Only clear token if it's a 401 (unauthorized) error
+      // Don't clear on network errors or other issues
+      if (e is ApiException && e.statusCode == 401) {
+        await localDataSource.clearAuthToken();
+        _currentUser = null;
+        _authStateController.add(null);
+      } else {
+        // For other errors, keep the token and just return null user
+        // The token might still be valid, just couldn't verify right now
+        _currentUser = null;
+        _authStateController.add(null);
+      }
       
       return Left(_handleError(e));
     }

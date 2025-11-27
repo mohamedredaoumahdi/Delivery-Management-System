@@ -9,6 +9,7 @@ import { catchAsync } from '@/utils/catchAsync';
 import { SessionService } from '@/config/redis';
 import { EmailService } from '@/services/emailService';
 import { AuthenticatedRequest } from '@/types/express';
+import { logger } from '@/utils/logger';
 
 export class AuthController {
   private generateTokens(userId: string, role: string) {
@@ -28,7 +29,7 @@ export class AuthController {
   }
 
   register = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password, name, role = 'CUSTOMER' } = req.body;
+    const { email, password, name, role = 'CUSTOMER', phone, vehicleType, licenseNumber } = req.body;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -49,12 +50,18 @@ export class AuthController {
         name,
         passwordHash,
         role,
+        phone,
+        vehicleType: role === 'DELIVERY' ? vehicleType : undefined,
+        licenseNumber: role === 'DELIVERY' ? licenseNumber : undefined,
       },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
+        phone: true,
+        vehicleType: true,
+        licenseNumber: true,
         createdAt: true,
       },
     });
@@ -88,7 +95,8 @@ export class AuthController {
       await EmailService.sendWelcomeEmail(user.email, user.name);
       await EmailService.sendVerificationEmail(user.email, emailVerifyToken);
     } catch (error) {
-      console.error('Failed to send welcome/verification email:', error);
+      // Log error without exposing sensitive data
+      logger.error('Failed to send welcome/verification email', error);
     }
 
     res.status(201).json({
@@ -272,7 +280,8 @@ export class AuthController {
     try {
       await EmailService.sendPasswordResetEmail(user.email, resetToken);
     } catch (error) {
-      console.error('Failed to send password reset email:', error);
+      // Log error without exposing sensitive data
+      logger.error('Failed to send password reset email', error);
       return next(new AppError('Failed to send password reset email', 500));
     }
 
@@ -362,6 +371,64 @@ export class AuthController {
       });
     } catch (error) {
       return next(new AppError('Invalid verification token', 400));
+    }
+  });
+
+  resendVerificationEmail = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const userId = req.user!.id;
+
+    // Check if user is already verified
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isEmailVerified: true,
+      },
+    });
+
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+
+    if (user.isEmailVerified) {
+      return res.json({
+        status: 'success',
+        message: 'Email is already verified',
+      });
+    }
+
+    // Delete any existing verification tokens for this user
+    await prisma.emailVerificationToken.deleteMany({
+      where: { userId },
+    });
+
+    // Generate new verification token
+    const emailVerifyToken = jwt.sign(
+      { userId: user.id },
+      config.jwtSecret,
+      { expiresIn: '24h' } // 24 hours expiry for resend
+    );
+
+    await prisma.emailVerificationToken.create({
+      data: {
+        token: emailVerifyToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      },
+    });
+
+    // Send verification email
+    try {
+      await EmailService.sendVerificationEmail(user.email, emailVerifyToken);
+      res.json({
+        status: 'success',
+        message: 'Verification email sent successfully',
+      });
+    } catch (error) {
+      logger.error('Failed to send verification email', error);
+      return next(new AppError('Failed to send verification email. Please try again later.', 500));
     }
   });
 

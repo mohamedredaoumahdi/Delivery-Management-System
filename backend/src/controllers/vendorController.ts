@@ -79,7 +79,7 @@ export class VendorController {
       throw new AppError('Shop not found', 404);
     }
 
-    const { name, description, price, categoryId, categoryName, images, inStock, isAvailable } = req.body;
+    const { name, description, price, categoryId, categoryName, images, imageUrl, inStock, isAvailable } = req.body;
 
     // Find or create category
     let category;
@@ -127,7 +127,8 @@ export class VendorController {
         description,
         price,
         categoryId: category.id,
-        images,
+        images: images ?? [],
+        imageUrl: imageUrl ?? null,
         categoryName: category.name,
         inStock: productInStock,
         isActive: productInStock, // Set isActive to match inStock
@@ -148,7 +149,7 @@ export class VendorController {
     }
 
     const { id } = req.params;
-    const { name, description, price, categoryId, categoryName, images, inStock, isAvailable } = req.body;
+    const { name, description, price, categoryId, categoryName, images, imageUrl, inStock, isAvailable } = req.body;
 
     // Find or create category if categoryName is provided
     let category;
@@ -187,6 +188,7 @@ export class VendorController {
     if (description !== undefined) updateData.description = description;
     if (price !== undefined) updateData.price = price;
     if (images !== undefined) updateData.images = images;
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl || null;
     
     // Handle availability - use inStock if provided, otherwise isAvailable
     if (inStock !== undefined) {
@@ -339,26 +341,84 @@ export class VendorController {
 
   // Analytics
   async getSalesAnalytics(req: AuthenticatedRequest, res: Response) {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, period } = req.query;
 
     const shop = await prisma.shop.findFirst({ where: { ownerId: req.user!.id } });
     if (!shop) {
       throw new AppError('Shop not found', 404);
     }
 
-    const where: any = { shopId: shop.id, status: OrderStatus.DELIVERED };
-    if (startDate && endDate) {
-      where.deliveredAt = { gte: new Date(startDate as string), lte: new Date(endDate as string) };
+    const now = new Date();
+    let startDateFilter: Date | undefined;
+    let endDateFilter: Date | undefined;
+
+    // Calculate date range based on period
+    if (period === 'today') {
+      startDateFilter = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      endDateFilter = now;
+    } else if (period === 'week') {
+      startDateFilter = new Date(now);
+      startDateFilter.setDate(now.getDate() - now.getDay());
+      startDateFilter.setHours(0, 0, 0, 0);
+      endDateFilter = now;
+    } else if (period === 'month') {
+      startDateFilter = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDateFilter = now;
+    } else if (startDate && endDate) {
+      startDateFilter = new Date(startDate as string);
+      endDateFilter = new Date(endDate as string);
+    }
+
+    const EXCLUDED_REVENUE_STATUSES = [OrderStatus.CANCELLED, OrderStatus.REFUNDED];
+    const where: any = {
+      shopId: shop.id,
+      status: { notIn: EXCLUDED_REVENUE_STATUSES },
+    };
+
+    if (startDateFilter && endDateFilter) {
+      where.createdAt = { gte: startDateFilter, lte: endDateFilter };
+    }
+
+    // Get revenue trends for last 7 days
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dayEnd = new Date(dayStart);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const dayRevenue = await prisma.order.aggregate({
+        where: {
+          shopId: shop.id,
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+          createdAt: { gte: dayStart, lte: dayEnd },
+        },
+        _sum: { total: true },
+        _count: { id: true },
+      });
+
+      last7Days.push({
+        date: dayStart.toISOString().split('T')[0],
+        revenue: dayRevenue._sum.total ?? 0,
+        orders: dayRevenue._count.id ?? 0,
+      });
     }
 
     const sales = await prisma.order.aggregate({
       where,
       _count: { id: true },
       _sum: { total: true },
-      _avg: { total: true }
+      _avg: { total: true },
     });
 
-    res.json(sales);
+    res.json({
+      status: 'success',
+      data: {
+        ...sales,
+        revenueTrend: last7Days,
+      },
+    });
   }
 
   async getProductAnalytics(req: AuthenticatedRequest, res: Response) {
@@ -367,15 +427,117 @@ export class VendorController {
       throw new AppError('Shop not found', 404);
     }
 
-    // Example: top products by revenue for the vendor's shop
+    const EXCLUDED_REVENUE_STATUSES = [OrderStatus.CANCELLED, OrderStatus.REFUNDED];
+
+    // Top products by revenue for the vendor's shop
     const products = await prisma.orderItem.groupBy({
       by: ['productId', 'productName'],
-      where: { order: { shopId: shop.id, status: OrderStatus.DELIVERED } },
-      _sum: { totalPrice: true },
-      _count: { id: true }
+      where: {
+        order: {
+          shopId: shop.id,
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+        },
+      },
+      _sum: { totalPrice: true, quantity: true },
+      _count: { id: true },
+      orderBy: {
+        _sum: { totalPrice: 'desc' },
+      },
+      take: 10,
     });
 
-    res.json(products);
+    // Format the response
+    const formattedProducts = products.map((product: any) => ({
+      productId: product.productId,
+      productName: product.productName,
+      totalRevenue: product._sum.totalPrice ?? 0,
+      totalQuantity: product._sum.quantity ?? 0,
+      orderCount: product._count.id,
+    }));
+
+    res.json({
+      status: 'success',
+      data: formattedProducts,
+    });
+  }
+
+  async getPerformanceAnalytics(req: AuthenticatedRequest, res: Response) {
+    const shop = await prisma.shop.findFirst({ where: { ownerId: req.user!.id } });
+    if (!shop) {
+      throw new AppError('Shop not found', 404);
+    }
+
+    // Get orders with status history for prep time calculation
+    const ordersWithHistory = await prisma.order.findMany({
+      where: {
+        shopId: shop.id,
+        status: { in: [OrderStatus.READY_FOR_PICKUP, OrderStatus.IN_DELIVERY, OrderStatus.DELIVERED] },
+      },
+      include: {
+        statusHistory: {
+          orderBy: { timestamp: 'asc' },
+        },
+      },
+      take: 100, // Analyze last 100 completed orders
+    });
+
+    // Calculate average preparation time (from ACCEPTED/PREPARING to READY_FOR_PICKUP)
+    let totalPrepTime = 0;
+    let prepTimeCount = 0;
+    const peakHours: Record<number, number> = {};
+    let totalOrders = 0;
+    let accurateOrders = 0;
+
+    for (const order of ordersWithHistory) {
+      // Calculate prep time
+      const acceptedTime = order.statusHistory.find((h: any) => 
+        h.status === OrderStatus.ACCEPTED || h.status === OrderStatus.PREPARING
+      )?.timestamp;
+      const readyTime = order.statusHistory.find((h: any) => 
+        h.status === OrderStatus.READY_FOR_PICKUP
+      )?.timestamp;
+
+      if (acceptedTime && readyTime) {
+        const prepTimeMinutes = (readyTime.getTime() - acceptedTime.getTime()) / (1000 * 60);
+        totalPrepTime += prepTimeMinutes;
+        prepTimeCount++;
+      }
+
+      // Calculate peak hours
+      const orderHour = order.createdAt.getHours();
+      peakHours[orderHour] = (peakHours[orderHour] || 0) + 1;
+
+      // Calculate order accuracy (orders that weren't cancelled or refunded)
+      totalOrders++;
+      if (order.status !== OrderStatus.CANCELLED && order.status !== OrderStatus.REFUNDED) {
+        accurateOrders++;
+      }
+    }
+
+    const avgPrepTimeMinutes = prepTimeCount > 0 ? Math.round(totalPrepTime / prepTimeCount) : 0;
+    const orderAccuracy = totalOrders > 0 ? Math.round((accurateOrders / totalOrders) * 100) : 100;
+
+    // Format peak hours data (24 hours)
+    const peakHoursData = Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      count: peakHours[hour] || 0,
+    }));
+
+    // Find peak hour
+    const peakHour = peakHoursData.reduce((max, current) => 
+      current.count > max.count ? current : max, peakHoursData[0]
+    );
+
+    res.json({
+      status: 'success',
+      data: {
+        avgPrepTimeMinutes,
+        orderAccuracy,
+        peakHours: peakHoursData,
+        peakHour: peakHour.hour,
+        peakHourCount: peakHour.count,
+      },
+    });
   }
 
   getVendorShop = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
@@ -383,7 +545,148 @@ export class VendorController {
       where: { ownerId: req.user!.id },
       include: { categories: true },
     });
-    res.json({ status: 'success', data: shop });
+    
+    if (!shop) {
+      throw new AppError('Shop not found', 404);
+    }
+
+    // Calculate analytics data
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const EXCLUDED_REVENUE_STATUSES = [OrderStatus.CANCELLED, OrderStatus.REFUNDED];
+
+    const [
+      todayOrders,
+      weekOrders,
+      monthOrders,
+      totalOrders,
+      todayRevenueAgg,
+      weekRevenueAgg,
+      monthRevenueAgg,
+      totalRevenueAgg,
+      pendingOrders,
+      preparingOrders,
+      readyOrders,
+      completedToday,
+    ] = await Promise.all([
+      prisma.order.count({
+        where: {
+          shopId: shop.id,
+          createdAt: { gte: startOfToday },
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+        },
+      }),
+      prisma.order.count({
+        where: {
+          shopId: shop.id,
+          createdAt: { gte: startOfWeek },
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+        },
+      }),
+      prisma.order.count({
+        where: {
+          shopId: shop.id,
+          createdAt: { gte: startOfMonth },
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+        },
+      }),
+      prisma.order.count({
+        where: {
+          shopId: shop.id,
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+        },
+      }),
+      prisma.order.aggregate({
+        where: {
+          shopId: shop.id,
+          createdAt: { gte: startOfToday },
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+        },
+        _sum: { total: true },
+      }),
+      prisma.order.aggregate({
+        where: {
+          shopId: shop.id,
+          createdAt: { gte: startOfWeek },
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+        },
+        _sum: { total: true },
+      }),
+      prisma.order.aggregate({
+        where: {
+          shopId: shop.id,
+          createdAt: { gte: startOfMonth },
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+        },
+        _sum: { total: true },
+      }),
+      prisma.order.aggregate({
+        where: {
+          shopId: shop.id,
+          status: { notIn: EXCLUDED_REVENUE_STATUSES },
+        },
+        _sum: { total: true },
+      }),
+      prisma.order.count({
+        where: {
+          shopId: shop.id,
+          status: OrderStatus.PENDING,
+        },
+      }),
+      prisma.order.count({
+        where: {
+          shopId: shop.id,
+          status: OrderStatus.PREPARING,
+        },
+      }),
+      prisma.order.count({
+        where: {
+          shopId: shop.id,
+          status: OrderStatus.READY_FOR_PICKUP,
+        },
+      }),
+      prisma.order.count({
+        where: {
+          shopId: shop.id,
+          status: OrderStatus.DELIVERED,
+          deliveredAt: { gte: startOfToday },
+        },
+      }),
+    ]);
+
+    const todayRevenue = todayRevenueAgg._sum.total ?? 0;
+    const weekRevenue = weekRevenueAgg._sum.total ?? 0;
+    const monthRevenue = monthRevenueAgg._sum.total ?? 0;
+    const totalRevenue = totalRevenueAgg._sum.total ?? 0;
+    const averageOrderValue = todayOrders > 0 ? todayRevenue / todayOrders : 0;
+
+    res.json({
+      status: 'success',
+      data: {
+        ...shop,
+        // Analytics data
+        todayOrders,
+        weekOrders,
+        monthOrders,
+        totalOrders,
+        todayRevenue,
+        weekRevenue,
+        monthRevenue,
+        totalRevenue,
+        averageOrderValue,
+        pendingOrders,
+        preparingOrders,
+        readyOrders,
+        completedOrders: completedToday,
+        rating: shop.rating ?? 0,
+        ratingCount: shop.reviewCount ?? 0,
+      },
+    });
   });
 
   createShop = catchAsync(async (req: AuthenticatedRequest, res: Response) => {

@@ -1,10 +1,26 @@
 import Joi from 'joi';
 
+const roleValues = ['CUSTOMER', 'VENDOR', 'DELIVERY', 'ADMIN'];
+
+export const createUserSchema = Joi.object({
+  name: Joi.string().required().min(2).max(50),
+  email: Joi.string().required().email(),
+  password: Joi.string().required().min(8).max(128),
+  role: Joi.string().required().valid(...roleValues),
+  phone: Joi.string().allow(null, '').pattern(/^\+?[\d\s-]{10,}$/),
+  isActive: Joi.boolean().default(true),
+  isEmailVerified: Joi.boolean().default(false),
+  isPhoneVerified: Joi.boolean().default(false),
+});
+
 export const updateUserSchema = Joi.object({
   name: Joi.string().min(2).max(50),
   email: Joi.string().email(),
-  role: Joi.string().valid('USER', 'VENDOR', 'DELIVERY', 'ADMIN'),
+  phone: Joi.string().allow(null, '').pattern(/^\+?[\d\s-]{10,}$/),
+  role: Joi.string().valid(...roleValues),
   isActive: Joi.boolean(),
+  isEmailVerified: Joi.boolean(),
+  isPhoneVerified: Joi.boolean(),
 });
 
 export const createShopSchema = Joi.object({
@@ -50,4 +66,37 @@ export const updateCategorySchema = Joi.object({
   description: Joi.string().min(10).max(200),
   // image is handled by multer middleware
   isActive: Joi.boolean(),
+});
+
+// Order management schemas
+export const assignDeliveryAgentSchema = Joi.object({
+  deliveryPersonId: Joi.string().required(),
+});
+
+export const cancelOrderSchema = Joi.object({
+  reason: Joi.string().required().min(5).max(500),
+});
+
+export const refundOrderSchema = Joi.object({
+  amount: Joi.number().min(0).optional(),
+  reason: Joi.string().required().min(5).max(500),
+});
+
+export const updateOrderFeesSchema = Joi.object({
+  deliveryFee: Joi.number().min(0).optional(),
+  discount: Joi.number().min(0).optional(),
+  reason: Joi.string().min(5).max(500).optional(),
+});
+
+// Vendor management schemas
+export const approveVendorSchema = Joi.object({
+  reason: Joi.string().allow('').max(500).optional(),
+});
+
+export const rejectVendorSchema = Joi.object({
+  reason: Joi.string().required().min(5).max(500),
+});
+
+export const suspendVendorSchema = Joi.object({
+  reason: Joi.string().required().min(5).max(500),
 }); 

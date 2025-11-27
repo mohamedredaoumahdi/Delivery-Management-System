@@ -608,7 +608,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Reorder Items?'),
-        content: Text(
+        content: const Text(
           'This will add all items from this order to your cart. '
           'Any existing cart items will be cleared first.',
         ),

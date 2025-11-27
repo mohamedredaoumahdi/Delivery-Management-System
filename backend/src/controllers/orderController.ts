@@ -5,6 +5,9 @@ import { AuthenticatedRequest } from '../types/express';
 import { getIO } from '@/services/socketService';
 import { NotificationService } from '@/services/notificationService';
 import { RoutingService } from '@/services/routingService';
+import { paymentService } from '@/services/paymentService';
+import { getWhitelabelConfig } from '@/config/whitelabel';
+import { logger } from '@/utils/logger';
 
 import { prisma } from '@/config/database';
 
@@ -35,7 +38,11 @@ export class OrderController {
         deliveryFee: true, 
         minimumOrderAmount: true,
         isActive: true,
-        isOpen: true
+        isOpen: true,
+        hasDelivery: true,
+        latitude: true,
+        longitude: true,
+        deliveryRadius: true
       } 
     });
     
@@ -45,6 +52,31 @@ export class OrderController {
 
     if (!shop.isActive || !shop.isOpen) {
       throw new AppError('Shop is currently not accepting orders', 400);
+    }
+
+    if (!shop.hasDelivery) {
+      throw new AppError('This shop does not offer delivery service', 400);
+    }
+
+    // Validate delivery address is within shop's delivery zone
+    if (deliveryLatitude && deliveryLongitude && shop.latitude && shop.longitude) {
+      const { haversineKm } = await import('@/utils/geo');
+      const distanceKm = haversineKm(
+        shop.latitude,
+        shop.longitude,
+        deliveryLatitude,
+        deliveryLongitude
+      );
+
+      // Use shop's configured delivery radius (defaults to 10km if not set)
+      const deliveryRadiusKm = shop.deliveryRadius || 10;
+      
+      if (distanceKm > deliveryRadiusKm) {
+        throw new AppError(
+          `Delivery address is ${distanceKm.toFixed(1)}km away. This shop only delivers within ${deliveryRadiusKm}km.`,
+          400
+        );
+      }
     }
 
     // Fetch products to get their current prices and validate availability
@@ -97,8 +129,12 @@ export class OrderController {
     }, 0);
 
     // Check minimum order amount
-    if (subtotal < shop.minimumOrderAmount) {
-      throw new AppError(`Minimum order amount is $${shop.minimumOrderAmount}`, 400);
+    // System-wide maximum minimum order amount is $10
+    // If shop has a higher minimum, cap it at $10 for customer orders
+    const effectiveMinimumOrderAmount = Math.min(shop.minimumOrderAmount || 0, 10);
+    
+    if (subtotal < effectiveMinimumOrderAmount) {
+      throw new AppError(`Minimum order amount is $${effectiveMinimumOrderAmount}`, 400);
     }
 
     const deliveryFee = shop.deliveryFee || 0;
@@ -182,9 +218,61 @@ export class OrderController {
       }
     }
 
-    // Payment processing placeholder:
-    // - CASH_ON_DELIVERY: leave as PENDING
-    // - CARD/WALLET/BANK: integrate with Stripe PaymentIntents in M2
+    // Process payment
+    let paymentIntentId: string | null = null;
+    let paymentClientSecret: string | undefined = undefined;
+    let requiresPaymentAction = false;
+
+    try {
+      const whitelabelConfig = getWhitelabelConfig();
+      const currency = whitelabelConfig.payment.currency || 'USD';
+      
+      // Get saved payment method if provided
+      const savedPaymentMethodId = req.body.paymentMethodId;
+      
+      const paymentResult = await paymentService.createPaymentIntent(
+        total,
+        currency,
+        order.id,
+        orderNumber,
+        paymentMethod as PaymentMethod,
+        undefined, // customerId - can be added later for saved customers
+        savedPaymentMethodId
+      );
+
+      paymentIntentId = paymentResult.paymentIntentId;
+      paymentClientSecret = paymentResult.clientSecret;
+      requiresPaymentAction = paymentResult.requiresAction || false;
+
+      // Update order with payment ID
+      if (paymentIntentId) {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { paymentId: paymentIntentId },
+        });
+      }
+
+      // For cash on delivery or already succeeded payments, order is ready
+      if (paymentMethod === PaymentMethod.CASH_ON_DELIVERY || paymentResult.status === 'succeeded') {
+        // Order status remains PENDING, will be updated when vendor accepts
+        logger.info(`Order ${orderNumber} created with payment method: ${paymentMethod}`);
+      } else if (requiresPaymentAction) {
+        // Payment requires additional action (3D Secure, etc.)
+        logger.info(`Order ${orderNumber} created but payment requires action`);
+      } else {
+        // Payment is processing
+        logger.info(`Order ${orderNumber} created with payment processing`);
+      }
+    } catch (paymentError: any) {
+      logger.error('Payment processing error', paymentError);
+      // If payment fails, we still create the order but mark it appropriately
+      // In production, you might want to delete the order or handle this differently
+      if (paymentMethod !== PaymentMethod.CASH_ON_DELIVERY) {
+        // For non-COD payments, if payment fails, we should handle it
+        // For now, we'll still create the order but the payment will need to be retried
+        logger.warn(`Payment processing failed for order ${orderNumber}, but order was created`);
+      }
+    }
 
     // Real-time: ETA estimation and notify vendor shop and user
     try {
@@ -216,7 +304,10 @@ export class OrderController {
       status: 'success',
       data: {
         ...order,
-        status: OrderStatus.PENDING
+        status: OrderStatus.PENDING,
+        paymentIntentId: paymentIntentId,
+        paymentClientSecret: paymentClientSecret,
+        requiresPaymentAction: requiresPaymentAction,
       }
     });
   }
@@ -415,6 +506,176 @@ export class OrderController {
     } catch {}
 
     res.json(updatedOrder);
+  }
+
+  async confirmPayment(req: AuthenticatedRequest, res: Response) {
+    const { orderId, paymentMethodId } = req.body;
+
+    if (!orderId) {
+      throw new AppError('Order ID is required', 400);
+    }
+
+    // Get order
+    const order = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        userId: req.user!.id,
+      },
+    });
+
+    if (!order) {
+      throw new AppError('Order not found', 404);
+    }
+
+    if (!order.paymentId) {
+      throw new AppError('Order does not have a payment intent', 400);
+    }
+
+    if (order.paymentMethod === PaymentMethod.CASH_ON_DELIVERY) {
+      throw new AppError('Cash on delivery orders do not require payment confirmation', 400);
+    }
+
+    try {
+      // Confirm the payment intent
+      const paymentResult = await paymentService.confirmPaymentIntent(
+        order.paymentId,
+        paymentMethodId
+      );
+
+      if (paymentResult.success) {
+        // Payment succeeded - order status remains PENDING until vendor accepts
+        // The webhook will also handle this, but we update here for immediate response
+        logger.info(`Payment confirmed for order ${order.orderNumber}`);
+
+        // Emit real-time update
+        const io = getIO();
+        if (io) {
+          io.to(`order:${order.id}`).emit('order:payment_confirmed', { orderId: order.id });
+          io.to(`user:${order.userId}`).emit('order:payment_confirmed', { orderId: order.id });
+        }
+
+        res.json({
+          status: 'success',
+          message: 'Payment confirmed successfully',
+          data: {
+            orderId: order.id,
+            paymentStatus: paymentResult.status,
+          },
+        });
+      } else {
+        // Payment requires additional action
+        res.status(202).json({
+          status: 'requires_action',
+          message: paymentResult.message,
+          data: {
+            orderId: order.id,
+            paymentStatus: paymentResult.status,
+          },
+        });
+      }
+    } catch (error: any) {
+      logger.error('Payment confirmation failed', error);
+      throw new AppError(
+        error.message || 'Failed to confirm payment',
+        error.statusCode || 500
+      );
+    }
+  }
+
+  async processRefund(req: AuthenticatedRequest, res: Response) {
+    const { orderId, amount, reason } = req.body;
+
+    if (!orderId) {
+      throw new AppError('Order ID is required', 400);
+    }
+
+    // Get order
+    const order = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        userId: req.user!.id,
+      },
+    });
+
+    if (!order) {
+      throw new AppError('Order not found', 404);
+    }
+
+    // Only allow refunds for delivered or cancelled orders
+    if (order.status !== OrderStatus.DELIVERED && order.status !== OrderStatus.CANCELLED) {
+      throw new AppError('Refunds can only be processed for delivered or cancelled orders', 400);
+    }
+
+    if (!order.paymentId) {
+      throw new AppError('Order does not have a payment ID', 400);
+    }
+
+    // Default to full refund if amount not specified
+    const refundAmount = amount || order.total;
+
+    if (refundAmount > order.total) {
+      throw new AppError('Refund amount cannot exceed order total', 400);
+    }
+
+    try {
+      // Process refund through payment service
+      const refundResult = await paymentService.processRefund(
+        order.paymentId,
+        refundAmount,
+        reason
+      );
+
+      if (refundResult.success) {
+        // Update order status to REFUNDED
+        const updatedOrder = await prisma.order.update({
+          where: { id: order.id },
+          data: { status: OrderStatus.REFUNDED },
+        });
+
+        // Emit real-time update
+        const io = getIO();
+        if (io) {
+          io.to(`order:${order.id}`).emit('order:refunded', {
+            orderId: order.id,
+            refundId: refundResult.refundId,
+            amount: refundResult.amount,
+          });
+          io.to(`user:${order.userId}`).emit('order:refunded', {
+            orderId: order.id,
+            refundId: refundResult.refundId,
+          });
+          io.to(`shop:${order.shopId}`).emit('order:refunded', {
+            orderId: order.id,
+          });
+        }
+
+        // Send notification
+        await NotificationService.sendToUser(order.userId, {
+          title: 'Refund Processed',
+          body: `Refund of $${refundResult.amount.toFixed(2)} has been processed for order ${order.orderNumber}`,
+          data: { orderId: order.id, refundId: refundResult.refundId },
+        });
+
+        res.json({
+          status: 'success',
+          message: refundResult.message || 'Refund processed successfully',
+          data: {
+            orderId: order.id,
+            refundId: refundResult.refundId,
+            refundAmount: refundResult.amount,
+            orderStatus: updatedOrder.status,
+          },
+        });
+      } else {
+        throw new AppError('Failed to process refund', 500);
+      }
+    } catch (error: any) {
+      logger.error('Refund processing failed', error);
+      throw new AppError(
+        error.message || 'Failed to process refund',
+        error.statusCode || 500
+      );
+    }
   }
 
   async trackOrder(req: AuthenticatedRequest, res: Response) {

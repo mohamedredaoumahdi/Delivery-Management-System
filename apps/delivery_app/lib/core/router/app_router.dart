@@ -19,6 +19,9 @@ import '../../features/delivery/presentation/pages/navigation_page.dart';
 import '../../features/earnings/presentation/pages/earnings_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/profile/presentation/pages/notifications_settings_page.dart';
+import '../../features/profile/presentation/pages/help_support_page.dart';
+import '../../features/permission/presentation/pages/permission_check_page.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -28,10 +31,15 @@ class AppRouter {
 
   static final GoRouter _router = GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/dashboard',
+    initialLocation: '/permission-check',
     redirect: (context, state) {
       final authState = context.read<AuthBloc>().state;
       final isAuthenticated = authState is AuthAuthenticated;
+      
+      // Allow permission check page to be accessed
+      if (state.matchedLocation == '/permission-check') {
+        return null;
+      }
       
       // If not authenticated and not on auth pages, redirect to login
       if (!isAuthenticated && 
@@ -50,6 +58,12 @@ class AppRouter {
       return null;
     },
     routes: [
+      // Permission Check Route (appears before login)
+      GoRoute(
+        path: '/permission-check',
+        builder: (context, state) => const PermissionCheckPage(),
+      ),
+      
       // Authentication Routes
       GoRoute(
         path: '/login',
@@ -140,6 +154,18 @@ class AppRouter {
       GoRoute(
         path: '/profile/edit',
         builder: (context, state) => const EditProfilePage(),
+      ),
+      
+      // Notifications Settings (outside main shell)
+      GoRoute(
+        path: '/profile/notifications',
+        builder: (context, state) => const NotificationsSettingsPage(),
+      ),
+      
+      // Help & Support (outside main shell)
+      GoRoute(
+        path: '/profile/help',
+        builder: (context, state) => const HelpSupportPage(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

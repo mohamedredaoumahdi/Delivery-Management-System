@@ -2,7 +2,7 @@ import 'package:delivery_app/features/location/presentation/bloc/location_bloc.d
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../bloc/dashboard_bloc.dart';
 
@@ -22,6 +22,41 @@ class _DashboardPageState extends State<DashboardPage> {
     context.read<DashboardBloc>().add(const DashboardLoadEvent());
     print('📍 DashboardPage: Adding LocationCheckStatusEvent');
     context.read<LocationBloc>().add(const LocationCheckStatusEvent());
+    
+    // Request location permission if not already granted
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndRequestLocationPermission();
+    });
+  }
+
+  Future<void> _checkAndRequestLocationPermission() async {
+    print('📍 DashboardPage: Checking location permission status with geolocator...');
+    // Use geolocator for consistency with PermissionCheckPage and LocationBloc
+    final geolocatorPermission = await Geolocator.checkPermission();
+    print('📍 DashboardPage: Current geolocator permission status: $geolocatorPermission');
+    
+    final isGranted = geolocatorPermission == LocationPermission.always || 
+                      geolocatorPermission == LocationPermission.whileInUse;
+    final isPermanentlyDenied = geolocatorPermission == LocationPermission.deniedForever;
+    
+    if (isGranted) {
+      print('📍 DashboardPage: Permission already granted');
+      // Update location to get current position
+      context.read<LocationBloc>().add(const LocationUpdateEvent());
+    } else if (isPermanentlyDenied) {
+      print('📍 DashboardPage: Permission permanently denied - showing dialog');
+      // Show dialog to guide user to settings
+      if (mounted) {
+        await Future.delayed(const Duration(milliseconds: 1000));
+        if (mounted) {
+          _showLocationSettingsDialog(context);
+        }
+      }
+    } else {
+      // Permission is denied or not determined
+      print('📍 DashboardPage: Permission not granted, LocationBloc will handle it');
+      // LocationBloc will check and request permission when needed
+    }
   }
 
   @override
@@ -32,24 +67,63 @@ class _DashboardPageState extends State<DashboardPage> {
       appBar: AppBar(
         title: const Text('Driver Dashboard'),
         actions: [
-          BlocBuilder<LocationBloc, LocationState>(
+          BlocListener<LocationBloc, LocationState>(
+            listener: (context, state) {
+              print('📍 DashboardPage: LocationBloc state changed to: ${state.runtimeType}');
+              if (state is LocationEnabled) {
+                print('✅ DashboardPage: Location is now ENABLED');
+                if (state.currentPosition != null) {
+                  print('📍 DashboardPage: Current position: ${state.currentPosition!.latitude}, ${state.currentPosition!.longitude}');
+                }
+              } else if (state is LocationDisabled) {
+                print('❌ DashboardPage: Location is DISABLED');
+                print('   - Permission denied: ${state.permissionDenied}');
+                print('   - Service disabled: ${state.serviceDisabled}');
+                print('   - Needs settings: ${state.needsSettings}');
+                
+                // Show dialog if permission is permanently denied
+                if (state.needsSettings && state.permissionDenied && mounted) {
+                  print('📱 DashboardPage: Permission permanently denied, will show settings dialog');
+                  // Use a flag to prevent multiple dialogs
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      _showLocationSettingsDialog(context);
+                    }
+                  });
+                }
+              } else if (state is LocationEnabling) {
+                print('⏳ DashboardPage: Location is ENABLING...');
+              } else if (state is LocationError) {
+                print('❌ DashboardPage: Location ERROR: ${state.message}');
+              }
+            },
+            child: BlocBuilder<LocationBloc, LocationState>(
             builder: (context, state) {
+                print('🎨 DashboardPage: LocationBloc builder - current state: ${state.runtimeType}');
+                final isEnabled = state is LocationEnabled;
+                final icon = isEnabled ? Icons.location_on : Icons.location_off;
+                final color = isEnabled ? Colors.green : Colors.red;
+                
               return IconButton(
-                icon: Icon(
-                  state is LocationEnabled 
-                      ? Icons.location_on 
-                      : Icons.location_off,
-                  color: state is LocationEnabled 
-                      ? Colors.green 
-                      : Colors.red,
-                ),
+                  icon: Icon(icon),
+                  color: color,
+                  tooltip: isEnabled 
+                      ? 'Update location' 
+                      : 'Enable location',
                 onPressed: () {
-                  if (state is! LocationEnabled) {
+                    print('🖱️ DashboardPage: Location icon button pressed');
+                    print('   Current state: ${state.runtimeType}');
+                    if (isEnabled) {
+                      print('📍 DashboardPage: Location is enabled, updating location...');
+                      context.read<LocationBloc>().add(const LocationUpdateEvent());
+                    } else {
+                      print('📍 DashboardPage: Location is disabled, enabling location...');
                     context.read<LocationBloc>().add(const LocationEnableEvent());
                   }
                 },
               );
             },
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -293,7 +367,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
@@ -318,25 +392,24 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildQuickStatsGrid(BuildContext context, DashboardLoaded state) {
     final theme = Theme.of(context);
-    final dateFormat = DateFormat('MMM d, yyyy');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.analytics_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                'Today\'s Summary - ${dateFormat.format(DateTime.now())}',
+                  'Today\'s Summary',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -346,50 +419,64 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.3,
+        ),
+        const SizedBox(height: 12),
+        // Stats in two rows
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Wrap(
+            alignment: WrapAlignment.start,
+            spacing: 20,
+            runSpacing: 12,
           children: [
-            _buildStatCard(
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
               context,
               'Deliveries',
               state.todayStats.deliveryCount.toString(),
               Icons.delivery_dining,
               Colors.blue,
             ),
-            _buildStatCard(
+              ),
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
               context,
               'Earnings',
               '\$${state.todayStats.earnings.toStringAsFixed(2)}',
               Icons.attach_money,
               Colors.green,
             ),
-            _buildStatCard(
+              ),
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
               context,
               'Hours',
               '${(state.todayStats.onlineMinutes / 60).toStringAsFixed(1)}h',
               Icons.access_time,
               Colors.orange,
             ),
-            _buildStatCard(
+              ),
+              SizedBox(
+                width: 150,
+                child: _buildStatItem(
               context,
               'Rating',
               state.todayStats.averageRating.toStringAsFixed(1),
               Icons.star,
               theme.colorScheme.primary,
+                ),
             ),
           ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildStatCard(
+  Widget _buildStatItem(
     BuildContext context,
     String title,
     String value,
@@ -398,42 +485,28 @@ class _DashboardPageState extends State<DashboardPage> {
   ) {
     final theme = Theme.of(context);
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+    return Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+          width: 48,
+          height: 48,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
                 color: color,
-                size: 18,
+            size: 24,
               ),
             ),
-            const SizedBox(height: 6),
+        const SizedBox(width: 12),
+        Flexible(
+          fit: FlexFit.loose,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
             Text(
               value,
               style: TextStyle(
@@ -448,17 +521,17 @@ class _DashboardPageState extends State<DashboardPage> {
             Text(
               title,
               style: TextStyle(
-                fontSize: 10,
+                  fontSize: 12,
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w500,
               ),
-              textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
       ),
+      ],
     );
   }
 
@@ -468,15 +541,15 @@ class _DashboardPageState extends State<DashboardPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.delivery_dining_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -491,9 +564,15 @@ class _DashboardPageState extends State<DashboardPage> {
                 onPressed: () {
                   context.push('/deliveries');
                 },
-                child: const Text('View All'),
+                  child: Text(
+                    'View All',
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
               ),
           ],
+          ),
         ),
         const SizedBox(height: 16),
         if (state.availableDeliveries.isEmpty)
@@ -517,15 +596,15 @@ class _DashboardPageState extends State<DashboardPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
+              Icon(
+                Icons.local_shipping_outlined,
+                size: 20,
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -535,6 +614,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
           ],
+          ),
         ),
         const SizedBox(height: 16),
         if (state.recentDeliveries.isEmpty)
@@ -824,5 +904,50 @@ class _DashboardPageState extends State<DashboardPage> {
       default:
         return 'Pending';
     }
+  }
+
+  void _showLocationSettingsDialog(BuildContext context) {
+    // Prevent showing multiple dialogs
+    if (!mounted) return;
+    
+    print('📱 DashboardPage: Showing location settings dialog');
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Location Permission Required'),
+        content: const Text(
+          'Location permission is required for delivery tracking. Please enable it in your device settings.\n\n'
+          'Go to: Settings > Privacy & Security > Location Services > Delivery App',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              print('📱 DashboardPage: User cancelled settings dialog');
+            },
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              print('📱 DashboardPage: User tapped Open Settings');
+              Navigator.of(context).pop();
+              try {
+                await Geolocator.openLocationSettings();
+                print('📱 DashboardPage: Settings opened');
+                // Check status again after user returns from settings
+                await Future.delayed(const Duration(seconds: 1));
+                if (mounted) {
+                  context.read<LocationBloc>().add(const LocationCheckStatusEvent());
+                }
+              } catch (e) {
+                print('❌ DashboardPage: Error opening settings: $e');
+              }
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
   }
 }

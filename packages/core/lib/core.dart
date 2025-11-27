@@ -13,6 +13,7 @@ export 'src/models/api_response.dart';
 
 // Config
 export 'src/config/environment.dart';
+export 'src/config/whitelabel_config.dart';
 
 // Exceptions
 // export 'src/exceptions/api_exceptions.dart';

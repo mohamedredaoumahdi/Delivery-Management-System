@@ -15,112 +15,92 @@ class RealTimeOrderStatusWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              'Order Status Overview',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Spacer(),
-            if (isUpdating)
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else
-              IconButton(
-                onPressed: onRefresh,
-                icon: const Icon(Icons.refresh, size: 18),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: 24,
-                  minHeight: 24,
-                ),
-              ),
-          ],
+        _buildStatusCard(
+          context,
+          icon: Icons.pending_actions,
+          title: 'Pending Orders',
+          value: (data['pendingOrders'] ?? 0).toString(),
+          color: Colors.orange,
         ),
-        const SizedBox(height: 16),
-        
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 300),
-              opacity: isUpdating ? 0.6 : 1.0,
-              child: Column(
-                children: [
-                  _buildStatusRow(
-                    'Pending Orders', 
-                    data['pendingOrders'] ?? 0, 
-                    Colors.orange,
-                    context,
-                  ),
-                  _buildStatusRow(
-                    'Preparing Orders', 
-                    data['preparingOrders'] ?? 0, 
-                    Colors.blue,
-                    context,
-                  ),
-                  _buildStatusRow(
-                    'Ready Orders', 
-                    data['readyOrders'] ?? 0, 
-                    Colors.green,
-                    context,
-                  ),
-                  _buildStatusRow(
-                    'Completed Today', 
-                    data['completedOrders'] ?? 0, 
-                    Colors.purple,
-                    context,
-                  ),
-                ],
-              ),
-            ),
-          ),
+        const SizedBox(height: 4),
+        _buildStatusCard(
+          context,
+          icon: Icons.restaurant,
+          title: 'Preparing Orders',
+          value: (data['preparingOrders'] ?? 0).toString(),
+          color: Colors.blue,
+        ),
+        const SizedBox(height: 4),
+        _buildStatusCard(
+          context,
+          icon: Icons.check_circle_outline,
+          title: 'Ready Orders',
+          value: (data['readyOrders'] ?? 0).toString(),
+          color: Colors.green,
+        ),
+        const SizedBox(height: 4),
+        _buildStatusCard(
+          context,
+          icon: Icons.done_all,
+          title: 'Completed Today',
+          value: (data['completedOrders'] ?? 0).toString(),
+          color: Colors.purple,
         ),
       ],
     );
   }
 
-  Widget _buildStatusRow(String label, int count, Color color, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
+  Widget _buildStatusCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 20),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: Text(
-              count.toString(),
-              key: ValueKey('$label-$count'),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
               ),
             ),
-          ),
-        ],
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-} 
+}

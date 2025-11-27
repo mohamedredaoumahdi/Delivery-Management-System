@@ -12,6 +12,8 @@ const orderController = new OrderController();
 router.use(auth);
 
 router.post('/', validateRequest(createOrderSchema), catchAsync(orderController.createOrder));
+router.post('/confirm-payment', catchAsync(orderController.confirmPayment));
+router.post('/refund', catchAsync(orderController.processRefund));
 router.get('/', catchAsync(orderController.getUserOrders));
 router.get('/:id', catchAsync(orderController.getOrderById));
 router.patch('/:id/cancel', catchAsync(orderController.cancelOrder));

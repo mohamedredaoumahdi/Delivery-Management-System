@@ -61,7 +61,8 @@ export class ShopController {
   });
 
   getNearbyShops = catchAsync(async (req: Request, res: Response) => {
-    const { lat, lng, radius = 5 } = req.query;
+    // Default radius is 50km if not provided by the client
+    const { lat, lng, radius = 50 } = req.query;
     
     if (!lat || !lng) {
       throw new AppError('Location coordinates are required', 400);

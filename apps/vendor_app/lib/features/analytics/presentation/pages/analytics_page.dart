@@ -16,20 +16,24 @@ class AnalyticsPage extends StatefulWidget {
 class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _selectedPeriod = 'This Week';
-  final List<String> _periods = ['Today', 'This Week', 'This Month', 'Last 3 Months'];
+  final List<String> _periods = ['Today', 'This Week', 'This Month', 'Last 3 Months', 'This Year'];
+  AnalyticsBloc? _analyticsBloc;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     // Load analytics when page initializes
-    context.read<AnalyticsBloc>().add(LoadAnalytics());
+    _analyticsBloc = context.read<AnalyticsBloc>();
+    _analyticsBloc?.add(LoadAnalytics());
   }
 
   @override
   void dispose() {
     // Stop real-time updates when leaving the page
-    context.read<AnalyticsBloc>().add(StopRealTimeUpdates());
+    if (mounted && _analyticsBloc != null) {
+      _analyticsBloc!.add(StopRealTimeUpdates());
+    }
     _tabController.dispose();
     super.dispose();
   }
@@ -40,33 +44,81 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
       appBar: AppBar(
         title: const Text('Analytics'),
         actions: [
+          // Period Selector
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: PopupMenuButton<String>(
+              icon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.date_range,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _selectedPeriod,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              onSelected: (value) {
+                setState(() {
+                  _selectedPeriod = value;
+                });
+                context.read<AnalyticsBloc>().add(LoadAnalytics());
+              },
+              itemBuilder: (context) => _periods
+                  .map((period) => PopupMenuItem(
+                        value: period,
+                        child: Row(
+                          children: [
+                            if (period == _selectedPeriod)
+                              Icon(
+                                Icons.check,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.primary,
+                              )
+                            else
+                              const SizedBox(width: 18),
+                            const SizedBox(width: 8),
+                            Text(period),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ),
+          // Refresh Button
           IconButton(
             icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh',
             onPressed: () {
               context.read<AnalyticsBloc>().add(LoadAnalytics());
             },
           ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.date_range),
-            onSelected: (value) {
-              setState(() {
-                _selectedPeriod = value;
-              });
-            },
-            itemBuilder: (context) => _periods
-                .map((period) => PopupMenuItem(
-                      value: period,
-                      child: Text(period),
-                    ))
-                .toList(),
-          ),
         ],
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: Theme.of(context).colorScheme.primary,
+          labelColor: Theme.of(context).colorScheme.primary,
+          unselectedLabelColor: Colors.grey,
           tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'Sales'),
-            Tab(text: 'Performance'),
+            Tab(icon: Icon(Icons.dashboard), text: 'Overview'),
+            Tab(icon: Icon(Icons.trending_up), text: 'Sales'),
+            Tab(icon: Icon(Icons.assessment), text: 'Performance'),
           ],
         ),
       ),
@@ -115,11 +167,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
                     ),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: () {
                       context.read<AnalyticsBloc>().add(LoadAnalytics());
                     },
-                    child: const Text('Retry'),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
                   ),
                 ],
               ),
@@ -163,219 +216,205 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.analytics,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                          'Analytics Overview',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                        const SizedBox(height: 4),
-                Text(
-                          'Period: $_selectedPeriod',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                  'Updated: ${_formatTime(lastUpdated)}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-                ),
-            ),
+            // Summary Header Card
+            _buildSummaryHeaderCard(context, lastUpdated),
             
             const SizedBox(height: 24),
             
-            // Real-time Key Metrics
-            Row(
-              children: [
-                Expanded(
-                  child: RealTimeMetricCard(
-                    title: 'Total Orders',
-                    value: data['todayOrders']?.toString() ?? '0',
-                    icon: Icons.receipt_long,
-                    color: Colors.blue,
-                    change: '+12%',
-                    isPositive: true,
-                    metricType: 'orders',
-                    isUpdating: updatingMetric == 'orders',
-                    onRefresh: () {
-                      context.read<AnalyticsBloc>().add(RefreshMetric('orders'));
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: RealTimeMetricCard(
-                    title: 'Revenue',
-                    value: '\$${(data['todayRevenue'] ?? 0.0).toStringAsFixed(2)}',
-                    icon: Icons.attach_money,
-                    color: Colors.green,
-                    change: '+8%',
-                    isPositive: true,
-                    metricType: 'revenue',
-                    isUpdating: updatingMetric == 'revenue',
-                    onRefresh: () {
-                      context.read<AnalyticsBloc>().add(RefreshMetric('revenue'));
-                    },
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 12),
-            
-            Row(
-              children: [
-                Expanded(
-                  child: RealTimeMetricCard(
-                    title: 'Avg Order Value',
-                    value: '\$${(data['averageOrderValue'] ?? 0.0).toStringAsFixed(2)}',
-                    icon: Icons.trending_up,
-                    color: Colors.purple,
-                    change: '+5%',
-                    isPositive: true,
-                    metricType: 'revenue',
-                    isUpdating: updatingMetric == 'revenue',
-                    onRefresh: () {
-                      context.read<AnalyticsBloc>().add(RefreshMetric('revenue'));
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: RealTimeMetricCard(
-                    title: 'Rating',
-                    value: (data['rating'] ?? 0.0).toStringAsFixed(1),
-                    icon: Icons.star,
-                    color: Colors.orange,
-                    change: '↗',
-                    isPositive: true,
-                    metricType: 'rating',
-                    isUpdating: updatingMetric == 'rating',
-                    onRefresh: () {
-                      context.read<AnalyticsBloc>().add(RefreshMetric('rating'));
-                    },
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Real-time Order Status Overview
-            RealTimeOrderStatusWidget(
-              data: data,
-              isUpdating: updatingMetric == 'orders',
-              onRefresh: () {
-                context.read<AnalyticsBloc>().add(RefreshMetric('orders'));
-              },
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Quick Stats
+            // Key Metrics Rows
             Text(
-              'Menu Statistics',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              'Key Metrics',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
             
-            Row(
+            RealTimeMetricCard(
+              title: 'Total Orders',
+              value: data['todayOrders']?.toString() ?? '0',
+              icon: Icons.receipt_long,
+              color: Colors.blue,
+              change: '',
+              isPositive: true,
+              metricType: 'orders',
+              isUpdating: updatingMetric == 'orders',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('orders'));
+              },
+            ),
+            
+            const SizedBox(height: 4),
+            
+            RealTimeMetricCard(
+              title: 'Revenue',
+              value: '\$${(data['todayRevenue'] ?? 0.0).toStringAsFixed(2)}',
+              icon: Icons.attach_money,
+              color: Colors.green,
+              change: '',
+              isPositive: true,
+              metricType: 'revenue',
+              isUpdating: updatingMetric == 'revenue',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('revenue'));
+              },
+            ),
+            
+            const SizedBox(height: 4),
+            
+            RealTimeMetricCard(
+              title: 'Avg Order Value',
+              value: '\$${(data['averageOrderValue'] ?? 0.0).toStringAsFixed(2)}',
+              icon: Icons.trending_up,
+              color: Colors.purple,
+              change: '',
+              isPositive: true,
+              metricType: 'revenue',
+              isUpdating: updatingMetric == 'revenue',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('revenue'));
+              },
+            ),
+            
+            const SizedBox(height: 4),
+            
+            RealTimeMetricCard(
+              title: 'Rating',
+              value: (data['rating'] ?? 0.0).toStringAsFixed(1),
+              icon: Icons.star,
+              color: Colors.orange,
+              change: '${data['ratingCount'] ?? data['totalRatings'] ?? 0} reviews',
+              isPositive: true,
+              metricType: 'rating',
+              isUpdating: updatingMetric == 'rating',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('rating'));
+              },
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Order Status
+            Text(
+              'Order Status',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            RealTimeOrderStatusWidget(
+              data: data,
+              isUpdating: updatingMetric == 'orders',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('orders'));
+              },
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Menu Statistics
+            Text(
+              'Menu Statistics',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            RealTimeMetricCard(
+              title: 'Active Items',
+              value: data['activeMenuItems']?.toString() ?? '0',
+              icon: Icons.restaurant_menu,
+              color: Colors.teal,
+              change: '',
+              isPositive: true,
+              metricType: 'menu',
+              isUpdating: updatingMetric == 'menu',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('menu'));
+              },
+            ),
+            
+            const SizedBox(height: 4),
+            
+            RealTimeMetricCard(
+              title: 'Out of Stock',
+              value: data['outOfStockItems']?.toString() ?? '0',
+              icon: Icons.warning,
+              color: Colors.red,
+              change: '',
+              isPositive: false,
+              metricType: 'menu',
+              isUpdating: updatingMetric == 'menu',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('menu'));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryHeaderCard(BuildContext context, DateTime lastUpdated) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.analytics,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: RealTimeMetricCard(
-                    title: 'Active Menu Items',
-                    value: data['activeMenuItems']?.toString() ?? '0',
-                    icon: Icons.restaurant_menu,
-                    color: Colors.teal,
-                    change: '',
-                    isPositive: true,
-                    metricType: 'menu',
-                    isUpdating: updatingMetric == 'menu',
-                    showMiniCard: true,
-                    onRefresh: () {
-                      context.read<AnalyticsBloc>().add(RefreshMetric('menu'));
-                    },
+                Text(
+                  'Analytics Overview',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: RealTimeMetricCard(
-                    title: 'Out of Stock',
-                    value: data['outOfStockItems']?.toString() ?? '0',
-                    icon: Icons.warning,
-                    color: Colors.red,
-                    change: '',
-                    isPositive: false,
-                    metricType: 'menu',
-                    isUpdating: updatingMetric == 'menu',
-                    showMiniCard: true,
-                    onRefresh: () {
-                      context.read<AnalyticsBloc>().add(RefreshMetric('menu'));
-                    },
+                const SizedBox(height: 4),
+                Text(
+                  'Period: $_selectedPeriod',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -390,167 +429,78 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Revenue Chart Placeholder
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.trending_up,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-            Text(
-              'Revenue Trends',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-                ),
-              ],
+            // Sales Summary Cards
+            RealTimeMetricCard(
+              title: 'Total Revenue',
+              value: '\$${(data['totalRevenue'] ?? data['todayRevenue'] ?? 0.0).toStringAsFixed(2)}',
+              icon: Icons.attach_money,
+              color: Colors.green,
+              change: '',
+              isPositive: true,
+              metricType: 'revenue',
+              isUpdating: updatingMetric == 'revenue',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('revenue'));
+              },
             ),
-            const SizedBox(height: 16),
             
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Container(
-                height: 220,
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.grey[50]!,
-                      Colors.grey[100]!,
-                    ],
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                      Icons.bar_chart,
-                      size: 48,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Revenue Chart',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Visual charts coming soon!',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 4),
+            
+            RealTimeMetricCard(
+              title: 'Total Orders',
+              value: '${data['totalOrders'] ?? data['todayOrders'] ?? 0}',
+              icon: Icons.receipt_long,
+              color: Colors.blue,
+              change: '',
+              isPositive: true,
+              metricType: 'orders',
+              isUpdating: updatingMetric == 'orders',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('orders'));
+              },
             ),
             
             const SizedBox(height: 24),
             
-            // Real-time Sales Summary
+            // Revenue Chart Section
+            _buildSectionHeader(
+              context,
+              icon: Icons.trending_up,
+              title: 'Revenue Trends',
+            ),
+            const SizedBox(height: 16),
+            
+            _buildRevenueTrendsChart(context, data),
+            
+            const SizedBox(height: 24),
+            
+            // Sales Summary by Period
+            _buildSectionHeader(
+              context,
+              icon: Icons.analytics,
+              title: 'Sales Summary',
+            ),
+            const SizedBox(height: 16),
+            
             RealTimeSalesWidget(
               data: data,
               isUpdating: updatingMetric == 'revenue',
               onRefresh: () {
-                context.read<AnalyticsBloc>().add(RefreshMetric('revenue'));
+                context.read<AnalyticsBloc>().add(const RefreshMetric('revenue'));
               },
             ),
             
             const SizedBox(height: 24),
             
             // Top Performing Items
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.restaurant_menu,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-            Text(
-              'Top Performing Items',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-                ),
-              ],
+            _buildSectionHeader(
+              context,
+              icon: Icons.restaurant_menu,
+              title: 'Top Performing Items',
             ),
             const SizedBox(height: 16),
             
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                      Icons.restaurant_menu,
-                      size: 48,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Product Analytics',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Detailed product performance metrics will be available soon.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildTopProductsList(context, data),
           ],
         ),
       ),
@@ -568,241 +518,277 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Performance Metrics Header
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.speed,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-            Text(
-              'Performance Metrics',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-                ),
-              ],
+            _buildSectionHeader(
+              context,
+              icon: Icons.speed,
+              title: 'Performance Metrics',
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             
-            Row(
-              children: [
-                Expanded(
-                  child: RealTimeMetricCard(
-                    title: 'Customer Rating',
-                    value: '${(data['rating'] ?? 0.0).toStringAsFixed(1)}/5.0',
-                    icon: Icons.star,
-                    color: Colors.orange,
-                    change: '${data['ratingCount'] ?? 0} reviews',
-                    isPositive: true,
-                    metricType: 'rating',
-                    isUpdating: updatingMetric == 'rating',
-                    showMiniCard: true,
-                    onRefresh: () {
-                      context.read<AnalyticsBloc>().add(RefreshMetric('rating'));
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildPerformanceCard(
-                    'Avg Prep Time',
-                    'Not available',
-                    Icons.timer,
-                    Colors.blue,
-                    'Coming soon',
-                  ),
-                ),
-              ],
+            RealTimeMetricCard(
+              title: 'Customer Rating',
+              value: '${(data['rating'] ?? 0.0).toStringAsFixed(1)}/5.0',
+              icon: Icons.star,
+              color: Colors.orange,
+              change: '${data['ratingCount'] ?? 0} reviews',
+              isPositive: true,
+              metricType: 'rating',
+              isUpdating: updatingMetric == 'rating',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('rating'));
+              },
             ),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: 4),
             
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPerformanceCard(
-                    'Order Accuracy',
-                    'Not available',
-                    Icons.check_circle,
-                    Colors.green,
-                    'Coming soon',
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: RealTimeMetricCard(
-                    title: 'Total Orders',
-                    value: '${data['totalOrders'] ?? 0}',
-                    icon: Icons.trending_up,
-                    color: Colors.purple,
-                    change: 'All time',
-                    isPositive: true,
-                    metricType: 'orders',
-                    isUpdating: updatingMetric == 'orders',
-                    showMiniCard: true,
-                    onRefresh: () {
-                      context.read<AnalyticsBloc>().add(RefreshMetric('orders'));
-                    },
-                  ),
-                ),
-              ],
+            RealTimeMetricCard(
+              title: 'Avg Prep Time',
+              value: data['avgPrepTimeMinutes'] != null 
+                  ? '${data['avgPrepTimeMinutes']} min'
+                  : 'N/A',
+              icon: Icons.timer,
+              color: Colors.blue,
+              change: data['avgPrepTimeMinutes'] != null ? 'Average time' : 'No data',
+              isPositive: true,
+              metricType: 'performance',
+              isUpdating: false,
+              onRefresh: () {},
+            ),
+            
+            const SizedBox(height: 4),
+            
+            RealTimeMetricCard(
+              title: 'Order Accuracy',
+              value: data['orderAccuracy'] != null 
+                  ? '${data['orderAccuracy']}%'
+                  : 'N/A',
+              icon: Icons.check_circle,
+              color: Colors.green,
+              change: data['orderAccuracy'] != null ? 'Success rate' : 'No data',
+              isPositive: true,
+              metricType: 'performance',
+              isUpdating: false,
+              onRefresh: () {},
+            ),
+            
+            const SizedBox(height: 4),
+            
+            RealTimeMetricCard(
+              title: 'Total Orders',
+              value: '${data['totalOrders'] ?? 0}',
+              icon: Icons.trending_up,
+              color: Colors.purple,
+              change: 'All time',
+              isPositive: true,
+              metricType: 'orders',
+              isUpdating: updatingMetric == 'orders',
+              onRefresh: () {
+                context.read<AnalyticsBloc>().add(const RefreshMetric('orders'));
+              },
             ),
             
             const SizedBox(height: 24),
             
-            // Peak Hours Chart Placeholder
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.schedule,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-            Text(
-              'Peak Hours Analysis',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-                ),
-              ],
+            // Peak Hours Analysis
+            _buildSectionHeader(
+              context,
+              icon: Icons.schedule,
+              title: 'Peak Hours Analysis',
             ),
             const SizedBox(height: 16),
             
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Container(
-                height: 220,
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.grey[50]!,
-                      Colors.grey[100]!,
-                    ],
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                      Icons.schedule,
-                      size: 48,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Peak Hours Chart',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Peak hours analysis coming soon!',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildPeakHoursChart(context, data),
             
             const SizedBox(height: 24),
             
             // Business Insights
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.lightbulb_outline,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-            Text(
-              'Business Insights',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-                ),
-              ],
+            _buildSectionHeader(
+              context,
+              icon: Icons.lightbulb_outline,
+              title: 'Business Insights',
             ),
             const SizedBox(height: 16),
             
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+            _buildBusinessInsightsCard(context, data),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, {required IconData icon, required String title}) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: Theme.of(context).colorScheme.primary,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  Widget _buildChartPlaceholder(BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Container(
+        height: 220,
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildSuggestionItem(
-                      Icons.restaurant_menu,
-                      'Add Menu Items',
-                      'Start by adding items to your menu to attract customers',
-                      Colors.blue,
+              child: Icon(
+                icon,
+                size: 48,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRevenueTrendsChart(BuildContext context, Map<String, dynamic> data) {
+    final revenueTrend = data['revenueTrend'] as List<dynamic>? ?? [];
+    
+    if (revenueTrend.isEmpty) {
+      return _buildChartPlaceholder(
+        context,
+        title: 'Revenue Chart',
+        subtitle: 'No revenue data available yet',
+        icon: Icons.bar_chart,
+      );
+    }
+
+    // Calculate max revenue for scaling
+    final maxRevenue = revenueTrend.map((e) => (e['revenue'] as num?)?.toDouble() ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);
+    final maxHeight = 120.0; // Reduced to leave room for labels
+
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Last 7 Days',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: maxHeight + 50, // Increased to accommodate labels
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: revenueTrend.asMap().entries.map((entry) {
+                  final day = entry.value as Map<String, dynamic>;
+                  final revenue = (day['revenue'] as num?)?.toDouble() ?? 0.0;
+                  final date = day['date'] as String? ?? '';
+                  final dayName = _getDayName(date);
+                  final height = maxRevenue > 0 ? (revenue / maxRevenue) * maxHeight : 0.0;
+                  
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: height > 0 ? height : 2,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            dayName,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 9,
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            '\$${revenue.toStringAsFixed(0)}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 8,
+                              color: Colors.grey[500],
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    Divider(color: Colors.grey[200]),
-                    const SizedBox(height: 16),
-                    _buildSuggestionItem(
-                      Icons.schedule,
-                      'Set Operating Hours',
-                      'Make sure your operating hours are clearly defined',
-                      Colors.green,
-                    ),
-                    const SizedBox(height: 16),
-                    Divider(color: Colors.grey[200]),
-                    const SizedBox(height: 16),
-                    _buildSuggestionItem(
-                      Icons.delivery_dining,
-                      'Enable Delivery',
-                      'Consider offering delivery to reach more customers',
-                      Colors.orange,
-                    ),
-                  ],
-                ),
+                  );
+                }).toList(),
               ),
             ),
           ],
@@ -811,46 +797,386 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
     );
   }
 
-  Widget _buildPerformanceCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-    String subtitle,
-  ) {
+  Widget _buildTopProductsList(BuildContext context, Map<String, dynamic> data) {
+    final topProducts = data['topProducts'] as List<dynamic>? ?? [];
+    
+    if (topProducts.isEmpty) {
+      return Card(
+        elevation: 0,
+        color: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: Colors.grey.withValues(alpha: 0.15),
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Icon(
+                Icons.restaurant_menu,
+                size: 48,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No product data available',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Product analytics will appear here once you start receiving orders.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: topProducts.asMap().entries.map((entry) {
+        final product = entry.value as Map<String, dynamic>;
+        final rank = entry.key + 1;
+        final productName = product['productName'] as String? ?? 'Unknown Product';
+        final totalRevenue = (product['totalRevenue'] as num?)?.toDouble() ?? 0.0;
+        final orderCount = product['orderCount'] as int? ?? 0;
+        final totalQuantity = (product['totalQuantity'] as num?)?.toInt() ?? 0;
+
+        return Padding(
+          padding: EdgeInsets.only(bottom: rank <= topProducts.length ? 4 : 0),
+          child: Card(
+            elevation: 0,
+            color: Theme.of(context).colorScheme.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: Colors.grey.withValues(alpha: 0.15),
+                width: 1,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Rank badge
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: rank <= 3
+                          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+                          : Colors.grey.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$rank',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: rank <= 3
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Product info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          productName,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$orderCount orders • $totalQuantity sold',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Revenue
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '\$${totalRevenue.toStringAsFixed(2)}',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[700],
+                        ),
+                      ),
+                      Text(
+                        'Revenue',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _getDayName(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final dateOnly = DateTime(date.year, date.month, date.day);
+      
+      if (dateOnly == today) {
+        return 'Today';
+      } else if (dateOnly == today.subtract(const Duration(days: 1))) {
+        return 'Yesterday';
+      } else {
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        return days[date.weekday - 1];
+      }
+    } catch (e) {
+      return '';
+    }
+  }
+
+  Widget _buildPeakHoursChart(BuildContext context, Map<String, dynamic> data) {
+    final peakHours = data['peakHours'] as List<dynamic>? ?? [];
+    
+    if (peakHours.isEmpty) {
+      return _buildChartPlaceholder(
+        context,
+        title: 'Peak Hours Chart',
+        subtitle: 'No order data available yet',
+        icon: Icons.schedule,
+      );
+    }
+
+    // Calculate max count for scaling
+    final maxCount = peakHours.map((e) => (e['count'] as num?)?.toInt() ?? 0).fold(0, (a, b) => a > b ? a : b);
+    final maxHeight = 100.0; // Reduced from 120
+
+    // Find peak hour
+    final peakHour = data['peakHour'] as int?;
+    final peakHourCount = data['peakHourCount'] as int? ?? 0;
+
     return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            if (peakHour != null && peakHourCount > 0) ...[
+              Row(
+                children: [
+                  Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Peak Hour: ${peakHour}:00 (${peakHourCount} orders)',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              const SizedBox(height: 16),
+            ],
+            SizedBox(
+              height: maxHeight + 35, // Reduced from 40
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: peakHours.map((hourData) {
+                  final hour = (hourData['hour'] as num?)?.toInt() ?? 0;
+                  final count = (hourData['count'] as num?)?.toInt() ?? 0;
+                  final height = maxCount > 0 ? (count / maxCount) * maxHeight : 0.0;
+                  final isPeak = peakHour != null && hour == peakHour;
+                  
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 1), // Reduced from 2
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: height > 0 ? height : 2,
+                            decoration: BoxDecoration(
+                              color: isPeak 
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.grey[400]!,
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                            ),
+                          ),
+                          const SizedBox(height: 4), // Reduced from 6
+                          Text(
+                            '${hour.toString().padLeft(2, '0')}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 7, // Reduced from 8
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (count > 0)
+                            Text(
+                              '$count',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: 6, // Reduced from 7
+                                color: Colors.grey[500],
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildBusinessInsightsCard(BuildContext context, Map<String, dynamic> data) {
+    final insights = <Widget>[];
+    
+    // Insight 1: Prep time performance
+    final avgPrepTime = data['avgPrepTimeMinutes'] as int?;
+    if (avgPrepTime != null) {
+      if (avgPrepTime > 30) {
+        insights.add(_buildSuggestionItem(
+          Icons.timer_off,
+          'Improve Prep Time',
+          'Your average prep time is ${avgPrepTime} minutes. Consider optimizing kitchen workflow.',
+          Colors.orange,
+        ));
+        insights.add(const SizedBox(height: 16));
+        insights.add(Divider(color: Colors.grey[200]));
+        insights.add(const SizedBox(height: 16));
+      } else if (avgPrepTime <= 20) {
+        insights.add(_buildSuggestionItem(
+          Icons.check_circle,
+          'Excellent Prep Time',
+          'Your average prep time of ${avgPrepTime} minutes is great! Keep it up.',
+          Colors.green,
+        ));
+        insights.add(const SizedBox(height: 16));
+        insights.add(Divider(color: Colors.grey[200]));
+        insights.add(const SizedBox(height: 16));
+      }
+    }
+    
+    // Insight 2: Order accuracy
+    final orderAccuracy = data['orderAccuracy'] as int?;
+    if (orderAccuracy != null && orderAccuracy < 95) {
+      insights.add(_buildSuggestionItem(
+        Icons.warning,
+        'Order Accuracy',
+        'Your order accuracy is ${orderAccuracy}%. Focus on reducing errors.',
+        Colors.red,
+      ));
+      insights.add(const SizedBox(height: 16));
+      insights.add(Divider(color: Colors.grey[200]));
+      insights.add(const SizedBox(height: 16));
+    }
+    
+    // Insight 3: Peak hours
+    final peakHour = data['peakHour'] as int?;
+    if (peakHour != null) {
+      insights.add(_buildSuggestionItem(
+        Icons.access_time,
+        'Peak Hours',
+        'Your busiest time is ${peakHour}:00. Ensure adequate staffing during this period.',
+        Colors.blue,
+      ));
+      insights.add(const SizedBox(height: 16));
+      insights.add(Divider(color: Colors.grey[200]));
+      insights.add(const SizedBox(height: 16));
+    }
+    
+    // Insight 4: Revenue performance
+    final todayRevenue = (data['todayRevenue'] as num?)?.toDouble() ?? 0.0;
+    final weekRevenue = (data['weekRevenue'] as num?)?.toDouble() ?? 0.0;
+    if (todayRevenue > 0 && weekRevenue > 0) {
+      final dailyAvg = weekRevenue / 7;
+      if (todayRevenue < dailyAvg * 0.7) {
+        insights.add(_buildSuggestionItem(
+          Icons.trending_down,
+          'Low Sales Today',
+          'Today\'s revenue is below average. Consider promotions or marketing.',
+          Colors.orange,
+        ));
+      } else if (todayRevenue > dailyAvg * 1.3) {
+        insights.add(_buildSuggestionItem(
+          Icons.trending_up,
+          'Great Sales Today',
+          'Today\'s revenue is above average! Excellent performance.',
+          Colors.green,
+        ));
+      }
+    }
+    
+    // Default insights if no data
+    if (insights.isEmpty) {
+      insights.add(_buildSuggestionItem(
+        Icons.restaurant_menu,
+        'Get Started',
+        'Start receiving orders to see personalized insights here.',
+        Colors.blue,
+      ));
+    }
+
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: insights,
         ),
       ),
     );
@@ -892,18 +1218,4 @@ class _AnalyticsPageState extends State<AnalyticsPage> with SingleTickerProvider
     );
   }
 
-  String _formatTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-    
-    if (difference.inSeconds < 60) {
-      return 'Just now';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
-    } else {
-      return '${dateTime.day}/${dateTime.month}';
-    }
-  }
-} 
+}

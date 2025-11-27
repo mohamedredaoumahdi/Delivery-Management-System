@@ -27,6 +27,19 @@ class _HomePageState extends State<HomePage> {
     
     // Request location permission and get user location
     context.read<LocationBloc>().add(LocationRequestPermission());
+    
+    // Fallback: Load nearby shops with default coordinates after a delay
+    // This ensures shops are shown even if location permission is denied or takes time
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        // Only load if we haven't received location yet
+        // The LocationBloc listener will override this if location is available
+        context.read<ShopListBloc>().add(const ShopListLoadNearbyEvent(
+          latitude: 37.7749, // San Francisco default
+          longitude: -122.4194,
+        ));
+      }
+    });
   }
   
   // Helper to get the current user from auth bloc
@@ -64,6 +77,11 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: theme.colorScheme.error,
             ),
           );
+          // Load nearby shops with default San Francisco coordinates as fallback
+          context.read<ShopListBloc>().add(const ShopListLoadNearbyEvent(
+            latitude: 37.7749,
+            longitude: -122.4194,
+          ));
         } else if (locationState is LocationError) {
           // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
@@ -72,6 +90,11 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: theme.colorScheme.error,
             ),
           );
+          // Load nearby shops with default San Francisco coordinates as fallback
+          context.read<ShopListBloc>().add(const ShopListLoadNearbyEvent(
+            latitude: 37.7749,
+            longitude: -122.4194,
+          ));
         }
       },
       child: _buildHomeContent(context, theme, user),
@@ -90,89 +113,53 @@ class _HomePageState extends State<HomePage> {
           },
           child: CustomScrollView(
             slivers: [
-              // Enhanced App Bar
-              SliverAppBar(
-                floating: true,
-                pinned: false,
-                expandedHeight: 120,
-                backgroundColor: Colors.transparent,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          theme.colorScheme.primary.withValues(alpha:0.05),
-                          theme.colorScheme.surface,
-                        ],
-                      ),
-                    ),
-                    child: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    user != null
-                                        ? 'Hello, ${_getFirstName(user.name)}! 👋'
-                                        : 'Welcome! 👋',
-                                    style: theme.textTheme.headlineSmall?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'What would you like to order today?',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurface.withValues(alpha:0.7),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: theme.colorScheme.primary.withValues(alpha:0.15),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: IconButton(
-                                icon: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        theme.colorScheme.primary.withValues(alpha:0.1),
-                                        theme.colorScheme.primary.withValues(alpha:0.05),
-                                      ],
-                                    ),
-                                  ),
-                                  child: const Icon(Icons.notifications_outlined),
+              // Header Section
+              SliverToBoxAdapter(
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                user != null
+                                    ? 'Hello, ${_getFirstName(user.name)}! 👋'
+                                    : 'Hello, Customer! 👋',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurface,
+                                  fontSize: 24,
                                 ),
-                    onPressed: () {
-                      // Navigate to notifications
-                    },
-                    tooltip: 'Notifications',
                               ),
-                  ),
-                ],
+                              const SizedBox(height: 8),
+                              Text(
+                                'What would you like to order today?',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        IconButton(
+                          icon: Icon(
+                            Icons.notifications_outlined,
+                            color: theme.colorScheme.onSurface,
+                            size: 28,
+                          ),
+                          iconSize: 28,
+                          onPressed: () {
+                            // Navigate to notifications
+                          },
+                          tooltip: 'Notifications',
+                        ),
+                      ],
                     ),
                   ),
                 ),

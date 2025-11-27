@@ -36,7 +36,7 @@ class AuthRegisterEvent extends AuthEvent {
   final String email;
   final String password;
   final String name;
-  final String phone;
+  final String? phone;
   final String vehicleType;
   final String licenseNumber;
 
@@ -44,13 +44,13 @@ class AuthRegisterEvent extends AuthEvent {
     required this.email,
     required this.password,
     required this.name,
-    required this.phone,
+    this.phone,
     required this.vehicleType,
     required this.licenseNumber,
   });
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         email,
         password,
         name,

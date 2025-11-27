@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:domain/domain.dart';
 
 /// Remote data source for vendor operations
 abstract class VendorRemoteDataSource {

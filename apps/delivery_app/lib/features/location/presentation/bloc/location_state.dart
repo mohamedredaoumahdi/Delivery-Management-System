@@ -31,14 +31,16 @@ class LocationEnabled extends LocationState {
 class LocationDisabled extends LocationState {
   final bool permissionDenied;
   final bool serviceDisabled;
+  final bool needsSettings;
 
   const LocationDisabled({
     required this.permissionDenied,
     required this.serviceDisabled,
+    this.needsSettings = false,
   });
 
   @override
-  List<Object> get props => [permissionDenied, serviceDisabled];
+  List<Object> get props => [permissionDenied, serviceDisabled, needsSettings];
 }
 
 /// Location error

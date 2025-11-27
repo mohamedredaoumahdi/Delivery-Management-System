@@ -43,10 +43,10 @@ export const auth = async (req: AuthenticatedRequest, res: Response, next: NextF
       throw new AppError('Account has been deactivated.', 401);
     }
 
-    // Optional: enforce email verification for protected routes
-    // if (!user.isEmailVerified) {
-    //   throw new AppError('Email not verified.', 403);
-    // }
+    // Enforce email verification if configured
+    if (config.requireEmailVerification && !user.isEmailVerified) {
+      throw new AppError('Please verify your email address to continue. Check your inbox for the verification link.', 403);
+    }
 
     req.user = user;
     next();

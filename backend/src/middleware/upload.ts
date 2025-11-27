@@ -27,7 +27,6 @@ export const upload = multer({
 
 // Image resizing middleware
 export const resizeImages = (req: Request, res: Response, next: NextFunction) => {
-  console.log('req.files:', req.files);
   if (!req.files) return next();
 
   req.body.images = [];
@@ -35,8 +34,10 @@ export const resizeImages = (req: Request, res: Response, next: NextFunction) =>
   Promise.all(
     (req.files as Express.Multer.File[]).map(async (file, i) => {
       const filename = `image-${Date.now()}-${i + 1}.jpeg`;
-      console.log('Processing file:', file.originalname);
-      console.log('File buffer:', file.buffer);
+      // Log file processing (without sensitive buffer data)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Processing file: ${file.originalname}, size: ${file.size} bytes`);
+      }
 
       await sharp(file.buffer)
         .resize(800, 600)

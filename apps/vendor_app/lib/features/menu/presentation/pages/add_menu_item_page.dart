@@ -17,6 +17,7 @@ class _AddMenuItemPageState extends State<AddMenuItemPage> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _preparationTimeController = TextEditingController(text: '15');
+  final _imageUrlController = TextEditingController();
   
   final List<String> _availableCategories = ['Main Course', 'Salads', 'Beverages', 'Desserts', 'Appetizers', 'Sides'];
   String _selectedCategory = 'Main Course';
@@ -28,6 +29,7 @@ class _AddMenuItemPageState extends State<AddMenuItemPage> {
     _descriptionController.dispose();
     _priceController.dispose();
     _preparationTimeController.dispose();
+    _imageUrlController.dispose();
     super.dispose();
   }
 
@@ -47,6 +49,11 @@ class _AddMenuItemPageState extends State<AddMenuItemPage> {
     // Add preparation time if provided
     if (_preparationTimeController.text.isNotEmpty) {
       data['preparationTime'] = int.parse(_preparationTimeController.text.trim());
+    }
+
+    // Optional image URL (from uploads)
+    if (_imageUrlController.text.trim().isNotEmpty) {
+      data['imageUrl'] = _imageUrlController.text.trim();
     }
 
     context.read<MenuBloc>().add(CreateMenuItem(data));
@@ -164,6 +171,34 @@ class _AddMenuItemPageState extends State<AddMenuItemPage> {
                     
                     const SizedBox(height: 16),
                     
+                    // Image URL (optional)
+                    TextFormField(
+                      controller: _imageUrlController,
+                      decoration: InputDecoration(
+                        labelText: 'Image URL (optional)',
+                        hintText: '/uploads/products/product-image.jpg',
+                        prefixIcon: const Icon(Icons.image_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
                     // Description Field
                     TextFormField(
                       controller: _descriptionController,
@@ -205,7 +240,7 @@ class _AddMenuItemPageState extends State<AddMenuItemPage> {
                     // Price Field
                     TextFormField(
                       controller: _priceController,
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
                         labelText: 'Price *',
                         hintText: '12.99',
@@ -244,7 +279,7 @@ class _AddMenuItemPageState extends State<AddMenuItemPage> {
                     
                     // Category Dropdown
                     DropdownButtonFormField<String>(
-                      value: _selectedCategory,
+                      initialValue: _selectedCategory,
                       decoration: InputDecoration(
                         labelText: 'Category *',
                         prefixIcon: const Icon(Icons.category),
@@ -369,7 +404,7 @@ class _AddMenuItemPageState extends State<AddMenuItemPage> {
                                 _isAvailable = value;
                               });
                             },
-                            activeColor: Theme.of(context).colorScheme.primary,
+                            activeThumbColor: Theme.of(context).colorScheme.primary,
                           ),
                         ],
                       ),
@@ -411,7 +446,7 @@ class _AddMenuItemPageState extends State<AddMenuItemPage> {
                               elevation: 2,
                             ),
                             child: isLoading
-                                ? SizedBox(
+                                ? const SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(

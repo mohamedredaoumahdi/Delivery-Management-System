@@ -68,6 +68,7 @@ interface Config {
   enableSwagger: boolean;
   enableCompression: boolean;
   enableMorganLogging: boolean;
+  requireEmailVerification: boolean;
 }
 
 const requiredEnvVars = [
@@ -117,7 +118,14 @@ export const config: Config = {
   
   // API
   apiVersion: process.env.API_VERSION || 'v1',
-  corsOrigin: (process.env.CORS_ORIGIN || '*').split(','),
+  corsOrigin: (() => {
+    const corsEnv = process.env.CORS_ORIGIN || '*';
+    // In production, prevent wildcard CORS
+    if (process.env.NODE_ENV === 'production' && corsEnv === '*') {
+      throw new Error('CORS_ORIGIN cannot be "*" in production. Please set specific allowed origins.');
+    }
+    return corsEnv.split(',');
+  })(),
   
   // Rate Limiting
   rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
@@ -145,6 +153,7 @@ export const config: Config = {
   enableSwagger: process.env.ENABLE_SWAGGER === 'true',
   enableCompression: process.env.ENABLE_COMPRESSION !== 'false',
   enableMorganLogging: process.env.ENABLE_MORGAN_LOGGING !== 'false',
+  requireEmailVerification: process.env.REQUIRE_EMAIL_VERIFICATION === 'true',
 };
 
 // Validate configuration

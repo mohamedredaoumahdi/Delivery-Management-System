@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../bloc/profile_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 
 class ProfilePage extends StatefulWidget {
   final Function(int)? navigateToTab;
@@ -24,6 +25,17 @@ class _ProfilePageState extends State<ProfilePage> {
     context.read<ProfileBloc>().add(LoadProfile());
   }
 
+  String _toAbsoluteImageUrl(String url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // Backend serves static files at http://localhost:3000/uploads/...
+    if (url.startsWith('/')) {
+      return 'http://localhost:3000$url';
+    }
+    return 'http://localhost:3000/$url';
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
@@ -36,20 +48,6 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Profile'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                _showEditProfileDialog();
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                _showSettingsDialog();
-              },
-            ),
-          ],
         ),
         body: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
@@ -126,18 +124,18 @@ class _ProfilePageState extends State<ProfilePage> {
                       
                       const SizedBox(height: 20),
                       
-                      // Statistics
-                      _buildStatisticsSection(),
-                      
-                      const SizedBox(height: 20),
-                      
                       // Account Settings
                       _buildAccountSettingsSection(),
                       
                       const SizedBox(height: 20),
                       
-                      // Actions
-                      _buildActionsSection(),
+                      // Help & Support
+                      _buildHelpSupportSection(),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Logout Button
+                      _buildLogoutButton(),
                       
                       const SizedBox(height: 32),
                     ],
@@ -156,6 +154,17 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileHeader(Map<String, dynamic> user) {
+    // Try to get shop logo from dashboard state
+    String? logoUrl;
+    final dashboardState = context.read<DashboardBloc>().state;
+    if (dashboardState is DashboardLoaded) {
+      final shop = dashboardState.dashboardData;
+      final dynamic rawLogo = shop['logoUrl'] ?? shop['logo_url'];
+      if (rawLogo is String && rawLogo.isNotEmpty) {
+        logoUrl = rawLogo;
+      }
+    }
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -179,21 +188,37 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // Profile Image
+            // Profile / Shop Image
             Container(
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
               child: CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.store,
-                  size: 50,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                child: logoUrl != null
+                    ? ClipOval(
+                        child: Image.network(
+                          _toAbsoluteImageUrl(logoUrl),
+                          width: 96,
+                          height: 96,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.store,
+                              size: 50,
+                              color: Theme.of(context).colorScheme.primary,
+                            );
+                          },
+                        ),
+                      )
+                    : Icon(
+                        Icons.store,
+                        size: 50,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
               ),
             ),
             
@@ -258,7 +283,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(width: 8),
                   Text(
                     _getAccountStatusText(user),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -274,359 +299,346 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildBusinessInfoSection(Map<String, dynamic> user) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header
+        Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.business,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Business Information',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            Icon(
+              Icons.business_center,
+              color: Theme.of(context).colorScheme.primary,
+              size: 24,
             ),
-            
-            const SizedBox(height: 20),
-            
-            _buildInfoRow(Icons.person, 'Name', user['name'] ?? 'Not provided'),
-            const Divider(height: 24),
-            _buildInfoRow(Icons.email, 'Email', user['email'] ?? 'Not provided'),
-            if (user['phone'] != null) ...[
-              const Divider(height: 24),
-              _buildInfoRow(Icons.phone, 'Phone', user['phone']),
-            ],
-            const Divider(height: 24),
-            _buildInfoRow(Icons.verified_user, 'Account Status', 
-              user['isActive'] == true ? 'Active' : 'Inactive'),
-            const Divider(height: 24),
-            _buildInfoRow(Icons.email_outlined, 'Email Verified', 
-              user['isEmailVerified'] == true ? 'Yes' : 'No'),
-            if (user['phone'] != null) ...[
-              const Divider(height: 24),
-              _buildInfoRow(Icons.phone_android, 'Phone Verified', 
-                user['isPhoneVerified'] == true ? 'Yes' : 'No'),
-            ],
-            if (user['lastLoginAt'] != null) ...[
-              const Divider(height: 24),
-              _buildInfoRow(Icons.access_time, 'Last Login', 
-                _formatDate(user['lastLoginAt'])),
-            ],
-            const Divider(height: 24),
-            _buildInfoRow(Icons.calendar_today, 'Member Since', 
-              _formatDate(user['createdAt'])),
+            const SizedBox(width: 8),
+            Text(
+              'Business Information',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
-      ),
+        const SizedBox(height: 12),
+        
+        // Separate tiles for each info item
+        _buildInfoTile(
+          context,
+          icon: Icons.person,
+          label: 'Name',
+          value: user['name'] ?? 'Not provided',
+          iconColor: Colors.blue,
+        ),
+        _buildInfoTile(
+          context,
+          icon: Icons.email,
+          label: 'Email',
+          value: user['email'] ?? 'Not provided',
+          iconColor: Colors.orange,
+        ),
+        if (user['phone'] != null)
+          _buildInfoTile(
+            context,
+            icon: Icons.phone,
+            label: 'Phone',
+            value: user['phone'],
+            iconColor: Colors.green,
+          ),
+        _buildInfoTile(
+          context,
+          icon: Icons.verified_user,
+          label: 'Account Status',
+          value: user['isActive'] == true ? 'Active' : 'Inactive',
+          iconColor: user['isActive'] == true ? Colors.green : Colors.red,
+        ),
+        _buildInfoTile(
+          context,
+          icon: Icons.email_outlined,
+          label: 'Email Verified',
+          value: user['isEmailVerified'] == true ? 'Yes' : 'No',
+          iconColor: user['isEmailVerified'] == true ? Colors.green : Colors.grey,
+        ),
+        if (user['phone'] != null)
+          _buildInfoTile(
+            context,
+            icon: Icons.phone_android,
+            label: 'Phone Verified',
+            value: user['isPhoneVerified'] == true ? 'Yes' : 'No',
+            iconColor: user['isPhoneVerified'] == true ? Colors.green : Colors.grey,
+          ),
+        if (user['lastLoginAt'] != null)
+          _buildInfoTile(
+            context,
+            icon: Icons.access_time,
+            label: 'Last Login',
+            value: _formatDate(user['lastLoginAt']),
+            iconColor: Colors.purple,
+          ),
+        _buildInfoTile(
+          context,
+          icon: Icons.calendar_today,
+          label: 'Member Since',
+          value: _formatDate(user['createdAt']),
+          iconColor: Colors.teal,
+        ),
+      ],
     );
   }
 
-  Widget _buildStatisticsSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.analytics,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Business Analytics',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 20),
-            
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.bar_chart,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'View Your Business Analytics',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'See detailed statistics about your orders, revenue, and performance in the Analytics tab.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Navigate to analytics tab using callback
-                      _navigateToTab?.call(3);
-                    },
-                    icon: const Icon(Icons.analytics),
-                    label: const Text('View Analytics'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+  Widget _buildInfoTile(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color iconColor,
+  }) {
+    final row = _buildInfoRow(icon, label, value, iconColor: iconColor);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 0),
+      child: Card(
+        elevation: 0,
+        color: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: Colors.grey.withValues(alpha: 0.15),
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: row,
         ),
       ),
     );
   }
 
   Widget _buildAccountSettingsSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header
+        Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.settings,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Account Settings',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            Icon(
+              Icons.settings,
+              color: Theme.of(context).colorScheme.primary,
+              size: 24,
             ),
-            
-            const SizedBox(height: 20),
-            
-            _buildSettingsItem(
-              Icons.edit,
-              'Edit Profile',
-              'Update your business information',
-              () => _showEditProfileDialog(),
-            ),
-            
-            const Divider(height: 24),
-            
-            _buildSettingsItem(
-              Icons.notifications,
-              'Notifications',
-              'Manage notification preferences',
-              () => _showNotificationSettings(),
-            ),
-            
-            const Divider(height: 24),
-            
-            _buildSettingsItem(
-              Icons.payment,
-              'Payment Settings',
-              'Manage payment methods and payouts',
-              () => _showPaymentSettings(),
-            ),
-            
-            const Divider(height: 24),
-            
-            _buildSettingsItem(
-              Icons.security,
-              'Security',
-              'Change password and security settings',
-              () => _showSecuritySettings(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionsSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.help,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Help & Support',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 20),
-            
-            _buildSettingsItem(
-              Icons.help_outline,
-              'Help Center',
-              'Get help with common questions',
-              () => _showHelpCenter(),
-            ),
-            
-            const Divider(height: 24),
-            
-            _buildSettingsItem(
-              Icons.support_agent,
-              'Contact Support',
-              'Reach out to our support team',
-              () => _contactSupport(),
-            ),
-            
-            const Divider(height: 24),
-            
-            _buildSettingsItem(
-              Icons.info_outline,
-              'About',
-              'App version and information',
-              () => _showAboutDialog(),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Logout Button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _showLogoutConfirmation(),
-                icon: const Icon(Icons.logout, color: Colors.red),
-                label: const Text(
-                  'Sign Out',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.red, width: 1.5),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+            const SizedBox(width: 8),
+            Text(
+              'Account Settings',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        
+        // Separate tiles for each setting
+        _buildSettingsTile(
+          context,
+          icon: Icons.edit,
+          title: 'Edit Profile',
+          subtitle: 'Update your business information',
+          iconColor: Colors.blue,
+          onTap: () => _showEditProfileDialog(),
+        ),
+        _buildSettingsTile(
+          context,
+          icon: Icons.notifications,
+          title: 'Notifications',
+          subtitle: 'Manage notification preferences',
+          iconColor: Colors.orange,
+          onTap: () => _showNotificationSettings(),
+        ),
+        _buildSettingsTile(
+          context,
+          icon: Icons.payment,
+          title: 'Payment Settings',
+          subtitle: 'Manage payment methods and payouts',
+          iconColor: Colors.green,
+          onTap: () => _showPaymentSettings(),
+        ),
+        _buildSettingsTile(
+          context,
+          icon: Icons.security,
+          title: 'Security',
+          subtitle: 'Change password and security settings',
+          iconColor: Colors.red,
+          onTap: () => _showSecuritySettings(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingsTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 0),
+      child: Card(
+        elevation: 0,
+        color: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: Colors.grey.withValues(alpha: 0.15),
+            width: 1,
+          ),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey[400],
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildHelpSupportSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.help,
+                size: 20,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Help & Support',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildSettingsTile(
+          context,
+          icon: Icons.help_outline,
+          title: 'Help Center',
+          subtitle: 'Get help with common questions',
+          iconColor: Colors.blue,
+          onTap: () => _showHelpCenter(),
+        ),
+        const SizedBox(height: 4),
+        _buildSettingsTile(
+          context,
+          icon: Icons.support_agent,
+          title: 'Contact Support',
+          subtitle: 'Reach out to our support team',
+          iconColor: Colors.orange,
+          onTap: () => _contactSupport(),
+        ),
+        const SizedBox(height: 4),
+        _buildSettingsTile(
+          context,
+          icon: Icons.info_outline,
+          title: 'About',
+          subtitle: 'App version and information',
+          iconColor: Colors.purple,
+          onTap: () => _showAboutDialog(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return ElevatedButton.icon(
+      onPressed: () => _showLogoutConfirmation(),
+      icon: const Icon(Icons.logout, color: Colors.white),
+      label: const Text(
+        'Sign Out',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        minimumSize: const Size(double.infinity, 50),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value, {Color? iconColor}) {
+    final effectiveIconColor = iconColor ?? Theme.of(context).colorScheme.primary;
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
+            color: effectiveIconColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+          child: Icon(icon, size: 20, color: effectiveIconColor),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -636,15 +648,16 @@ class _ProfilePageState extends State<ProfilePage> {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   color: Colors.grey[600],
                   fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 value,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -655,75 +668,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildSettingsItem(
-    IconData icon,
-    String title,
-    String subtitle,
-    VoidCallback onTap,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).colorScheme.primary,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: Colors.grey[400],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Color _getAccountStatusColor(Map<String, dynamic> user) {
     if (user['isActive'] == true) {
       return Colors.green;
     } else {
       return Colors.orange;
-    }
-  }
-
-  IconData _getAccountStatusIcon(Map<String, dynamic> user) {
-    if (user['isActive'] == true) {
-      return Icons.check_circle;
-    } else {
-      return Icons.warning;
     }
   }
 
@@ -747,80 +696,30 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showEditProfileDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Profile'),
-        content: const Text('Profile editing functionality coming soon!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSettingsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Settings'),
-        content: const Text('Additional settings coming soon!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
+    final state = context.read<ProfileBloc>().state;
+    if (state is ProfileLoaded) {
+      context.push('/edit-profile', extra: state.user);
+    }
   }
 
   void _showNotificationSettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Notification settings coming soon!'),
-      ),
-    );
+    context.push('/notifications-settings');
   }
 
   void _showPaymentSettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Payment settings coming soon!'),
-      ),
-    );
+    context.push('/payment-settings');
   }
 
   void _showSecuritySettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Security settings coming soon!'),
-      ),
-    );
+    context.push('/security-settings');
   }
 
   void _showHelpCenter() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Help center coming soon!'),
-      ),
-    );
+    context.push('/help-center');
   }
 
   void _contactSupport() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Contact support: support@deliveryapp.com'),
-        duration: Duration(seconds: 3),
-      ),
-    );
+    context.push('/contact-support');
   }
 
   void _showAboutDialog() {

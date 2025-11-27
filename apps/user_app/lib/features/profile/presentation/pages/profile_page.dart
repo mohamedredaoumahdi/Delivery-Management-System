@@ -2,12 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:domain/domain.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
 
 import 'package:user_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:core/core.dart';
 
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Refresh user data when profile page loads to get latest profile picture
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuthBloc>().add(AuthCheckStatusEvent());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,27 +120,12 @@ class ProfilePage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            theme.colorScheme.primary.withValues(alpha: 0.12),
-            theme.colorScheme.primary.withValues(alpha: 0.03),
-            theme.colorScheme.surface,
-          ],
-          stops: const [0.0, 0.7, 1.0],
-        ),
+        color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.15),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.05),
-            blurRadius: 32,
-            offset: const Offset(0, 16),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -132,51 +134,22 @@ class ProfilePage extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
             width: 1,
-          ),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.white.withValues(alpha: 0.1),
-              Colors.transparent,
-            ],
           ),
         ),
       child: Row(
         children: [
-            // Enhanced profile picture with glowing effect
+            // Profile picture
           Container(
               width: 96,
               height: 96,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    theme.colorScheme.primary.withValues(alpha: 0.3),
-                    theme.colorScheme.primary.withValues(alpha: 0.1),
-                    theme.colorScheme.primary.withValues(alpha: 0.05),
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.25),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-              color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    blurRadius: 40,
-                    offset: const Offset(0, 20),
-                  ),
-                ],
+              color: theme.colorScheme.primaryContainer,
               border: Border.all(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.4),
-                  width: 3,
+                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                  width: 2,
               ),
             ),
             child: user.profilePicture != null
@@ -440,13 +413,21 @@ class ProfilePage extends StatelessWidget {
           icon: Icons.help_outline,
           title: 'Help Center',
           subtitle: 'Get help and find answers',
-          onTap: () {
-            // TODO: Navigate to help center
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Help center coming soon!'),
-              ),
-            );
+          onTap: () async {
+            final config = WhitelabelConfig.instance;
+            final url = config.helpCenterUrl;
+            try {
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not open help center')),
+                );
+              }
+            }
           },
         ),
         _buildSettingsItem(
@@ -454,13 +435,21 @@ class ProfilePage extends StatelessWidget {
           icon: Icons.chat_outlined,
           title: 'Contact Support',
           subtitle: 'Get in touch with our team',
-          onTap: () {
-            // TODO: Open contact support
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Contact support coming soon!'),
-              ),
-            );
+          onTap: () async {
+            final config = WhitelabelConfig.instance;
+            final url = config.supportUrl;
+            try {
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not open support')),
+                );
+              }
+            }
           },
         ),
         _buildSettingsItem(
@@ -468,13 +457,26 @@ class ProfilePage extends StatelessWidget {
           icon: Icons.star_outline,
           title: 'Rate the App',
           subtitle: 'Share your feedback',
-          onTap: () {
-            // TODO: Open app store for rating
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('App rating coming soon!'),
-              ),
-            );
+          onTap: () async {
+            final config = WhitelabelConfig.instance;
+            String url;
+            if (Platform.isIOS) {
+              url = config.appStoreUrl;
+            } else {
+              url = config.playStoreUrl;
+            }
+            try {
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not open app store')),
+                );
+              }
+            }
           },
         ),
       ],
@@ -499,13 +501,21 @@ class ProfilePage extends StatelessWidget {
           icon: Icons.description_outlined,
           title: 'Terms of Service',
           subtitle: 'Read our terms and conditions',
-          onTap: () {
-            // TODO: Open terms of service
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Terms of service coming soon!'),
-              ),
-            );
+          onTap: () async {
+            final config = WhitelabelConfig.instance;
+            final url = config.termsOfServiceUrl;
+            try {
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not open terms of service')),
+                );
+              }
+            }
           },
         ),
         _buildSettingsItem(
@@ -513,13 +523,21 @@ class ProfilePage extends StatelessWidget {
           icon: Icons.privacy_tip_outlined,
           title: 'Privacy Policy',
           subtitle: 'Learn about our privacy practices',
-          onTap: () {
-            // TODO: Open privacy policy
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Privacy policy coming soon!'),
-              ),
-            );
+          onTap: () async {
+            final config = WhitelabelConfig.instance;
+            final url = config.privacyPolicyUrl;
+            try {
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not open privacy policy')),
+                );
+              }
+            }
           },
         ),
       ],

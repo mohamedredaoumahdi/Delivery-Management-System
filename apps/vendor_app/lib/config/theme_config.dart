@@ -54,6 +54,8 @@ class VendorAppTheme {
       // Custom button shapes
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: baseTheme.primaryColor,
+          foregroundColor: Colors.white,
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

@@ -41,6 +41,31 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
         title: const Text('Menu Management'),
         actions: [
           IconButton(
+            icon: Stack(
+              children: [
+                const Icon(Icons.filter_list),
+                if (_selectedCategory != 'All' || _selectedFilter != 'All')
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () {
+              _showFilterDialog(context);
+            },
+            tooltip: 'Filter Menu Items',
+          ),
+          IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
               context.push('/add-menu-item');
@@ -97,44 +122,6 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
                 fillColor: Colors.grey[50],
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
-            ),
-          ),
-          
-          // Category Filter
-          Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                final category = _categories[index];
-                final isSelected = category == _selectedCategory;
-                
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(category),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedCategory = category;
-                      });
-                    },
-                    backgroundColor: Colors.grey[100],
-                    selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                    checkmarkColor: Theme.of(context).colorScheme.primary,
-                    labelStyle: TextStyle(
-                      color: isSelected 
-                          ? Theme.of(context).colorScheme.primary 
-                          : Colors.grey[700],
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                );
-              },
             ),
           ),
           
@@ -273,10 +260,14 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
     final price = (menuItem['price'] as num).toDouble();
 
     return Card(
-      elevation: 2,
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
       ),
       child: InkWell(
         onTap: () {
@@ -284,26 +275,21 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.all(16),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Menu Item Image Placeholder - Smaller size
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.restaurant,
-                  size: 30,
-                  color: Theme.of(context).colorScheme.primary,
+              // Menu item thumbnail (uses backend imageUrl / images with fallback)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: _buildMenuItemImage(context, menuItem),
                 ),
               ),
               
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               
               // Menu Item Details
               Expanded(
@@ -311,24 +297,79 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title - Full width
-                    Text(
-                      menuItem['name'],
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    // Title and Status Row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            menuItem['name'],
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                              height: 1.3,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Status Badge - Compact
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isAvailable 
+                                ? Colors.green.withValues(alpha: 0.1) 
+                                : Colors.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: isAvailable ? Colors.green : Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isAvailable ? 'Available' : 'Unavailable',
+                                style: TextStyle(
+                                  color: isAvailable ? Colors.green : Colors.red,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                     
                     const SizedBox(height: 8),
                     
+                    // Description (if available)
+                    if (menuItem['description'] != null && (menuItem['description'] as String).isNotEmpty)
+                      Text(
+                        menuItem['description'],
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                          fontSize: 13,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    
+                    const SizedBox(height: 10),
+                    
+                    // Price and Category Row
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
@@ -337,7 +378,7 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
                             '\$${price.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 15,
                               color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
@@ -346,7 +387,7 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
                           const SizedBox(width: 8),
                           Flexible(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Colors.grey[100],
                                 borderRadius: BorderRadius.circular(8),
@@ -372,99 +413,52 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
               
               const SizedBox(width: 12),
               
-              // Status Badge and Action Buttons - Right aligned
+              // Action Buttons - Vertical
               Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Status Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isAvailable 
-                          ? Colors.green.withValues(alpha: 0.15) 
-                          : Colors.red.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isAvailable ? Colors.green : Colors.red,
-                        width: 1,
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        context.push('/edit-menu-item/${menuItem['id']}');
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: isAvailable ? Colors.green : Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          isAvailable ? 'Available' : 'Unavailable',
-                          style: TextStyle(
-                            color: isAvailable ? Colors.green : Colors.red,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
-                  
-                  const SizedBox(height: 10),
-                  
-                  // Action Buttons
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            context.push('/edit-menu-item/${menuItem['id']}');
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.edit_outlined,
-                              size: 18,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
+                  const SizedBox(height: 8),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        _deleteMenuItem(menuItem);
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.delete_outline,
+                          size: 20,
+                          color: Colors.red,
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            _deleteMenuItem(menuItem);
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.delete_outline,
-                              size: 18,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -526,9 +520,9 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
         expand: false,
         builder: (context, scrollController) {
           return Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               children: [
@@ -578,18 +572,13 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Image placeholder
-                        Container(
-                          width: double.infinity,
-                          height: 220,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Icon(
-                            Icons.restaurant,
-                            size: 80,
-                            color: Theme.of(context).colorScheme.primary,
+                        // Menu item image
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 220,
+                            child: _buildMenuItemImage(context, menuItem),
                           ),
                         ),
                         
@@ -902,6 +891,56 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
       ),
     );
   }
+
+  Widget _buildMenuItemImage(
+    BuildContext context,
+    Map<String, dynamic> menuItem,
+  ) {
+    final theme = Theme.of(context);
+    dynamic imageUrl =
+        menuItem['imageUrl'] ?? menuItem['image'] ?? menuItem['image_url'];
+
+    // Fallback to first image in images array if available
+    if ((imageUrl == null || (imageUrl is String && imageUrl.isEmpty)) &&
+        menuItem['images'] is List &&
+        (menuItem['images'] as List).isNotEmpty) {
+      imageUrl = (menuItem['images'] as List).first;
+    }
+
+    if (imageUrl is String && imageUrl.isNotEmpty) {
+      final absoluteUrl = _toAbsoluteImageUrl(imageUrl);
+      return Image.network(
+        absoluteUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildImagePlaceholder(theme),
+      );
+    }
+
+    return _buildImagePlaceholder(theme);
+  }
+
+  String _toAbsoluteImageUrl(String url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // Backend serves static files at http://localhost:3000/uploads/...
+    if (url.startsWith('/')) {
+      return 'http://localhost:3000$url';
+    }
+    return 'http://localhost:3000/$url';
+  }
+
+  Widget _buildImagePlaceholder(ThemeData theme) {
+    return Container(
+      color: theme.colorScheme.primary.withValues(alpha: 0.06),
+      child: Icon(
+        Icons.restaurant,
+        size: 72,
+        color: theme.colorScheme.primary.withValues(alpha: 0.7),
+      ),
+    );
+  }
   
   Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
     return Row(
@@ -949,7 +988,7 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Are you sure you want to delete this item?'),
+            const Text('Are you sure you want to delete this item?'),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
@@ -1201,7 +1240,28 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () {
-                    // Show sort dialog
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Sort By'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: _sortOptions.map((option) {
+                            return RadioListTile<String>(
+                              title: Text(option),
+                              value: option,
+                              groupValue: _selectedSort,
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedSort = value!;
+                                });
+                                Navigator.pop(context);
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    );
                   },
                   icon: Icon(
                     Icons.sort,
@@ -1237,16 +1297,175 @@ class _MenuManagementPageState extends State<MenuManagementPage> {
     );
   }
 
-  String _getFilterDescription(String filter) {
-    switch (filter) {
-      case 'All':
-        return 'Show all menu items';
-      case 'Available':
-        return 'Show only available items';
-      case 'Unavailable':
-        return 'Show only unavailable items';
-      default:
-        return '';
-    }
+  void _showFilterDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            
+            // Title
+            Text(
+              'Filter Menu Items',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Category Section
+            Text(
+              'Category',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _categories.map((category) {
+                final isSelected = category == _selectedCategory;
+                return FilterChip(
+                  label: Text(category),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedCategory = category;
+                    });
+                  },
+                  backgroundColor: Colors.grey[100],
+                  selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                  checkmarkColor: Theme.of(context).colorScheme.primary,
+                  labelStyle: TextStyle(
+                    color: isSelected 
+                        ? Theme.of(context).colorScheme.primary 
+                        : Colors.grey[700],
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                );
+              }).toList(),
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Availability Section
+            Text(
+              'Availability',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _filters.map((filter) {
+                final isSelected = filter == _selectedFilter;
+                return FilterChip(
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (filter == 'Available')
+                        Icon(Icons.check_circle, size: 16, color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600])
+                      else if (filter == 'Unavailable')
+                        Icon(Icons.cancel, size: 16, color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[600]),
+                      if (filter != 'All') const SizedBox(width: 4),
+                      Text(filter),
+                    ],
+                  ),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedFilter = filter;
+                    });
+                  },
+                  backgroundColor: Colors.grey[100],
+                  selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                  checkmarkColor: Theme.of(context).colorScheme.primary,
+                  labelStyle: TextStyle(
+                    color: isSelected 
+                        ? Theme.of(context).colorScheme.primary 
+                        : Colors.grey[700],
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                );
+              }).toList(),
+            ),
+            
+            const SizedBox(height: 32),
+            
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedCategory = 'All';
+                        _selectedFilter = 'All';
+                      });
+                      Navigator.pop(context);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Clear All'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Apply Filters'),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
   }
+
 } 

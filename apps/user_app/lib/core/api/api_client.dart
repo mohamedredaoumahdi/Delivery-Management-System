@@ -20,11 +20,8 @@ class ApiClient {
         return handler.next(options);
       },
       onError: (DioException error, handler) {
-        print('Interceptor caught DioError: ${error.message}'); // Debug log
-        print('Interceptor DioError type: ${error.type}'); // Debug log
-        print('Interceptor DioError response: ${error.response}'); // Debug log
+        // Handle 401 Unauthorized - clear invalid token
         if (error.response?.statusCode == 401) {
-          // Handle token refresh or logout
           _prefs.remove('auth_token');
         }
         return handler.next(error);
@@ -40,13 +37,11 @@ class ApiClient {
     }
   }
 
+  /// Sends a POST request to the specified path with optional data
   Future<Response> post(String path, {dynamic data}) async {
     try {
-      final response = await _dio.post(path, data: data);
-      print('Response from $path: ${response.data}'); // Debug log
-      return response;
+      return await _dio.post(path, data: data);
     } on DioException catch (e) {
-      print('Error response from $path: ${e.response?.data}'); // Debug log
       throw _handleError(e);
     }
   }
@@ -71,14 +66,10 @@ class ApiClient {
     await _prefs.setString('auth_token', token);
   }
 
+  /// Handles DioException and converts it to a user-friendly ApiException
+  /// Extracts error messages from response data when available
   Exception _handleError(DioException error) {
-    print('Handling DioError: ${error.message}'); // Debug log
-    print('DioError type: ${error.type}'); // Debug log
-    print('DioError response: ${error.response}'); // Debug log
-    
     if (error.response != null) {
-      print('Error response status code: ${error.response?.statusCode}'); // Debug log
-      print('Error response data: ${error.response?.data}'); // Debug log
       final responseData = error.response?.data;
       String errorMessage = 'An error occurred';
       

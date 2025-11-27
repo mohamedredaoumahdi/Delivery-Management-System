@@ -38,16 +38,57 @@ const io = new Server(server, {
 // Initialize socket service (expects an io instance)
 initializeSocket(io);
 
-// Security middleware
+// Security middleware - Helmet.js with comprehensive security headers
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
 }));
 
 // CORS configuration
 app.use(cors({
-  origin: config.corsOrigin,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // In development, allow all origins including localhost:8080
+    if (config.nodeEnv === 'development') {
+      return callback(null, true);
+    }
+    
+    // In production, check against allowed list
+    const allowedOrigins = Array.isArray(config.corsOrigin) 
+      ? config.corsOrigin 
+      : config.corsOrigin === '*' 
+        ? true 
+        : [config.corsOrigin];
+    
+    // Always allow localhost:8080 for Flutter web admin app
+    const allowedList = Array.isArray(allowedOrigins)
+      ? [...allowedOrigins, 'http://localhost:8080', 'http://127.0.0.1:8080']
+      : allowedOrigins;
+    
+    if (allowedList === true || (Array.isArray(allowedList) && allowedList.includes(origin))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
 }));
 
 // Compression middleware
@@ -59,6 +100,11 @@ if (config.enableCompression) {
 if (config.enableMorganLogging && config.nodeEnv === 'development') {
   app.use(morgan('combined'));
 }
+
+// Payment webhooks need raw body for signature verification
+// Mount webhook routes BEFORE body parsing middleware
+import paymentWebhookRoutes from '@/routes/paymentWebhooks';
+app.use('/api/webhooks', paymentWebhookRoutes);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));

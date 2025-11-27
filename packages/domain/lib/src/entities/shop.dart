@@ -204,13 +204,21 @@ class Shop extends Equatable {
   
   /// Creates a shop from JSON
   factory Shop.fromJson(Map<String, dynamic> json) {
+    // Helper function to convert relative URLs to absolute URLs
+    String? toAbsoluteUrl(String? url) {
+      if (url == null || url.isEmpty) return null;
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      const baseUrl = 'http://localhost:3000';
+      return url.startsWith('/') ? '$baseUrl$url' : '$baseUrl/$url';
+    }
+
     return Shop(
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String,
       category: _parseShopCategory(json['category'] as String),
-      logoUrl: json['logoUrl'] as String?,
-      coverImageUrl: json['coverImageUrl'] as String?,
+      logoUrl: toAbsoluteUrl(json['logoUrl'] as String?),
+      coverImageUrl: toAbsoluteUrl(json['coverImageUrl'] as String?),
       address: json['address'] as String,
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),

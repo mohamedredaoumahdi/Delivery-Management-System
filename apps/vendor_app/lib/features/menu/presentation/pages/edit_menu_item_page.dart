@@ -22,6 +22,7 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
   late TextEditingController _descriptionController;
   late TextEditingController _priceController;
   late TextEditingController _preparationTimeController;
+  late TextEditingController _imageUrlController;
   
   final List<String> _availableCategories = ['Main Course', 'Salads', 'Beverages', 'Desserts', 'Appetizers', 'Sides'];
   String _selectedCategory = 'Main Course';
@@ -36,6 +37,7 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
     _descriptionController = TextEditingController();
     _priceController = TextEditingController();
     _preparationTimeController = TextEditingController();
+    _imageUrlController = TextEditingController();
     
     // Load menu items to find the one to edit
     context.read<MenuBloc>().add(LoadMenuItems());
@@ -47,6 +49,7 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
     _descriptionController.dispose();
     _priceController.dispose();
     _preparationTimeController.dispose();
+    _imageUrlController.dispose();
     super.dispose();
   }
 
@@ -78,6 +81,8 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
           _descriptionController.text = item['description'] ?? '';
           _priceController.text = (item['price'] as num?)?.toString() ?? '';
           _preparationTimeController.text = item['preparationTime']?.toString() ?? '15';
+          _imageUrlController.text =
+              item['imageUrl'] ?? (item['images'] is List && (item['images'] as List).isNotEmpty ? (item['images'] as List).first : '');
           
           // Handle category
           final categoryFromItem = item['categoryName'] ?? item['category'];
@@ -129,6 +134,10 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
     // Add preparation time if provided
     if (_preparationTimeController.text.isNotEmpty) {
       data['preparationTime'] = int.parse(_preparationTimeController.text.trim());
+    }
+
+    if (_imageUrlController.text.trim().isNotEmpty) {
+      data['imageUrl'] = _imageUrlController.text.trim();
     }
 
     context.read<MenuBloc>().add(UpdateMenuItem(widget.itemId, data));
@@ -289,6 +298,34 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
                               
                               const SizedBox(height: 16),
                               
+                    // Image URL (optional)
+                    TextFormField(
+                      controller: _imageUrlController,
+                      decoration: InputDecoration(
+                        labelText: 'Image URL (optional)',
+                        hintText: '/uploads/products/product-image.jpg',
+                        prefixIcon: const Icon(Icons.image_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
                               // Description Field
                               TextFormField(
                                 controller: _descriptionController,
@@ -330,7 +367,7 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
                               // Price Field
                               TextFormField(
                                 controller: _priceController,
-                                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                 decoration: InputDecoration(
                                   labelText: 'Price *',
                                   hintText: '12.99',
@@ -369,7 +406,7 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
                               
                               // Category Dropdown
                               DropdownButtonFormField<String>(
-                                value: _selectedCategory,
+                                initialValue: _selectedCategory,
                                 decoration: InputDecoration(
                                   labelText: 'Category *',
                                   prefixIcon: const Icon(Icons.category),
@@ -494,7 +531,7 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
                                           _isAvailable = value;
                                         });
                                       },
-                                      activeColor: Theme.of(context).colorScheme.primary,
+                                      activeThumbColor: Theme.of(context).colorScheme.primary,
                                     ),
                                   ],
                                 ),
@@ -536,7 +573,7 @@ class _EditMenuItemPageState extends State<EditMenuItemPage> {
                                         elevation: 2,
                                       ),
                                       child: isSaving
-                                          ? SizedBox(
+                                          ? const SizedBox(
                                               height: 20,
                                               width: 20,
                                               child: CircularProgressIndicator(

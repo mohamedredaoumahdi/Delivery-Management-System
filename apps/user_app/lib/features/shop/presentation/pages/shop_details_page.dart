@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,6 +34,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
   bool _isSearching = false;
   List<String> _categories = [];
   String? _selectedCategory;
+  Timer? _searchDebounce;
+  bool _isHeaderVisible = true;
 
   @override
   void initState() {
@@ -55,13 +58,22 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
     _tabController.dispose();
     _scrollController.dispose();
     _searchController.dispose();
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
   void _onScroll() {
+    // Update header visibility based on scroll position
+    final isScrolled = _scrollController.position.pixels > 50;
+    if (_isHeaderVisible != !isScrolled) {
+      setState(() {
+        _isHeaderVisible = !isScrolled;
+      });
+    }
+    
+    // Load more products when user is near the bottom
     if (_scrollController.position.pixels >= 
         _scrollController.position.maxScrollExtent - 200) {
-      // Load more products when user is near the bottom
       final state = context.read<ProductListBloc>().state;
       if (state is ProductListLoaded && state.hasMore) {
         context.read<ProductListBloc>().add(ProductListLoadMoreEvent());
@@ -120,6 +132,9 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
   }
 
   void _addToCart(Product product) {
+    // Haptic feedback for better UX
+    HapticFeedback.lightImpact();
+    
     context.read<CartBloc>().add(CartAddItemEvent(
       product: product,
       shopId: widget.shopId,
@@ -129,10 +144,27 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${product.name} added to cart'),
+        content: Row(
+          children: [
+            const Icon(
+              Icons.check_circle,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text('${product.name} added to cart'),
+            ),
+          ],
+        ),
         duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         action: SnackBarAction(
           label: 'View Cart',
+          textColor: Colors.white,
           onPressed: () => context.go('/cart'),
         ),
       ),
@@ -141,47 +173,63 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
 
   Widget _buildCategoryChip(BuildContext context, String label, bool isSelected, VoidCallback onTap) {
     final theme = Theme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     
-    return Container(
-      margin: const EdgeInsets.only(right: 12),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      theme.colorScheme.primary,
-                      theme.colorScheme.primary.withValues(alpha:0.8),
-                    ],
-                  )
-                : null,
-            color: isSelected ? null : theme.colorScheme.surfaceContainerHighest.withValues(alpha:0.7),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: theme.colorScheme.primary.withValues(alpha:0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ] : null,
-            border: Border.all(
-              color: isSelected 
-                  ? Colors.transparent 
-                  : theme.colorScheme.outline.withValues(alpha:0.2),
-              width: 1,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      margin: EdgeInsets.only(right: screenWidth * 0.03), // 3% of screen width
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onTap();
+          },
+          borderRadius: BorderRadius.circular(screenWidth * 0.05),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.04, // 4% of screen width
+              vertical: screenHeight * 0.012, // 1.2% of screen height
             ),
-          ),
-          child: Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: isSelected 
-                  ? Colors.white 
-                  : theme.colorScheme.onSurface.withValues(alpha:0.8),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary,
+                        theme.colorScheme.primary.withValues(alpha:0.8),
+                      ],
+                    )
+                  : null,
+              color: isSelected ? null : theme.colorScheme.surfaceContainerHighest.withValues(alpha:0.7),
+              borderRadius: BorderRadius.circular(screenWidth * 0.05), // 5% of screen width
+              boxShadow: isSelected ? [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withValues(alpha:0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ] : null,
+              border: Border.all(
+                color: isSelected 
+                    ? Colors.transparent 
+                    : theme.colorScheme.outline.withValues(alpha:0.2),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isSelected 
+                    ? Colors.white 
+                    : theme.colorScheme.onSurface.withValues(alpha:0.8),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
             ),
           ),
         ),
@@ -223,10 +271,14 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
               controller: _scrollController,
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
-                  // App bar with shop cover image
+                  // App bar with shop cover image:
+                  // - Not pinned
+                  // - Not floating (so it does NOT reappear while scrolling inner content)
                   SliverAppBar(
                     expandedHeight: 200,
-                    pinned: true,
+                    pinned: false,
+                    floating: false,
+                    snap: false,
                     flexibleSpace: FlexibleSpaceBar(
                       background: Stack(
                         fit: StackFit.expand,
@@ -290,10 +342,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
               },
               body: Column(
                 children: [
-                  // Shop info section
-                  ShopInfoCard(shop: shop),
-                  
-                  // Tab bar for Products and Info
+                  // Tab bar for Products and Info (fixed at top)
                   Material(
                     color: theme.colorScheme.surface,
                     child: TabBar(
@@ -310,12 +359,12 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                     ),
                   ),
                   
-                  // Tab content
+                  // Tab content (scrollable below the fixed tab bar)
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        // Products tab
+                        // Products tab - shop info + products scroll together
                         _buildProductsTab(context, shop),
                         
                         // Info tab
@@ -338,146 +387,169 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
   }
 
   Widget _buildProductsTab(BuildContext context, Shop shop) {
-    return Column(
-      children: [
-        // Search and filter section
-        Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha:0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 2),
-                spreadRadius: 0,
-              ),
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withValues(alpha:0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 1),
-                spreadRadius: 0,
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Enhanced search bar
-              Container(
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha:0.5),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withValues(alpha:0.1),
-                    width: 1,
-                  ),
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    return CustomScrollView(
+      // Don't use _scrollController here - it's already used by NestedScrollView
+      // The NestedScrollView will handle scrolling coordination
+      slivers: [
+        // Shop info card - now scrolls with the products so it doesn't permanently take vertical space
+        SliverToBoxAdapter(
+          child: ShopInfoCard(shop: shop),
+        ),
+        
+        // Search and filter section - scrolls with content
+        SliverToBoxAdapter(
+          child: Container(
+            margin: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.04, // 4% of screen width
+              vertical: screenHeight * 0.015, // 1.5% of screen height
+            ),
+            padding: EdgeInsets.all(screenWidth * 0.04), // 4% of screen width
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(screenWidth * 0.05), // 5% of screen width
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha:0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                  spreadRadius: 0,
                 ),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    Icon(
-                      Icons.search_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 20,
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.shadow.withValues(alpha:0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Enhanced search bar
+                Container(
+                  height: screenHeight * 0.06, // 6% of screen height
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha:0.5),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.04), // 4% of screen width
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline.withValues(alpha:0.1),
+                      width: 1,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                controller: _searchController,
-                        decoration: InputDecoration(
-                hintText: 'Search products...',
-                          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.6),
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(width: screenWidth * 0.04), // 4% of screen width
+                      Icon(
+                        Icons.search_rounded,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: screenWidth * 0.05, // 5% of screen width
+                      ),
+                      SizedBox(width: screenWidth * 0.03), // 3% of screen width
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Search products...',
+                            hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.6),
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
                           ),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                onSubmitted: (_) => _performSearch(),
-                onChanged: (value) {
-                  setState(() {
-                    _isSearching = value.isNotEmpty;
-                  });
-                  if (value.isEmpty) {
-                    _clearSearch();
-                  }
-                },
-              ),
-                    ),
-                    if (_searchController.text.isNotEmpty)
-                      GestureDetector(
-                        onTap: _clearSearch,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.close_rounded,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.5),
-                            size: 18,
-                          ),
-                        ),
-                      )
-                    else
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.tune_rounded,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.4),
-                          size: 18,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          onSubmitted: (_) => _performSearch(),
+                          onChanged: (value) {
+                            setState(() {
+                              _isSearching = value.isNotEmpty;
+                            });
+                            
+                            // Debounce search for better performance
+                            _searchDebounce?.cancel();
+                            if (value.isEmpty) {
+                              _clearSearch();
+                            } else {
+                              _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+                                _performSearch();
+                              });
+                            }
+                          },
                         ),
                       ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-              ),
-              
-              // Enhanced category filter chips
-              BlocListener<ProductListBloc, ProductListState>(
-                listener: (context, state) {
-                  if (state is ProductListLoaded && _categories != state.categories) {
-                    setState(() {
-                      _categories = state.categories;
-                    });
-                  }
-                },
-                child: _categories.isNotEmpty
-                    ? Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                _buildCategoryChip(
-                                  context,
-                                  'All',
-                                  _selectedCategory == null,
-                                  () => _filterByCategory(null),
-                                ),
-                                ..._categories.map((category) => _buildCategoryChip(
-                                  context,
-                                  category,
-                                  _selectedCategory == category,
-                                  () => _filterByCategory(category),
-                                )),
-                              ],
+                      if (_searchController.text.isNotEmpty)
+                        GestureDetector(
+                          onTap: _clearSearch,
+                          child: Container(
+                            padding: EdgeInsets.all(screenWidth * 0.02), // 2% of screen width
+                            child: Icon(
+                              Icons.close_rounded,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.5),
+                              size: screenWidth * 0.045, // 4.5% of screen width
                             ),
                           ),
-                        ],
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
+                        )
+                      else
+                        Container(
+                          padding: EdgeInsets.all(screenWidth * 0.02), // 2% of screen width
+                          child: Icon(
+                            Icons.tune_rounded,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.4),
+                            size: screenWidth * 0.045, // 4.5% of screen width
+                          ),
+                        ),
+                      SizedBox(width: screenWidth * 0.02), // 2% of screen width
+                    ],
+                  ),
+                ),
+                
+                // Enhanced category filter chips
+                BlocListener<ProductListBloc, ProductListState>(
+                  listener: (context, state) {
+                    if (state is ProductListLoaded && _categories != state.categories) {
+                      setState(() {
+                        _categories = state.categories;
+                      });
+                    }
+                  },
+                  child: _categories.isNotEmpty
+                      ? Column(
+                          children: [
+                            SizedBox(height: screenHeight * 0.015), // 1.5% of screen height
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  _buildCategoryChip(
+                                    context,
+                                    'All',
+                                    _selectedCategory == null,
+                                    () => _filterByCategory(null),
+                                  ),
+                                  ..._categories.map((category) => _buildCategoryChip(
+                                    context,
+                                    category,
+                                    _selectedCategory == category,
+                                    () => _filterByCategory(category),
+                                  )),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
           ),
         ),
         
-        // Products grid
-        Expanded(
-          child: BlocConsumer<ProductListBloc, ProductListState>(
+        // Products grid - scrolls with search bar
+        SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+          sliver: BlocConsumer<ProductListBloc, ProductListState>(
             listener: (context, state) {
               if (state is ProductListError) {
                 print('❌ ProductListBloc Error: ${state.message}');
@@ -491,8 +563,10 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
             },
             builder: (context, state) {
               if (state is ProductListLoading && state.oldProducts == null) {
-                return const Center(
-                  child: CircularProgressIndicator(),
+                return const SliverFillRemaining(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 );
               }
 
@@ -515,18 +589,24 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
                 }
 
                 if (products.isEmpty) {
-                  return _buildEmptyProductsState(context);
+                  return SliverFillRemaining(
+                    child: _buildEmptyProductsState(context),
+                  );
                 }
 
-                return _buildProductsGrid(context, products, hasMore, shop);
+                return _buildProductsGridSliver(context, products, hasMore, shop, screenWidth);
               }
 
               if (state is ProductListError) {
-                return _buildProductsErrorState(context, state.message);
+                return SliverFillRemaining(
+                  child: _buildProductsErrorState(context, state.message),
+                );
               }
 
-              return const Center(
-                child: CircularProgressIndicator(),
+              return const SliverFillRemaining(
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
               );
             },
           ),
@@ -535,25 +615,19 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
     );
   }
 
-  Widget _buildProductsGrid(BuildContext context, List<Product> products, bool hasMore, Shop shop) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<ProductListBloc>().add(ProductListRefreshEvent(
-          shopId: widget.shopId,
-          category: _selectedCategory,
-        ));
-        await Future.delayed(const Duration(milliseconds: 500));
-      },
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.7,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: products.length + (hasMore ? 2 : 0), // Add 2 loading placeholders
-        itemBuilder: (context, index) {
+
+  Widget _buildProductsGridSliver(BuildContext context, List<Product> products, bool hasMore, Shop shop, double screenWidth) {
+    // Pagination is handled by the _onScroll listener on _scrollController
+    // which is attached to the NestedScrollView
+    return SliverGrid(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.7,
+        crossAxisSpacing: screenWidth * 0.04,
+        mainAxisSpacing: screenWidth * 0.04,
+      ),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
           if (index >= products.length) {
             // Loading placeholder for pagination
             return const Card(
@@ -572,6 +646,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
             onAddToCart: () => _addToCart(product),
           );
         },
+        childCount: products.length + (hasMore ? 2 : 0),
       ),
     );
   }
@@ -580,157 +655,169 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
     final theme = Theme.of(context);
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Description
-          if (shop.description.isNotEmpty) ...[
-            Text(
-              'About',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              shop.description,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 24),
-          ],
-          
-          // Contact Information
-          Text(
-            'Contact Information',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          // Reuse the same shop info card at the top of the Info tab
+          ShopInfoCard(shop: shop),
           const SizedBox(height: 16),
-          
-          AppCard(
-            child: Column(
-              children: [
-                _buildInfoRow(
-                  context,
-                  Icons.location_on_outlined,
-                  'Address',
-                  shop.address,
-                  onTap: () => _openMaps(shop.latitude, shop.longitude),
-                ),
-                const Divider(height: 24),
-                _buildInfoRow(
-                  context,
-                  Icons.phone_outlined,
-                  'Phone',
-                  shop.phone,
-                  onTap: () => _makePhoneCall(shop.phone),
-                ),
-                const Divider(height: 24),
-                _buildInfoRow(
-                  context,
-                  Icons.email_outlined,
-                  'Email',
-                  shop.email,
-                  onTap: () => _sendEmail(shop.email),
-                ),
-                if (shop.website != null) ...[
-                  const Divider(height: 24),
-                  _buildInfoRow(
-                    context,
-                    Icons.language_outlined,
-                    'Website',
-                    shop.website!,
-                    onTap: () => _openWebsite(shop.website!),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          
-          // Delivery Information
-          Text(
-            'Delivery Information',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          AppCard(
-            child: Column(
-              children: [
-                _buildInfoRow(
-                  context,
-                  Icons.access_time,
-                  'Delivery Time',
-                  '${shop.estimatedDeliveryTime} minutes',
-                ),
-                const Divider(height: 24),
-                _buildInfoRow(
-                  context,
-                  Icons.delivery_dining,
-                  'Delivery Fee',
-                  '\$${shop.deliveryFee.toStringAsFixed(2)}',
-                ),
-                const Divider(height: 24),
-                _buildInfoRow(
-                  context,
-                  Icons.attach_money,
-                  'Minimum Order',
-                  '\$${shop.minimumOrderAmount.toStringAsFixed(2)}',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          
-          // Operating Hours
-          Text(
-            'Operating Hours',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          AppCard(
+
+          // Info content with consistent horizontal padding (matches Products tab)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Parse and display opening hours
-                // This is a simplified version - you might want to parse the JSON properly
-                Text(
-                  'Monday - Friday: 9:00 AM - 10:00 PM',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Saturday - Sunday: 10:00 AM - 11:00 PM',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: shop.isOpen ? Colors.green.shade100 : Colors.red.shade100,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    shop.isOpen ? 'Currently Open' : 'Currently Closed',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: shop.isOpen ? Colors.green.shade800 : Colors.red.shade800,
+                // Description
+                if (shop.description.isNotEmpty) ...[
+                  Text(
+                    'About',
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    shop.description,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 24),
+                ],
+                
+                // Contact Information
+                Text(
+                  'Contact Information',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+                const SizedBox(height: 16),
+                
+                AppCard(
+                  child: Column(
+                    children: [
+                      _buildInfoRow(
+                        context,
+                        Icons.location_on_outlined,
+                        'Address',
+                        shop.address,
+                        onTap: () => _openMaps(shop.latitude, shop.longitude),
+                      ),
+                      const Divider(height: 24),
+                      _buildInfoRow(
+                        context,
+                        Icons.phone_outlined,
+                        'Phone',
+                        shop.phone,
+                        onTap: () => _makePhoneCall(shop.phone),
+                      ),
+                      const Divider(height: 24),
+                      _buildInfoRow(
+                        context,
+                        Icons.email_outlined,
+                        'Email',
+                        shop.email,
+                        onTap: () => _sendEmail(shop.email),
+                      ),
+                      if (shop.website != null) ...[
+                        const Divider(height: 24),
+                        _buildInfoRow(
+                          context,
+                          Icons.language_outlined,
+                          'Website',
+                          shop.website!,
+                          onTap: () => _openWebsite(shop.website!),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Delivery Information
+                Text(
+                  'Delivery Information',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                AppCard(
+                  child: Column(
+                    children: [
+                      _buildInfoRow(
+                        context,
+                        Icons.access_time,
+                        'Delivery Time',
+                        '${shop.estimatedDeliveryTime} minutes',
+                      ),
+                      const Divider(height: 24),
+                      _buildInfoRow(
+                        context,
+                        Icons.delivery_dining,
+                        'Delivery Fee',
+                        '\$${shop.deliveryFee.toStringAsFixed(2)}',
+                      ),
+                      const Divider(height: 24),
+                      _buildInfoRow(
+                        context,
+                        Icons.attach_money,
+                        'Minimum Order',
+                        '\$${shop.minimumOrderAmount.toStringAsFixed(2)}',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Operating Hours
+                Text(
+                  'Operating Hours',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Parse and display opening hours
+                      // This is a simplified version - you might want to parse the JSON properly
+                      Text(
+                        'Monday - Friday: 9:00 AM - 10:00 PM',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Saturday - Sunday: 10:00 AM - 11:00 PM',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: shop.isOpen ? Colors.green.shade100 : Colors.red.shade100,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          shop.isOpen ? 'Currently Open' : 'Currently Closed',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: shop.isOpen ? Colors.green.shade800 : Colors.red.shade800,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
               ],
             ),
           ),
-          
-          const SizedBox(height: 32),
         ],
       ),
     );
@@ -1053,7 +1140,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> with TickerProviderSt
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(

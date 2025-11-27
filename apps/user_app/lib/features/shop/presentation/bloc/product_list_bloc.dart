@@ -187,7 +187,7 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
               if (!emit.isDone) {
                 emit(ProductListLoaded(
                   products: products,
-                  categories: [], // Empty categories on failure
+                  categories: const [], // Empty categories on failure
                   hasMore: products.length >= 20,
                 ));
               }

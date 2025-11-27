@@ -52,8 +52,26 @@ class PaymentMethodRepositoryImpl implements PaymentMethodRepository {
     try {
       logger.i('💳 PaymentMethodRepositoryImpl: Creating payment method');
       
+      // Map frontend enum to backend enum string (with underscores)
+      String _mapType(PaymentMethodType t) {
+        switch (t) {
+          case PaymentMethodType.creditCard:
+            return 'CREDIT_CARD';
+          case PaymentMethodType.debitCard:
+            return 'DEBIT_CARD';
+          case PaymentMethodType.paypal:
+            return 'PAYPAL';
+          case PaymentMethodType.applePay:
+            return 'APPLE_PAY';
+          case PaymentMethodType.googlePay:
+            return 'GOOGLE_PAY';
+          case PaymentMethodType.bankAccount:
+            return 'BANK_ACCOUNT';
+        }
+      }
+
       final data = {
-        'type': type.toString().split('.').last.toUpperCase(),
+        'type': _mapType(type),
         'label': label,
         'isDefault': isDefault,
       };

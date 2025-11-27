@@ -6,6 +6,7 @@ import { AuthenticatedRequest } from '@/types/express';
 import { getIO } from '@/services/socketService';
 import { NotificationService } from '@/services/notificationService';
 import { RoutingService } from '@/services/routingService';
+import { haversineKm } from '@/utils/geo';
 
 export class DeliveryController {
   getAssignedOrders = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
@@ -253,6 +254,38 @@ export class DeliveryController {
     });
   });
 
+  // Status management (online/offline)
+  goOnline = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    // Store online status (in production, use Redis or database)
+    // For now, we'll just return success
+    // In a real implementation, you'd store this in Redis with TTL or in a database
+    
+    res.json({
+      status: 'success',
+      message: 'Driver is now online',
+      data: {
+        userId: req.user!.id,
+        status: 'online',
+        timestamp: new Date().toISOString(),
+      },
+    });
+  });
+
+  goOffline = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    // Store offline status (in production, use Redis or database)
+    // For now, we'll just return success
+    
+    res.json({
+      status: 'success',
+      message: 'Driver is now offline',
+      data: {
+        userId: req.user!.id,
+        status: 'offline',
+        timestamp: new Date().toISOString(),
+      },
+    });
+  });
+
   getEarnings = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
     const { period = 'today' } = req.query;
     const driverId = req.user!.id;
@@ -296,6 +329,12 @@ export class DeliveryController {
             name: true,
           },
         },
+        shop: {
+          select: {
+            latitude: true,
+            longitude: true,
+          },
+        },
       },
       orderBy: {
         deliveredAt: 'desc',
@@ -330,18 +369,46 @@ export class DeliveryController {
     const basePay = deliveredOrders.reduce((sum: number, order: OrderWithUser) => sum + (order.deliveryFee || 0), 0);
     const tips = deliveredOrders.reduce((sum: number, order: OrderWithUser) => sum + (order.tip || 0), 0);
     const bonuses = 0; // Can be calculated based on performance metrics
+    
+    // Calculate actual distances and distance bonus
+    let totalDistance = 0;
     const distanceBonus = deliveredOrders.reduce((sum: number, order: OrderWithUser) => {
-      // Assume $0.50 per km as distance bonus
-      return sum + (2.0 * 0.5); // Using default distance of 2km
+      if (order.shop && order.shop.latitude && order.shop.longitude && 
+          order.deliveryLatitude && order.deliveryLongitude) {
+        const distance = haversineKm(
+          order.shop.latitude,
+          order.shop.longitude,
+          order.deliveryLatitude,
+          order.deliveryLongitude
+        );
+        totalDistance += distance;
+        // $0.50 per km as distance bonus
+        return sum + (distance * 0.5);
+      }
+      // Fallback to 2km if coordinates not available
+      return sum + (2.0 * 0.5);
     }, 0);
 
-    // Recent deliveries (last 10)
-    const recentDeliveries = deliveredOrders.slice(0, 10).map((order: OrderWithUser) => ({
-      orderNumber: order.orderNumber || `ORD-${order.id.substring(0, 8)}`,
-      completedAt: order.deliveredAt?.toISOString() || order.updatedAt.toISOString(),
-      earnings: (order.deliveryFee || 0) + (order.tip || 0) + ((order.total || 0) * 0.02),
-      distance: 2.0, // TODO: Calculate actual distance
-    }));
+    // Recent deliveries (last 10) with actual distances
+    const recentDeliveries = deliveredOrders.slice(0, 10).map((order: OrderWithUser) => {
+      let distance = 2.0; // Default fallback
+      if (order.shop && order.shop.latitude && order.shop.longitude && 
+          order.deliveryLatitude && order.deliveryLongitude) {
+        distance = haversineKm(
+          order.shop.latitude,
+          order.shop.longitude,
+          order.deliveryLatitude,
+          order.deliveryLongitude
+        );
+      }
+      
+      return {
+        orderNumber: order.orderNumber || `ORD-${order.id.substring(0, 8)}`,
+        completedAt: order.deliveredAt?.toISOString() || order.updatedAt.toISOString(),
+        earnings: (order.deliveryFee || 0) + (order.tip || 0) + ((order.total || 0) * 0.02),
+        distance: Math.round(distance * 10) / 10, // Round to 1 decimal place
+      };
+    });
 
     // Payment history
     const paymentHistory: Array<{ date: string; amount: number; description: string; status: string }> = [];
@@ -410,6 +477,51 @@ export class DeliveryController {
     const onlineMinutes = deliveredOrders.length * 30; // Assume 30 minutes per delivery
     const onlineHours = Math.floor(onlineMinutes / 60);
 
+    // Calculate acceptance rate: accepted orders / (accepted + rejected)
+    const allOrders = await prisma.order.findMany({
+      where: {
+        OR: [
+          { deliveryPersonId: driverId },
+          { status: 'READY_FOR_PICKUP', deliveryPersonId: null },
+        ],
+      },
+      select: { id: true, deliveryPersonId: true, status: true },
+    });
+    const acceptedCount = allOrders.filter((o: any) => o.deliveryPersonId === driverId).length;
+    const availableCount = allOrders.filter((o: any) => o.status === 'READY_FOR_PICKUP' && !o.deliveryPersonId).length;
+    const totalOffered = acceptedCount + availableCount;
+    const acceptanceRate = totalOffered > 0 ? Math.round((acceptedCount / totalOffered) * 100) : 100;
+
+    // Get customer rating from reviews (if delivery reviews exist, otherwise default)
+    const reviews = await prisma.review.findMany({
+      where: {
+        shopId: { in: deliveredOrders.map((o: any) => o.shopId) },
+      },
+      select: { rating: true },
+    });
+    const customerRating = reviews.length > 0
+      ? Math.round((reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length) * 10) / 10
+      : 4.5; // Default rating if no reviews
+
+    // Calculate on-time rate: orders delivered on time / total delivered
+    let onTimeCount = 0;
+    for (const order of deliveredOrders) {
+      if (order.estimatedDeliveryTime && order.deliveredAt) {
+        const estimated = new Date(order.estimatedDeliveryTime);
+        const delivered = new Date(order.deliveredAt);
+        // Consider on-time if delivered within 15 minutes of estimated time
+        if (delivered <= new Date(estimated.getTime() + 15 * 60 * 1000)) {
+          onTimeCount++;
+        }
+      } else {
+        // If no estimated time, assume on-time
+        onTimeCount++;
+      }
+    }
+    const onTimeRate = deliveredOrders.length > 0
+      ? Math.round((onTimeCount / deliveredOrders.length) * 100)
+      : 100;
+
     res.json({
       status: 'success',
       data: {
@@ -440,9 +552,9 @@ export class DeliveryController {
             return sum + deliveryFee + tip + commission;
           }, 0),
         weeklyHours: Math.floor(onlineMinutes / 60),
-        acceptanceRate: 95, // TODO: Calculate from actual data
-        customerRating: 4.8, // TODO: Get from reviews
-        onTimeRate: 98, // TODO: Calculate from actual data
+        acceptanceRate,
+        customerRating,
+        onTimeRate,
         averageTip: tips / deliveredOrders.length || 0,
         bestTip: deliveredOrders.length > 0 ? Math.max(...deliveredOrders.map((o: OrderWithUser) => o.tip || 0)) : 0,
         tipRate: deliveredOrders.length > 0 ? (deliveredOrders.filter((o: OrderWithUser) => (o.tip || 0) > 0).length / deliveredOrders.length) * 100 : 0,

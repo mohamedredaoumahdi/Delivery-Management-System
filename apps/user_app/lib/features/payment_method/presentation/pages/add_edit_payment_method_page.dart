@@ -32,6 +32,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
   final _labelController = TextEditingController();
   final _cardNumberController = TextEditingController();
   final _expiryController = TextEditingController();
+  final _cvvController = TextEditingController();
   final _holderNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _bankNameController = TextEditingController();
@@ -62,6 +63,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
     _labelController.dispose();
     _cardNumberController.dispose();
     _expiryController.dispose();
+    _cvvController.dispose();
     _holderNameController.dispose();
     _emailController.dispose();
     _bankNameController.dispose();
@@ -98,6 +100,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
     _labelController.addListener(() => _markAsChanged());
     _cardNumberController.addListener(() => _markAsChanged());
     _expiryController.addListener(() => _markAsChanged());
+    _cvvController.addListener(() => _markAsChanged());
     _holderNameController.addListener(() => _markAsChanged());
     _emailController.addListener(() => _markAsChanged());
     _bankNameController.addListener(() => _markAsChanged());
@@ -433,17 +436,21 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
           keyboardType: TextInputType.number,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
+            // Limit to 16 digits (will appear as 19 chars with spaces: XXXX XXXX XXXX XXXX)
+            LengthLimitingTextInputFormatter(16),
             _CardNumberInputFormatter(),
           ],
           validator: (value) {
-            if (value == null || value.replaceAll(' ', '').length < 13) {
-              return 'Please enter a valid card number';
+            final digits = value?.replaceAll(' ', '') ?? '';
+            if (digits.length != 16) {
+              return 'Card number must be 16 digits';
             }
             return null;
           },
           onChanged: (value) => _detectCardBrand(value),
         ),
         const SizedBox(height: 16),
+        // Expiration date and CVV side by side
         Row(
           children: [
             Expanded(
@@ -479,34 +486,64 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
             ),
             const SizedBox(width: 16),
             Expanded(
-              flex: 3,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[300]!),
+              flex: 2,
+              child: TextFormField(
+                controller: _cvvController,
+                decoration: InputDecoration(
+                  labelText: 'CVV',
+                  hintText: '123',
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
                 ),
-              child: DropdownButtonFormField<String>(
-                value: _selectedCardBrand,
-                decoration: const InputDecoration(
-                  labelText: 'Card Brand',
-                  prefixIcon: Icon(Icons.business),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                ),
-                  isExpanded: true,
-                items: const [
-                  DropdownMenuItem(value: 'visa', child: Text('Visa')),
-                  DropdownMenuItem(value: 'mastercard', child: Text('Mastercard')),
-                    DropdownMenuItem(value: 'amex', child: Text('Amex')),
-                  DropdownMenuItem(value: 'discover', child: Text('Discover')),
-                  DropdownMenuItem(value: 'other', child: Text('Other')),
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(3),
                 ],
-                onChanged: (value) => setState(() => _selectedCardBrand = value!),
-                ),
+                validator: (value) {
+                  if (value == null || value.length != 3) {
+                    return 'CVV must be 3 digits';
+                  }
+                  return null;
+                },
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        // Card brand dropdown below
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: DropdownButtonFormField<String>(
+            initialValue: _selectedCardBrand,
+            decoration: const InputDecoration(
+              labelText: 'Card Brand',
+              prefixIcon: Icon(Icons.business),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            ),
+            isExpanded: true,
+            items: const [
+              DropdownMenuItem(value: 'visa', child: Text('Visa')),
+              DropdownMenuItem(value: 'mastercard', child: Text('Mastercard')),
+              DropdownMenuItem(value: 'amex', child: Text('Amex')),
+              DropdownMenuItem(value: 'discover', child: Text('Discover')),
+              DropdownMenuItem(value: 'other', child: Text('Other')),
+            ],
+            onChanged: (value) => setState(() => _selectedCardBrand = value!),
+          ),
         ),
         const SizedBox(height: 16),
         TextFormField(
@@ -726,7 +763,7 @@ class _AddEditPaymentMethodPageState extends State<AddEditPaymentMethodPage>
               : Colors.grey,
           ),
         ),
-        activeColor: Theme.of(context).primaryColor,
+        activeThumbColor: Theme.of(context).primaryColor,
       ),
     );
   }

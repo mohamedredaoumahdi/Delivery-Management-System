@@ -116,7 +116,7 @@ class _SearchPageState extends State<SearchPage> {
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: theme.colorScheme.surfaceVariant.withValues(alpha:0.3),
+                      fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha:0.3),
                     ),
                     textInputAction: TextInputAction.search,
                     onSubmitted: _performSearch,

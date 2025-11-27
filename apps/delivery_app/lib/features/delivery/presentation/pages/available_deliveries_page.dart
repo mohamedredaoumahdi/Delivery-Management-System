@@ -278,10 +278,14 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
     final showAcceptButton = _currentTab == DeliveryTab.available;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1,
+        ),
       ),
       child: InkWell(
         onTap: () {
@@ -296,23 +300,11 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
               // Header with order number, status, and earnings
               Row(
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      _getStatusIcon(delivery.status),
-                      color: statusColor,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                       children: [
                         Text(
                           'Order #${delivery.orderNumber.length > 7 ? delivery.orderNumber.substring(0, 7) : delivery.orderNumber}...',
@@ -323,7 +315,7 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                            const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
@@ -337,19 +329,42 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
                           child: Text(
                             statusText,
                             style: TextStyle(
-                              fontSize: theme.textTheme.bodySmall?.fontSize ?? 12,
+                                  fontSize: theme.textTheme.bodySmall?.fontSize ?? 11,
                               color: statusColor,
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.person_outline,
+                              size: 16,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                delivery.customerName,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -365,30 +380,7 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-
-              // Customer info
-              Row(
-                children: [
-                  Icon(
-                    Icons.person_outline,
-                    size: 18,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      delivery.customerName,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
 
               // Delivery address
               Row(
@@ -396,14 +388,14 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
                 children: [
                   Icon(
                     Icons.location_on_outlined,
-                    size: 18,
+                    size: 16,
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       delivery.deliveryAddress,
-                      style: theme.textTheme.bodyMedium?.copyWith(
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                       ),
                       maxLines: 2,
@@ -442,7 +434,7 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
 
               // Action buttons
               if (showAcceptButton) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
@@ -450,6 +442,9 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
                         onPressed: () {
                           context.push('/delivery/${delivery.id}');
                         },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                         child: const Text('View Details'),
                       ),
                     ),
@@ -459,6 +454,9 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
                         onPressed: () {
                           _showAcceptDialog(context, delivery);
                         },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                         child: const Text('Accept'),
                       ),
                     ),
@@ -514,21 +512,6 @@ class _AvailableDeliveriesPageState extends State<AvailableDeliveriesPage>
         return Colors.purple;
       case DeliveryStatus.delivered:
         return Colors.green;
-    }
-  }
-
-  IconData _getStatusIcon(DeliveryStatus status) {
-    switch (status) {
-      case DeliveryStatus.pending:
-      case DeliveryStatus.readyForPickup:
-        return Icons.schedule;
-      case DeliveryStatus.accepted:
-        return Icons.check_circle_outline;
-      case DeliveryStatus.pickedUp:
-      case DeliveryStatus.inTransit:
-        return Icons.local_shipping;
-      case DeliveryStatus.delivered:
-        return Icons.check_circle;
     }
   }
 

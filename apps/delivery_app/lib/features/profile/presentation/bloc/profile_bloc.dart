@@ -13,6 +13,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
   ProfileBloc(this._profileService) : super(const ProfileInitial()) {
     on<ProfileLoadEvent>(_onLoadProfile);
+    on<ProfileUpdateEvent>(_onUpdateProfile);
     on<ProfileLogoutEvent>(_onLogout);
   }
 
@@ -50,6 +51,43 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       print('❌ ProfileBloc: Error type: ${error.runtimeType}');
       emit(ProfileError(error.toString()));
       print('📊 ProfileBloc: Emitted ProfileError state: $error');
+    }
+  }
+
+  Future<void> _onUpdateProfile(
+    ProfileUpdateEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
+    print('🚀 ProfileBloc: UpdateEvent received');
+    
+    try {
+      print('🔄 ProfileBloc: Calling profileService.updateProfile()');
+      await _profileService.updateProfile(
+        name: event.name,
+        phone: event.phone,
+        vehicleType: event.vehicleType,
+        licenseNumber: event.licenseNumber,
+      );
+      
+      print('✅ ProfileBloc: Profile updated successfully');
+      
+      // Reload profile to get updated data
+      final profileData = await _profileService.getProfile();
+      final profile = DriverUser(
+        id: profileData['id'] ?? '',
+        email: profileData['email'] ?? '',
+        name: profileData['name'] ?? 'Delivery Driver',
+        phone: profileData['phone'] ?? '',
+        vehicleType: profileData['vehicleType'] ?? 'Car',
+        licenseNumber: profileData['licenseNumber'] ?? 'DL123456',
+        isActive: profileData['isActive'] ?? true,
+      );
+      
+      emit(ProfileLoaded(profile));
+      print('📊 ProfileBloc: Emitted ProfileLoaded state with updated data');
+    } catch (error) {
+      print('❌ ProfileBloc: Error updating profile: $error');
+      emit(ProfileError(error.toString()));
     }
   }
 
